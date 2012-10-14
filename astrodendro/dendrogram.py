@@ -25,7 +25,6 @@
 
 import numpy as np
 from .components import Branch, Leaf
-from .newick import parse_newick
 from .progressbar import AnimatedProgressBar
 
 

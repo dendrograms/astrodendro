@@ -1,1 +1,1 @@
-from dendrogram import Dendrogram
+from .dendrogram import Dendrogram
