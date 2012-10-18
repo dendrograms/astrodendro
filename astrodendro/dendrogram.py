@@ -33,6 +33,14 @@ class Dendrogram(object):
     def __init__(self):
         self.data = None
         self.n_dim = 0
+        # Put in a friendly error message to make sure nobody confuses the 
+        # static methods for creating a dendrogram with instance methods:
+        def static_warning(self):
+            err = "Invalid use of static method. Try d=Dendrogram.compute(data)"
+            err +=" or d=Dendrogram.load_from(file)"
+            raise AttributeError(err)
+        self.compute = static_warning
+        self.load_from = static_warning
 
     @staticmethod
     def compute(data, min_intensity=-np.inf, min_npix=0, min_delta=0, verbose=False):
