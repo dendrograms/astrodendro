@@ -60,8 +60,8 @@ class Test2DimensionalData(unittest.TestCase):
         self.assertIsNone(branch.parent)
         self.assertEqual(branch.ancestor, branch)
         self.assertEqual(branch.merge_level, 0)
-        self.assertEqual(branch.get_npix(descend=False), 1) # only pixel is a 0
-        self.assertEqual(branch.get_npix(descend=True), 7)
+        self.assertEqual(branch.get_npix(subtree=False), 1) # only pixel is a 0
+        self.assertEqual(branch.get_npix(subtree=True), 7)
         
         self.assertEqual(len(branch.children), 2)
         for leaf in branch.children:
@@ -137,7 +137,7 @@ class Test3DimensionalData(unittest.TestCase):
                 if node:
                     # The current pixel is associated with part of the dendrogram.
                     self.assertIn(coord, node.coords, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node))
-                    fmax_coords, fmax = node.get_peak(descend=True)
+                    fmax_coords, fmax = node.get_peak(subtree=True)
                     if d.node_at(fmax_coords) is node:
                         # The current pixel is the peak pixel in this node
                         pass

@@ -61,8 +61,8 @@ class TestIO(unittest.TestCase):
             self.assertItemsEqual(node1.f, node2.f)
             self.assertEqual(type(node1), type(node2))
             # Compare the coordinates and intensity values of all peak pixels:
-            self.assertEqual(node1.get_peak(descend=True),
-                             node2.get_peak(descend=True))
+            self.assertEqual(node1.get_peak(subtree=True),
+                             node2.get_peak(subtree=True))
             if type(node2) == Branch:
                 self.assertEqual(node1.merge_level, node2.merge_level)  
     

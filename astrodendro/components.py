@@ -136,17 +136,17 @@ class Leaf(object):
         " Newick representation of this Leaf " 
         return "%i:%.3f" % (self.idx, self.height)
 
-    def get_npix(self, descend=False):
+    def get_npix(self, subtree=False):
         """
         Return the number of pixels in this Leaf.
-        'descend' is ignored and is only for compatibility with Branch
+        'subtree' is ignored and is only for compatibility with Branch
         """
         return len(self.f)
 
-    def get_peak(self, descend=False):
+    def get_peak(self, subtree=False):
         """
         Return (coordinates, intensity) for the pixel with maximum value.
-        'descend' is ignored and is only for compatibility with Branch
+        'subtree' is ignored and is only for compatibility with Branch
         """
         if not hasattr(self, '_peak'):
             self._peak = (self.coords[self.f.index(self.fmax)], self.fmax) 
@@ -200,28 +200,28 @@ class Branch(Leaf):
                     break
         return self._descendants
     
-    def get_npix(self, descend=False):
+    def get_npix(self, subtree=False):
         """
         Return the number of pixels in this Branch.
-        If descend=True, the result is a sum that includes all child nodes. 
+        If subtree=True, the result is a sum that includes all child nodes. 
         """
-        if not descend:
+        if not subtree:
             return len(self.f)
-        # descend is True, so return total npix including all child nodes:
+        # subtree is True, so return total npix including all child nodes:
         if not hasattr(self, '_npix_total'): # _npix_total has not been cached
             self._npix_total = len(self.f)
             self._npix_total += sum([len(node.f) for node in self.descendants])
         return self._npix_total
     
-    def get_peak(self, descend=False):
+    def get_peak(self, subtree=False):
         """
         Return (coordinates, intensity) for the pixel with maximum value
-        If descend=True, will search all descendant nodes too. 
+        If subtree=True, will search all descendant nodes too. 
         """
         if not hasattr(self, '_peak'):
             self._peak = (self.coords[self.f.index(self.fmax)], self.fmax)
             # Note the above cached value never includes descendants
-        if not descend:
+        if not subtree:
             return self._peak
         else:
             found = self._peak
