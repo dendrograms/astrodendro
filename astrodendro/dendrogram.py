@@ -242,7 +242,8 @@ class Dendrogram(object):
         " Return a flattened iterable containing all nodes in the dendrogram "
         return self.nodes_dict.itervalues()
     
-    def get_leaves(self):
+    @property
+    def leaves(self):
         " Return a flattened list of all leaves in the dendrogram "
         return [i for i in self.nodes_dict.itervalues() if type(i) == Leaf]
 

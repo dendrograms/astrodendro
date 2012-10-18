@@ -51,10 +51,7 @@ class TestRecursionLimit(unittest.TestCase):
     
     def test_compute(self):
         d = Dendrogram.compute(self.data)
-        
-        leaves = d.get_leaves()
-        
-        self.assertEqual(len(leaves), self.size, msg="We expect {n} leaves, not {a}.".format(n=self.size, a=len(leaves)))
+        self.assertEqual(len(d.leaves), self.size, msg="We expect {n} leaves, not {a}.".format(n=self.size, a=len(d.leaves)))
     
     def test_computing_level(self):
         d = Dendrogram.compute(self.data)

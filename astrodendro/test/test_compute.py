@@ -121,7 +121,7 @@ class Test3DimensionalData(unittest.TestCase):
         d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_intensity=1.4)
         
         # This data with these parameters should produce 55 leaves
-        self.assertEqual(len(d.get_leaves()),55)
+        self.assertEqual(len(d.leaves),55)
         
         # Now check every pixel in the data cube (this takes a while).
         # The following loop construct may look crazy, but it is a more
@@ -161,7 +161,7 @@ class TestNDimensionalData(unittest.TestCase):
         # Now dendrogram it:
         d = Dendrogram.compute(data, min_intensity=1)
         # We expect two leaves:
-        leaves = d.get_leaves()
+        leaves = d.leaves
         self.assertEqual(len(leaves), 2)
         # We expect one branch:
         branches = [i for i in d.all_nodes if type(i) is Branch]
