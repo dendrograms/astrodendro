@@ -58,8 +58,8 @@ class Leaf(object):
         self.f.extend(leaf.f)
         self.fmin, self.fmax = min(leaf.fmin, self.fmin), max(leaf.fmax, self.fmax)
 
-    def add_footprint(self, image, level):
-        "Fill in a map which shows the depth of the tree"
+    def fill_footprint(self, image, level):
+        "Set all corresponding points in 'image' to the value 'level'"
         for c in self.coords:
             image[c] = level
 
@@ -166,11 +166,12 @@ class Branch(Leaf):
     #   The following methods can be used during OR after computation         #
     ###########################################################################
     
-    def add_footprint(self, image, level, recursive=True):
+    def fill_footprint(self, image, level, recursive=True):
+        "Set all corresponding points in 'image' to the value 'level'"
         if recursive:
             for child in self.children:
-                child.add_footprint(image, level + 1)
-        Leaf.add_footprint(self, image, level)
+                child.fill_footprint(image, level + 1)
+        Leaf.fill_footprint(self, image, level)
     
     
     ###########################################################################

@@ -185,7 +185,7 @@ class Dendrogram(object):
                     # Merge the insignificant node that this pixel now belongs to:
                     belongs_to._merge(m)
                     # Update index map
-                    m.add_footprint(self.index_map, belongs_to.idx)
+                    m.fill_footprint(self.index_map, belongs_to.idx)
 
         if verbose:
             progress_bar.progress = 100 # Done
@@ -202,7 +202,7 @@ class Dendrogram(object):
                 # This leaf is an orphan, so remove all references to it:
                 nodes.pop(leaf.idx)
                 self.trunk.remove(leaf)
-                leaf.add_footprint(self.index_map, 0)
+                leaf.fill_footprint(self.index_map, 0)
         
         # To make the node.level property fast, we ensure all the nodes in the
         # trunk have their level cached as "0"
