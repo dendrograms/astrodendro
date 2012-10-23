@@ -114,4 +114,4 @@ To run the unit tests, simply run the command
 A benchmark is also included that uses realistic data to determine how fast the
 dendrograms are being generated. To run the benchmark, use the command
 
-    python benchmark.py
+    python -m astrodendro.test.benchmark
