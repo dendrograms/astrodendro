@@ -24,7 +24,6 @@ import sys
 import numpy as np
 
 from .. import Dendrogram
-from ..components import Leaf
 
 
 class TestRecursionLimit(object):
@@ -53,7 +52,7 @@ class TestRecursionLimit(object):
 
     def test_compute(self):
         d = Dendrogram.compute(self.data)
-        self.assertEqual(len(d.leaves), self.size, msg="We expect {n} leaves, not {a}.".format(n=self.size, a=len(d.leaves)))
+        assert len(d.leaves) == self.size, "We expect {n} leaves, not {a}.".format(n=self.size, a=len(d.leaves))
 
     def test_computing_level(self):
         d = Dendrogram.compute(self.data)
@@ -74,8 +73,8 @@ class TestRecursionLimit(object):
             while level > 0:
                 obj = obj.parent
                 level -= 1
-            self.assertEqual(obj.parent, None)
-            self.assertEqual(obj.level, 0)
+            assert obj.parent == None
+            assert obj.level == 0
 
     def teardown_method(self, method):
         sys.setrecursionlimit(self._oldlimit)

@@ -4,8 +4,7 @@ This module provides a 107x107x602 pixel data cube where all the flux values
 greater than 1.4 represent real data from L1448 13co, but all other (lesser)
 values are randomly generated.
 """
-import numpy as np
-import os.path
+import os
 try:
     import gzip
 except AttributeError:
@@ -16,6 +15,8 @@ except AttributeError:
                        " subfolder. Please change to a different directory"
                        " and re-run this test.")
 import cPickle
+
+import numpy as np
 
 # First, load the data cube from the file:
 _datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.pkl.gz')

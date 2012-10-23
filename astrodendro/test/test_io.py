@@ -22,7 +22,6 @@
 " Test import and export of dendrograms "
 
 import os
-import unittest
 
 import numpy as np
 
@@ -55,20 +54,19 @@ class TestIO(object):
     def compare_dendrograms(self, d1, d2):
         " Helper method that ensures d1 and d2 are equivalent "
         # Do we get the same number of nodes?
-        self.assertEqual(len(d1.nodes_dict), len(d2.nodes_dict))
+        assert len(d1.nodes_dict) == len(d2.nodes_dict)
         # Do we recover the data exactly?
         np.testing.assert_array_equal(d1.data, d2.data)
         # Now check that the nodes are the same:
         for idx in d2.nodes_dict:
             node1, node2 = d1.nodes_dict[idx], d2.nodes_dict[idx]
-            self.assertItemsEqual(node1.coords, node2.coords)
-            self.assertItemsEqual(node1.f, node2.f)
-            self.assertEqual(type(node1), type(node2))
+            assert np.all(node1.coords == node2.coords)
+            assert np.all(node1.f == node2.f)
+            assert type(node1) == type(node2)
             # Compare the coordinates and intensity values of all peak pixels:
-            self.assertEqual(node1.get_peak(subtree=True),
-                             node2.get_peak(subtree=True))
+            assert node1.get_peak(subtree=True) == node2.get_peak(subtree=True)
             if type(node2) == Branch:
-                self.assertEqual(node1.merge_level, node2.merge_level)
+                assert node1.merge_level == node2.merge_level
 
     # Below are the actual tests for each import/export format:
 
