@@ -22,9 +22,9 @@
 import timeit
 import os
 
-from ._testdata import data
+from astrodendro.test._testdata import data
 
-from .. import Dendrogram
+from astrodendro import Dendrogram
 
 
 def benchmark_compute():
