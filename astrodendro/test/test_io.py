@@ -60,8 +60,8 @@ class TestIO(object):
         # Now check that the nodes are the same:
         for idx in d2.nodes_dict:
             node1, node2 = d1.nodes_dict[idx], d2.nodes_dict[idx]
-            assert np.all(node1.coords == node2.coords)
-            assert np.all(node1.f == node2.f)
+            assert np.all(np.sort(node1.coords, axis=0) == np.sort(node2.coords, axis=0))
+            assert np.all(np.sort(node1.f) == np.sort(node2.f))
             assert type(node1) == type(node2)
             # Compare the coordinates and intensity values of all peak pixels:
             assert node1.get_peak(subtree=True) == node2.get_peak(subtree=True)
