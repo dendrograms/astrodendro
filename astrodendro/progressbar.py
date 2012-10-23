@@ -23,8 +23,8 @@ And here another example with different options:
 
     >>> from progressbar import ProgressBar
     >>> custom_options = {
-    ...     'end': 100, 
-    ...     'width': 20, 
+    ...     'end': 100,
+    ...     'width': 20,
     ...     'fill': '#',
     ...     'format': '%(progress)s%% [%(fill)s%(blank)s]'
     ... }
@@ -37,16 +37,17 @@ And here another example with different options:
     >>> p + 9
     >>> print p
     100% [####################]
-	
+
 Source: https://github.com/ikame/progressbar
-	
+
 """
 import sys
+
 
 class ProgressBar(object):
     """ProgressBar class holds the options of the progress bar.
     The options are:
-        start   State from which start the progress. For example, if start is 
+        start   State from which start the progress. For example, if start is
                 5 and the end is 10, the progress of this state is 50%
         end     State in which the progress has terminated.
         width   --
@@ -65,7 +66,7 @@ class ProgressBar(object):
         self.blank = blank
         self.pformat = pformat
         self.incremental = incremental
-        self.step = 100 / float(width) #fix
+        self.step = 100 / float(width)  # fix
         self.reset()
 
     def __add__(self, increment):
@@ -77,7 +78,7 @@ class ProgressBar(object):
         return self
 
     def __str__(self):
-        progressed = int(self.progress / self.step) #fix
+        progressed = int(self.progress / self.step)  # fix
         fill = progressed * self.fill
         blank = (self.width - progressed) * self.blank
         return self.pformat % {'fill': fill, 'blank': blank, 'progress': int(self.progress)}

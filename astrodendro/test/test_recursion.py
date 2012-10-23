@@ -19,50 +19,51 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import unittest
-from astrodendro import Dendrogram
-from astrodendro.components import Leaf
-import numpy as np
 import sys
 
-class TestRecursionLimit(unittest.TestCase):
+import numpy as np
+
+from .. import Dendrogram
+
+
+class TestRecursionLimit(object):
     """
     Test that we can efficiently compute deep dendrogram trees
     without hitting the recursion limit.
     Note: plot() uses recursion but we should be able to *compute*
-    dendrograms without using deep recursion, even if we aren't 
+    dendrograms without using deep recursion, even if we aren't
     yet able to plot them without using recursion.
     """
-    def setUp(self):
+    def setup_method(self, method):
         self._oldlimit = sys.getrecursionlimit()
-        sys.setrecursionlimit(100) # Reduce recursion limit dramatically (default is 1000)
-        size = 10000 # number of leaves desired in the dendrogram
-        data1 = np.arange(size*2) # first row
-        data2 = np.arange(size*2) # second row
-        data2[::2] += 2;
-        data1[-1] = 0 # set the last pixel in the first row to zero, to trigger a deep ancestor search
-        self.data = np.vstack((data1,data2))
+        sys.setrecursionlimit(100)  # Reduce recursion limit dramatically (default is 1000)
+        size = 10000  # number of leaves desired in the dendrogram
+        data1 = np.arange(size * 2)  # first row
+        data2 = np.arange(size * 2)  # second row
+        data2[::2] += 2
+        data1[-1] = 0  # set the last pixel in the first row to zero, to trigger a deep ancestor search
+        self.data = np.vstack((data1, data2))
         self.size = size
         # self.data now looks like this:
         # [[ 0, 1, 2, 3, 4, 5, ...],
         #  [ 2, 1, 4, 3, 6, 5, ...]]
         # Notice every second column has a local maximum
         # so there are [size] local maxima in the array
-    
+
     def test_compute(self):
         d = Dendrogram.compute(self.data)
-        self.assertEqual(len(d.leaves), self.size, msg="We expect {n} leaves, not {a}.".format(n=self.size, a=len(d.leaves)))
-    
+        assert len(d.leaves) == self.size, "We expect {n} leaves, not {a}.".format(n=self.size, a=len(d.leaves))
+
     def test_computing_level(self):
         d = Dendrogram.compute(self.data)
-        
+
         # Now pick a node near the middle of the dendrogram:
-        mid_node = d.node_at((0, self.size//2))
-        
+        mid_node = d.node_at((0, self.size // 2))
+
         # Compute its level:
         sys.setrecursionlimit(100000)
         _ = mid_node.level
-        
+
         # Now check the .level property of all nodes, in random order:
         import random
         nodes = random.sample(list(d.all_nodes), len(d.nodes_dict))
@@ -72,11 +73,8 @@ class TestRecursionLimit(unittest.TestCase):
             while level > 0:
                 obj = obj.parent
                 level -= 1
-            self.assertEqual(obj.parent, None)
-            self.assertEqual(obj.level, 0)
-    
-    def tearDown(self):
-        sys.setrecursionlimit(self._oldlimit)
+            assert obj.parent == None
+            assert obj.level == 0
 
-if __name__ == '__main__':
-    unittest.main()
+    def teardown_method(self, method):
+        sys.setrecursionlimit(self._oldlimit)

@@ -19,6 +19,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+
 class Leaf(object):
 
     ###########################################################################
@@ -37,8 +38,8 @@ class Leaf(object):
             self.fmin, self.fmax = min(f), max(f)
         self.idx = idx
         self.parent = None
-        self._ancestor = None # Cached ancestor, if any
-        self._level = None # Cached "level" property - see below
+        self._ancestor = None  # Cached ancestor, if any
+        self._level = None  # Cached "level" property - see below
 
     def _add_pixel(self, coord, f):
         """
@@ -73,7 +74,7 @@ class Leaf(object):
             return self.fmax - self.fmin
         else:
             return self.fmax - self.parent.merge_level
-    
+
     @property
     def ancestor(self):
         """
@@ -82,7 +83,7 @@ class Leaf(object):
         Results are partially cached to reduce recursion depth.
         The caching assumes that once an object has been given a parent, that
         parent will never change.
-        
+
         This method should be equivalent to:
             if self.parent == None:
                 return self
@@ -98,11 +99,11 @@ class Leaf(object):
             # the cached ancestor, if needed:
             a = self._ancestor
             if a._ancestor:
-                self._ancestor = a._ancestor # Update our cached value
+                self._ancestor = a._ancestor  # Update our cached value
             else:
                 self._ancestor = a.parent
         return self._ancestor
-    
+
     ###########################################################################
     #   The following methods are only reliable after the entire tree is      #
     #   computed. They should not be used in dendrogram.py                    #
@@ -133,7 +134,7 @@ class Leaf(object):
 
     @property
     def newick(self):
-        " Newick representation of this Leaf " 
+        " Newick representation of this Leaf "
         return "%i:%.3f" % (self.idx, self.height)
 
     def get_npix(self, subtree=False):
@@ -149,47 +150,46 @@ class Leaf(object):
         'subtree' is ignored and is only for compatibility with Branch
         """
         if not hasattr(self, '_peak'):
-            self._peak = (self.coords[self.f.index(self.fmax)], self.fmax) 
+            self._peak = (self.coords[self.f.index(self.fmax)], self.fmax)
         return self._peak
+
 
 class Branch(Leaf):
 
     def __init__(self, children, coord, f, idx=None):
-        self.merge_level = f # Record the exact flux level that triggered creation of this branch
+        self.merge_level = f  # Record the exact flux level that triggered creation of this branch
         self.children = children
         for child in children:
             child.parent = self
         Leaf.__init__(self, coord, f, idx=idx)
-        self._descendants = None # Cached value is not initially set
+        self._descendants = None  # Cached value is not initially set
 
     ###########################################################################
     #   The following methods can be used during OR after computation         #
     ###########################################################################
-    
+
     def fill_footprint(self, image, level, recursive=True):
         "Set all corresponding points in 'image' to the value 'level'"
         if recursive:
             for child in self.children:
                 child.fill_footprint(image, level + 1)
         Leaf.fill_footprint(self, image, level)
-    
-    
+
     ###########################################################################
     #   The following methods are only reliable after the entire tree is      #
     #   computed. They should not be used in dendrogram.py                    #
     ###########################################################################
-
     @property
     def newick(self):
         newick_items = [child.newick for child in self.children]
         return "(%s)%s:%.3f" % (','.join(newick_items), self.idx, self.height)
-    
+
     @property
     def descendants(self):
         "Get a flattened list of all child leaves and branches. Non-recursive."
         if self._descendants is None:
             self._descendants = []
-            to_add = [self] # branches with children we will need to add to the list
+            to_add = [self]  # branches with children we will need to add to the list
             while True:
                 children = []
                 map(children.extend, [branch.children for branch in to_add])
@@ -199,24 +199,24 @@ class Branch(Leaf):
                 if not to_add:
                     break
         return self._descendants
-    
+
     def get_npix(self, subtree=False):
         """
         Return the number of pixels in this Branch.
-        If subtree=True, the result is a sum that includes all child nodes. 
+        If subtree=True, the result is a sum that includes all child nodes.
         """
         if not subtree:
             return len(self.f)
         # subtree is True, so return total npix including all child nodes:
-        if not hasattr(self, '_npix_total'): # _npix_total has not been cached
+        if not hasattr(self, '_npix_total'):  # _npix_total has not been cached
             self._npix_total = len(self.f)
             self._npix_total += sum([len(node.f) for node in self.descendants])
         return self._npix_total
-    
+
     def get_peak(self, subtree=False):
         """
         Return (coordinates, intensity) for the pixel with maximum value
-        If subtree=True, will search all descendant nodes too. 
+        If subtree=True, will search all descendant nodes too.
         """
         if not hasattr(self, '_peak'):
             self._peak = (self.coords[self.f.index(self.fmax)], self.fmax)
