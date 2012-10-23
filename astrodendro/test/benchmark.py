@@ -22,9 +22,9 @@
 import timeit
 import os
 
-from astrodendro.test._testdata import data
+from ._testdata import data
 
-from astrodendro import Dendrogram
+from .. import Dendrogram
 
 
 def benchmark_compute():
@@ -69,6 +69,7 @@ def benchmark_hdf5():
     t = timeit.timeit(testHDF5, number=num) / num
 
     print("Total average export+import time: {0:.3}s".format(t))
+
 
 if __name__ == '__main__':
     try:
