@@ -88,6 +88,7 @@ def _parse_newick(string):
 
 # Import and export
 
+
 def dendro_export_hdf5(d, filename):
     """Export the dendrogram 'd' to the HDF5 file 'filename'"""
     import h5py
@@ -108,6 +109,7 @@ def dendro_export_hdf5(d, filename):
     ds.attrs['IMAGE_MINMAXRANGE'] = [d.data.min(), d.data.max()]
 
     f.close()
+
 
 def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""

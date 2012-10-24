@@ -23,13 +23,15 @@ import numpy as np
 
 # Import and export
 
+
 def dendro_export_fits(d, filename):
-    " Export the dendrogram 'd' to the FITS file 'filename' "
+    """Export the dendrogram 'd' to the FITS file 'filename'"""
     import pyfits
     raise NotImplementedError("FITS export has not yet been implemented.")
 
+
 def dendro_import_fits(filename):
-    " Import 'filename' and construct a dendrogram from it "
+    """Import 'filename' and construct a dendrogram from it"""
     import pyfits
     from ..dendrogram import Dendrogram
     from ..components import Leaf, Branch

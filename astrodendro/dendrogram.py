@@ -42,6 +42,7 @@ IO_FORMATS = {
 
 # Define main dendrogram class
 
+
 class Dendrogram(object):
 
     def __init__(self):
@@ -233,14 +234,14 @@ class Dendrogram(object):
     @staticmethod
     def load_from(filename, format="autodetect"):
         if format == "autodetect":
-            format = filename.rsplit('.',1)[-1].lower()
+            format = filename.rsplit('.', 1)[-1].lower()
         return IO_FORMATS[format][1](filename)
-    
+
     def save_to(self, filename, format="autodetect"):
         if format == "autodetect":
-            format = filename.rsplit('.',1)[-1].lower()
+            format = filename.rsplit('.', 1)[-1].lower()
         return IO_FORMATS[format][0](self, filename)
-    
+
     @property
     def all_nodes(self):
         " Return a flattened iterable containing all nodes in the dendrogram "
