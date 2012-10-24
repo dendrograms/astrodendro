@@ -109,9 +109,9 @@ Unit Tests and Benchmarks
 Several unit tests are included, and are also installed with the package.
 To run the unit tests, simply run the command
 
-	python -m astrodendro.test
+    python setup.py test
 
 A benchmark is also included that uses realistic data to determine how fast the
 dendrograms are being generated. To run the benchmark, use the command
 
-	python -m astrodendro.test.benchmark
+    python -m astrodendro.test.benchmark

@@ -26,6 +26,7 @@ from ..components import Leaf, Branch
 
 # Helper functions:
 
+
 def _parse_newick(string):
 
     items = {}
@@ -90,6 +91,7 @@ def _parse_newick(string):
 
 # Import and export
 
+
 def dendro_export(d, filename):
     " Export the dendrogram 'd' to the HDF5 file 'filename' "
     f = h5py.File(filename, 'w')
@@ -110,6 +112,7 @@ def dendro_export(d, filename):
 
     f.close()
 
+
 def dendro_import(filename):
     " Import 'filename' and construct a dendrogram from it "
     h5f = h5py.File(filename, 'r')
@@ -118,17 +121,17 @@ def dendro_import(filename):
     d.data = h5f['data'].value
     d.index_map = h5f['index_map'].value
     d.nodes_dict = {}
-    
+
     flux_by_node = {}
     coords_by_node = {}
-    
+
     def _construct_tree(repr):
         nodes = []
         for idx in repr:
             node_coords = coords_by_node[idx]
             f = flux_by_node[idx]
             if type(repr[idx]) == tuple:
-                sub_nodes_repr = repr[idx][0] # Parsed representation of sub nodes
+                sub_nodes_repr = repr[idx][0]  # Parsed representation of sub nodes
                 sub_nodes = _construct_tree(sub_nodes_repr)
                 for i in sub_nodes:
                     d.nodes_dict[i.idx] = i
@@ -151,7 +154,7 @@ def dendro_import(filename):
                 nodes.append(l)
                 d.nodes_dict[idx] = l
         return nodes
-    
+
     # Do a fast iteration through d.data, adding the coords and intensity values
     # to the two dictionaries declared above:
     coords = np.array(np.unravel_index(np.arange(d.data.size),
@@ -171,6 +174,6 @@ def dendro_import(filename):
     # To make the node.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
     for node in d.trunk:
-        node._level = 0 # See the @property level() definition in components.py
-    
+        node._level = 0  # See the @property level() definition in components.py
+
     return d
