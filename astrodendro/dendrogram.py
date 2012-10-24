@@ -29,6 +29,20 @@ from .components import Branch, Leaf
 from .progressbar import AnimatedProgressBar
 
 
+# Set exporters and importers
+
+from .io.fits import dendro_export_fits, dendro_import_fits
+from .io.hdf5 import dendro_export_hdf5, dendro_import_hdf5
+
+IO_FORMATS = {
+    # name: (export_function, import_function)
+    'fits': (dendro_export_fits, dendro_import_fits),
+    'hdf5': (dendro_export_hdf5, dendro_import_hdf5),
+}
+
+# Define main dendrogram class
+
+
 class Dendrogram(object):
 
     def __init__(self):
@@ -218,26 +232,15 @@ class Dendrogram(object):
         return self
 
     @staticmethod
-    def _io_module_for(format):
-        " Helper for load_from() and save_to() "
-        try:
-            # Load the module .io.[format]
-            return getattr(__import__('astrodendro.io.' + format).io, format)
-        except ImportError:
-            raise ValueError("Invalid/unknown format: '{}'".format(format))
-
-    @staticmethod
     def load_from(filename, format="autodetect"):
         if format == "autodetect":
             format = filename.rsplit('.', 1)[-1].lower()
-        io_module = Dendrogram._io_module_for(format)
-        return io_module.dendro_import(filename)
+        return IO_FORMATS[format][1](filename)
 
     def save_to(self, filename, format="autodetect"):
         if format == "autodetect":
             format = filename.rsplit('.', 1)[-1].lower()
-        io_module = Dendrogram._io_module_for(format)
-        io_module.dendro_export(self, filename)
+        return IO_FORMATS[format][0](self, filename)
 
     @property
     def all_nodes(self):
