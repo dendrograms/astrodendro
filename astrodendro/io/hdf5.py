@@ -19,10 +19,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import h5py
 import numpy as np
-from ..dendrogram import Dendrogram
-from ..components import Leaf, Branch
 
 # Helper functions:
 
@@ -92,8 +89,9 @@ def _parse_newick(string):
 # Import and export
 
 
-def dendro_export(d, filename):
-    " Export the dendrogram 'd' to the HDF5 file 'filename' "
+def dendro_export_hdf5(d, filename):
+    """Export the dendrogram 'd' to the HDF5 file 'filename'"""
+    import h5py
     f = h5py.File(filename, 'w')
 
     f.attrs['n_dim'] = d.n_dim
@@ -113,8 +111,11 @@ def dendro_export(d, filename):
     f.close()
 
 
-def dendro_import(filename):
-    " Import 'filename' and construct a dendrogram from it "
+def dendro_import_hdf5(filename):
+    """Import 'filename' and construct a dendrogram from it"""
+    import h5py
+    from ..dendrogram import Dendrogram
+    from ..components import Leaf, Branch
     h5f = h5py.File(filename, 'r')
     d = Dendrogram()
     d.n_dim = h5f.attrs['n_dim']
