@@ -51,7 +51,7 @@ class Dendrogram(object):
         # Put in a friendly error message to make sure nobody confuses the
         # static methods for creating a dendrogram with instance methods:
 
-        def static_warning(self):
+        def static_warning(self, *args, **kwargs):
             err = "Invalid use of static method. Try d=Dendrogram.compute(data)"
             err += " or d=Dendrogram.load_from(file)"
             raise AttributeError(err)
