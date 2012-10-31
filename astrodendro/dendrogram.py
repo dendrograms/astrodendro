@@ -67,7 +67,8 @@ class Dendrogram(object):
         self.load_from = static_warning
 
     @staticmethod
-    def compute(data, min_value=-np.inf, min_delta=0, min_npix=0, verbose=False):
+    def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
+                merge_test_function=None, verbose=False):
         """
         Compute a dendrogram from a Numpy array.
 
@@ -101,6 +102,10 @@ class Dendrogram(object):
         More information about the above parameters is available from the
         online documentation at [www.dendrograms.org](www.dendrograms.org).
         """
+
+        if merge_test_function is None:
+            merge_test_function = lambda n, c, i: True
+        
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
@@ -208,7 +213,9 @@ class Dendrogram(object):
                 merge = [structure for structure in adjacent
                          if structure.is_leaf and
                          (structure.vmax - data_value < min_delta or
-                          len(structure.values(subtree=False)) < min_npix or structure.vmax == data_value)]
+                          len(structure.values(subtree=False)) < min_npix or
+                          structure.vmax == data_value or
+                          not merge_test_function(node, coords, intensity))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
