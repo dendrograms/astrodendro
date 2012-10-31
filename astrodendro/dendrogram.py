@@ -104,8 +104,8 @@ class Dendrogram(object):
         """
 
         if merge_test_function is None:
-            merge_test_function = lambda n, c, i: True
-        
+            merge_test_function = lambda n, c, i: False
+
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
@@ -215,7 +215,7 @@ class Dendrogram(object):
                          (structure.vmax - data_value < min_delta or
                           len(structure.values(subtree=False)) < min_npix or
                           structure.vmax == data_value or
-                          not merge_test_function(node, coords, intensity))]
+                          merge_test_function(node, coords, intensity))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
