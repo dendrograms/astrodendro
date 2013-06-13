@@ -15,24 +15,22 @@ except AttributeError:
                        " subfolder. Please change to a different directory"
                        " and re-run this test.")
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
-
 import numpy as np
 
 # First, load the data cube from the file:
-_datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.pkl.gz')
-_datafile = gzip.open(_datafile_path, 'rb')
+_datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.npz')
+
+# np.savez_compressed('sample-data-hl.npz', flux_values=flux, coords=coords)
+
+
+arrays = np.load(_datafile_path)
 
 # data file contains pickled flux_values and coords from L1448 13co,
 # a data cube which originally had a shape of (107, 107, 602)
 # but filtered to only include data points above value of 1.4
 
-_flux_values = pickle.load(_datafile)
-_coords = pickle.load(_datafile)
-_datafile.close()
+_flux_values = arrays['flux_values']
+_coords = arrays['coords']
 
 # Create a new data cube filled with random values no greater than 1.4
 # (these will later be filtered out, but that filtering should be part of
