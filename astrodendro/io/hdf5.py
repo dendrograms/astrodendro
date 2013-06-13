@@ -158,8 +158,8 @@ def dendro_import_hdf5(filename):
 
     # Do a fast iteration through d.data, adding the coords and intensity values
     # to the two dictionaries declared above:
-    coords = np.array(np.unravel_index(np.arange(d.data.size),
-                                       d.data.shape)).transpose()
+    coords = np.indices(d.data.shape).reshape(d.data.ndim, np.prod(d.data.shape)).transpose()
+
     for coord in coords:
         coord = tuple(coord)
         idx = d.index_map[coord]
