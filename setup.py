@@ -19,10 +19,30 @@ class DendroTest(Command):
         pass
 
     def run(self):
+
+        import os
+        import shutil
+        import tempfile
+
+        # First ensure that we build the package so that 2to3 gets executed
+        self.reinitialize_command('build', inplace=False)
+        self.run_command('build')
+        build_cmd = self.get_finalized_command('build')
+        new_path = os.path.abspath(build_cmd.build_lib)
+
+        # Copy the build to a temporary directory for the purposes of testing
+        # - this avoids creating pyc and __pycache__ directories inside the
+        # build directory
+        tmp_dir = tempfile.mkdtemp(prefix='astropy-test-')
+        testing_path = os.path.join(tmp_dir, os.path.basename(new_path))
+        shutil.copytree(new_path, testing_path)
+
         import sys
         import subprocess
-        errno = subprocess.call([sys.executable, 'runtests.py'])
+
+        errno = subprocess.call([sys.executable, os.path.abspath('runtests.py')], cwd=testing_path)
         raise SystemExit(errno)
+
 
 setup(name='dendro-core',
       version='0.0.1',
@@ -30,6 +50,7 @@ setup(name='dendro-core',
       author='Braden MacDonald and Thomas Robitaille',
       author_email='braden@bradenmacdonald.com',
       packages=['astrodendro', 'astrodendro.io', 'astrodendro.test'],
+      package_data={'astrodendro.test':['*.gz']},
       provides=['astrodendro'],
       requires=['numpy'],
       cmdclass={'build_py': build_py, 'test': DendroTest},

@@ -14,7 +14,11 @@ except AttributeError:
     raise RuntimeError("This test cannot be run from a folder with an 'io'"
                        " subfolder. Please change to a different directory"
                        " and re-run this test.")
-import cPickle
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 import numpy as np
 
