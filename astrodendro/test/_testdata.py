@@ -30,8 +30,8 @@ _datafile = gzip.open(_datafile_path, 'rb')
 # a data cube which originally had a shape of (107, 107, 602)
 # but filtered to only include data points above value of 1.4
 
-_flux_values = cPickle.load(_datafile)
-_coords = cPickle.load(_datafile)
+_flux_values = pickle.load(_datafile)
+_coords = pickle.load(_datafile)
 _datafile.close()
 
 # Create a new data cube filled with random values no greater than 1.4
