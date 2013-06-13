@@ -4,7 +4,7 @@ python:
     - 2.6
     - 2.7
     - 3.2
-    - 3.3
+    # 3.3 cannot yet be tested due to incompatibility with h5py
 
 env:
     # try all python versions with the latest stable Numpy
