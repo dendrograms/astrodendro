@@ -67,9 +67,9 @@ class Dendrogram(object):
         self.min_intensity, self.min_npix, self.min_delta = min_intensity, min_npix, min_delta
 
         # Create a list of all points in the cube above min_intensity
-        keep = self.data.ravel() > min_intensity
-        intensity_values = self.data.ravel()[keep]
-        coords = np.array(np.unravel_index(np.arange(self.data.size)[keep], self.data.shape)).transpose()
+        keep = self.data > min_intensity
+        intensity_values = self.data[keep]
+        coords = np.vstack(np.where(keep)).transpose()
 
         if verbose:
             print("Generating dendrogram using {:,} of {:,} pixels ({}% of data)".format(intensity_values.size, self.data.size, (100 * intensity_values.size / self.data.size)))
