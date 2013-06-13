@@ -20,15 +20,11 @@ import numpy as np
 # First, load the data cube from the file:
 _datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.npz')
 
-# np.savez_compressed('sample-data-hl.npz', flux_values=flux, coords=coords)
-
-
-arrays = np.load(_datafile_path)
-
-# data file contains pickled flux_values and coords from L1448 13co,
+# data file contains saved flux_values and coords from L1448 13co,
 # a data cube which originally had a shape of (107, 107, 602)
 # but filtered to only include data points above value of 1.4
 
+arrays = np.load(_datafile_path)
 _flux_values = arrays['flux_values']
 _coords = arrays['coords']
 
