@@ -131,7 +131,7 @@ class Test3DimensionalData(object):
         # The following loop construct may look crazy, but it is a more
         # efficient way of iterating through the array than using a regular
         # nditer with multi_index.
-        for coord in np.array(np.unravel_index(np.arange(self.data.size), self.data.shape)).transpose():
+        for coord in np.indices(self.data.shape).reshape(self.data.ndim, np.prod(self.data.shape)).transpose():
             coord = tuple(coord)
             f = self.data[coord]
             if (f < 1.4):

@@ -14,21 +14,19 @@ except AttributeError:
     raise RuntimeError("This test cannot be run from a folder with an 'io'"
                        " subfolder. Please change to a different directory"
                        " and re-run this test.")
-import cPickle
 
 import numpy as np
 
 # First, load the data cube from the file:
-_datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.pkl.gz')
-_datafile = gzip.open(_datafile_path, 'rb')
+_datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.npz')
 
-# data file contains pickled flux_values and coords from L1448 13co,
+# data file contains saved flux_values and coords from L1448 13co,
 # a data cube which originally had a shape of (107, 107, 602)
 # but filtered to only include data points above value of 1.4
 
-_flux_values = cPickle.load(_datafile)
-_coords = cPickle.load(_datafile)
-_datafile.close()
+arrays = np.load(_datafile_path)
+_flux_values = arrays['flux_values']
+_coords = arrays['coords']
 
 # Create a new data cube filled with random values no greater than 1.4
 # (these will later be filtered out, but that filtering should be part of
