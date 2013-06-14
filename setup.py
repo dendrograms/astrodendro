@@ -33,7 +33,7 @@ class DendroTest(Command):
         # Copy the build to a temporary directory for the purposes of testing
         # - this avoids creating pyc and __pycache__ directories inside the
         # build directory
-        tmp_dir = tempfile.mkdtemp(prefix='astropy-test-')
+        tmp_dir = tempfile.mkdtemp(prefix='astrodendro-test-')
         testing_path = os.path.join(tmp_dir, os.path.basename(new_path))
         shutil.copytree(new_path, testing_path)
 
