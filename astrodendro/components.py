@@ -270,19 +270,19 @@ class Structure(object):
         Get a flattened list of all child leaves and branches.
         """
 
-        if self.descendants is None:
-            self.descendants = []
+        if self._descendants is None:
+            self._descendants = []
             to_add = [self]  # branches with children we will need to add to the list
             while True:
                 children = []
                 map(children.extend, [branch.children for branch in to_add])
-                self.descendants.extend(children)
+                self._descendants.extend(children)
                 # Then proceed, essentially recursing through child branches:
                 to_add = [b for b in children if not b.is_leaf]
                 if not to_add:
                     break
 
-        return self.descendants
+        return self._descendants
 
     def get_npix(self, subtree=False):
         """
@@ -306,12 +306,12 @@ class Structure(object):
         """
         if not hasattr(self, '_peak'):
             self._peak = (self._indices[self._values.index(self.vmax)], self.vmax)
-            # Note the above cached value never includes children_structures
+            # Note the above cached value never includes descendants
         if not subtree:
             return self._peak
         else:
             found = self._peak
-            for node in self.children_structures:
+            for node in self.descendants:
                 if found[1] < node.vmax:
                     found = node.get_peak()
             return found
