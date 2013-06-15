@@ -26,7 +26,7 @@ _datafile_path = os.path.join(os.path.dirname(__file__), 'sample-data-hl.npz')
 
 arrays = np.load(_datafile_path)
 _flux_values = arrays['flux_values']
-_indices = arrays['indices']
+_indices = arrays['coords']
 
 # Create a new data cube filled with random values no greater than 1.4
 # (these will later be filtered out, but that filtering should be part of
