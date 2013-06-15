@@ -22,7 +22,7 @@
 import numpy as np
 
 from .. import Dendrogram
-from ..components import Structure
+from ..structure import Structure
 
 
 class Test2DimensionalData(object):

@@ -115,7 +115,7 @@ def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import h5py
     from ..dendrogram import Dendrogram
-    from ..components import Structure
+    from ..structure import Structure
     h5f = h5py.File(filename, 'r')
     d = Dendrogram()
     d.n_dim = h5f.attrs['n_dim']
@@ -175,6 +175,6 @@ def dendro_import_hdf5(filename):
     # To make the node.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
     for node in d.trunk:
-        node._level = 0  # See the @property level() definition in components.py
+        node._level = 0  # See the @property level() definition in structure.py
 
     return d

@@ -25,7 +25,7 @@
 
 import numpy as np
 
-from .components import Structure
+from .structure import Structure
 from .progressbar import AnimatedProgressBar
 
 
@@ -223,7 +223,7 @@ class Dendrogram(object):
         # To make the node.level property fast, we ensure all the nodes in the
         # trunk have their level cached as "0"
         for node in self.trunk:
-            node._level = 0  # See the definition of level() in components.py
+            node._level = 0  # See the definition of level() in structure.py
 
         # Save a list of all nodes accessible by ID
         self.nodes_dict = nodes
