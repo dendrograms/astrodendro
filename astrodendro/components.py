@@ -206,7 +206,7 @@ class Structure(object):
     #   computed. They should not be used in dendrogram.py                    #
     ###########################################################################
 
-    def fill_footprint(self, array, recursive=True):
+    def fill_footprint(self, array, level, recursive=True):
         """
         Set all corresponding points in `array` to the level of the structure
 
@@ -219,9 +219,9 @@ class Structure(object):
         """
         if recursive:
             for child in self.children:
-                child.fill_footprint(array)
+                child.fill_footprint(array, level + 1)
         for index in self.indices:
-            array[index] = self.level
+            array[index] = level
 
     @property
     def level(self):
