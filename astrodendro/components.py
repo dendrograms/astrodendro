@@ -49,7 +49,7 @@ class Structure(object):
         if np.isscalar(values):  # values are for a single pixel
             self._indices = [indices]
             self._values = [values]
-            self._vmin_sel, self._vmax = values, values
+            self._vmin, self._vmax = values, values
         else:  # values are for a sequence of pixels
             self._indices = indices
             self._values = values
@@ -69,7 +69,14 @@ class Structure(object):
         return not self.children
 
     @property
-    def indices(self):
+    def is_branch(self):
+        """
+        Whether the present structure is a branch
+        """
+        return not self.is_leaf
+
+    @property
+    def indices_all(self):
         """
         The indices of the pixels in the branch, and sub-structures
         """
@@ -77,18 +84,18 @@ class Structure(object):
         # since child.indices will include all children recursively.
         sub_indices = []
         for child in self.children:
-            sub_indices += child.indices
-        return self.indices_self + sub_indices
+            sub_indices += child.indices_all
+        return self.indices + sub_indices
 
     @property
-    def indices_self(self):
+    def indices(self):
         """
         The indices of the pixels in this branch, excluding sub-structures
         """
         return self._indices
 
     @property
-    def values(self):
+    def values_all(self):
         """
         The values of the pixels in the branch, and sub-structures
         """
@@ -96,15 +103,29 @@ class Structure(object):
         # ``values`` for all children will include all children recursively.
         sub_values = []
         for child in self.children:
-            sub_values += child.values
+            sub_values += child.values_all
         return self.values + sub_values
 
     @property
-    def values_self(self):
+    def values(self):
         """
         The values of the pixels in this branch, excluding sub-structures
         """
         return self._values
+
+    @property
+    def vmin(self):
+        """
+        The minimum value of pixels belonging to the branch (excluding sub-structure)
+        """
+        return self._vmin
+
+    @property
+    def vmax(self):
+        """
+        The maximum value of pixels belonging to the branch (excluding sub-structure)
+        """
+        return self._vmax
 
     def _add_pixel(self, index, value):
         """
@@ -120,9 +141,9 @@ class Structure(object):
         value : float
             The value of the pixel
         """
-        self.indices.append(index)
-        self.values.append(value)
-        self.vmin, self.vmax = min(value, self.vmin), max(value, self.vmax)
+        self._indices.append(index)
+        self._values.append(value)
+        self._vmin, self._vmax = min(value, self.vmin), max(value, self.vmax)
 
     def _merge(self, structure):
         """
@@ -131,9 +152,9 @@ class Structure(object):
         This is a private method only intended for use by
         :meth:`~astrodendro.dendrogram.Dendrogram.compute`
         """
-        self.indices.extend(structure.indices)
-        self.values.extend(structure.values)
-        self.vmin, self.vmax = min(structure.vmin, self.vmin), max(structure.vmax, self.vmax)
+        self._indices.extend(structure._indices)
+        self._values.extend(structure._values)
+        self._vmin, self._vmax = min(structure.vmin, self.vmin), max(structure.vmax, self.vmax)
 
     ###########################################################################
     #   The following methods can be used during OR after computation         #
@@ -271,14 +292,11 @@ class Structure(object):
         """
 
         if not subtree:
-            return len(self.f)
-
-        # subtree is True, so return total npix including all sub-structures
-        if not hasattr(self, '_npix_total'):  # _npix_total has not been cached
-            self._npix_total = len(self.values)
-            self._npix_total += sum([len(node.values) for node in self.children_structures])
-
-        return self._npix_total
+            return len(self.values)
+        else:
+            if not hasattr(self, '_npix_total'):  # _npix_total has not been cached
+                self._npix_total = len(self.values_all)
+            return self._npix_total
 
     def get_peak(self, subtree=False):
         """
@@ -287,7 +305,7 @@ class Structure(object):
         If subtree=True, will search all descendant nodes too.
         """
         if not hasattr(self, '_peak'):
-            self._peak = (self.indices[self.values.index(self.vmax)], self.vmax)
+            self._peak = (self._indices[self._values.index(self.vmax)], self.vmax)
             # Note the above cached value never includes children_structures
         if not subtree:
             return self._peak
@@ -297,3 +315,9 @@ class Structure(object):
                 if found[1] < node.vmax:
                     found = node.get_peak()
             return found
+
+    def __repr__(self):
+        if self.is_leaf:
+            return "<Leaf>"
+        else:
+            return "<Branch>"

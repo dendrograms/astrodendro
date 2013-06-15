@@ -25,7 +25,7 @@
 
 import numpy as np
 
-from .components import Branch, Leaf
+from .components import Structure
 from .progressbar import AnimatedProgressBar
 
 
@@ -139,7 +139,7 @@ class Dendrogram(object):
                 idx = next_idx()
 
                 # Create leaf
-                leaf = Leaf(coord, intensity, idx=idx)
+                leaf = Structure(coord, intensity, idx=idx)
 
                 # Add leaf to overall list
                 nodes[idx] = leaf
@@ -164,9 +164,9 @@ class Dendrogram(object):
                 # separate. These leaves will now be treated the same as the pixel
                 # under consideration
                 merge = [node for node in adjacent
-                         if type(node) is Leaf and
-                         (node.fmax - intensity < min_delta or
-                          len(node.f) < min_npix or node.fmax == intensity)]
+                         if node.is_leaf and
+                         (node.vmax - intensity < min_delta or
+                          len(node.values) < min_npix or node.vmax == intensity)]
 
                 # Remove merges from list of adjacent nodes
                 for node in merge:
@@ -186,7 +186,7 @@ class Dendrogram(object):
                     belongs_to._add_pixel(coord, intensity)
                 else:
                     # Create a branch
-                    belongs_to = Branch(adjacent, coord, intensity, idx=next_idx())
+                    belongs_to = Structure(coord, intensity, children=adjacent, idx=next_idx())
                     # Add branch to overall list
                     nodes[belongs_to.idx] = belongs_to
 
@@ -212,9 +212,9 @@ class Dendrogram(object):
         self.trunk = [node for node in nodes.itervalues() if node.parent is None]
 
         # Remove orphan leaves that aren't large enough
-        leaves_in_trunk = [node for node in self.trunk if type(node) == Leaf]
+        leaves_in_trunk = [node for node in self.trunk if node.is_leaf]
         for leaf in leaves_in_trunk:
-            if (len(leaf.f) < min_npix or leaf.fmax - leaf.fmin < min_delta):
+            if (len(leaf.values) < min_npix or leaf.vmax - leaf.vmin < min_delta):
                 # This leaf is an orphan, so remove all references to it:
                 nodes.pop(leaf.idx)
                 self.trunk.remove(leaf)
@@ -250,7 +250,7 @@ class Dendrogram(object):
     @property
     def leaves(self):
         " Return a flattened list of all leaves in the dendrogram "
-        return [i for i in self.nodes_dict.itervalues() if type(i) == Leaf]
+        return [i for i in self.nodes_dict.itervalues() if i.is_leaf]
 
     def to_newick(self):
         return "(%s);" % ','.join([node.newick for node in self.trunk])

@@ -115,7 +115,7 @@ def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import h5py
     from ..dendrogram import Dendrogram
-    from ..components import Leaf, Branch
+    from ..components import Structure
     h5f = h5py.File(filename, 'r')
     d = Dendrogram()
     d.n_dim = h5f.attrs['n_dim']
@@ -136,7 +136,7 @@ def dendro_import_hdf5(filename):
                 sub_nodes = _construct_tree(sub_nodes_repr)
                 for i in sub_nodes:
                     d.nodes_dict[i.idx] = i
-                b = Branch(sub_nodes, node_coords, f, idx=idx)
+                b = Structure(node_coords, f, children=sub_nodes, idx=idx)
                 # Correct merge levels - complicated because of the
                 # order in which we are building the tree.
                 # What we do is look at the heights of this branch's
@@ -147,11 +147,11 @@ def dendro_import_hdf5(filename):
                     height = first_child_repr[1]
                 else:
                     height = first_child_repr
-                b.merge_level = sub_nodes[0].fmax - height
+                b.merge_level = sub_nodes[0].vmax - height
                 d.nodes_dict[idx] = b
                 nodes.append(b)
             else:
-                l = Leaf(node_coords, f, idx=idx)
+                l = Structure(node_coords, f, idx=idx)
                 nodes.append(l)
                 d.nodes_dict[idx] = l
         return nodes
