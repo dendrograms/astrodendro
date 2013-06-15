@@ -122,7 +122,7 @@ class Test3DimensionalData(object):
         self.data = data
 
     def test_dendrogramComputation(self):
-        d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_intensity=1.4)
+        d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_data_value=1.4)
 
         # This data with these parameters should produce 55 leaves
         assert len(d.leaves) == 55
@@ -141,8 +141,8 @@ class Test3DimensionalData(object):
                 if node:
                     # The current pixel is associated with part of the dendrogram.
                     assert coord in node.indices, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
-                    vmax_coords, vmax = node.get_peak(subtree=True)
-                    if d.node_at(vmax_coords) is node:
+                    vmax_indices, vmax = node.get_peak(subtree=True)
+                    if d.node_at(vmax_indices) is node:
                         # The current pixel is the peak pixel in this node
                         pass
                     else:
@@ -156,14 +156,14 @@ class TestNDimensionalData(object):
         # N-dimensional data is hard to conceptualize so I've kept this simple.
         # Create a local maximum (value 5) at the centre
         data[2, 2, 2, 2] = 5
-        # add some points around it of intensity 3. Note that '1:4:2' is equivalent to saying indices '1' and '3'
+        # add some points around it with value 3. Note that '1:4:2' is equivalent to saying indices '1' and '3'
         data[2, 1:4:2, 2, 2] = data[2, 2, 1:4:2, 2] = data[2, 2, 2, 1:4:2] = 3
         # Add a trail of points of value 2 connecting one of those 3s to a 4
         data[0:3, 0, 2, 2] = 2  # Sets [0, 0, 2, 2], [1, 0, 2, 2], and [2, 0, 2, 2] all equal to 2 -> will connect to the '3' at [2, 1, 2, 2]
         data[0, 0, 2, 1] = 4
 
         # Now dendrogram it:
-        d = Dendrogram.compute(data, min_intensity=1)
+        d = Dendrogram.compute(data, min_data_value=1)
         # We expect two leaves:
         leaves = d.leaves
         assert len(leaves) == 2

@@ -63,7 +63,7 @@ class TestIO(object):
             assert np.all(np.sort(node1.indices, axis=0) == np.sort(node2.indices, axis=0))
             assert np.all(np.sort(node1.values) == np.sort(node2.values))
             assert type(node1) == type(node2)
-            # Compare the coordinates and intensity values of all peak pixels:
+            # Compare the coordinates and data values of all peak pixels:
             assert node1.get_peak(subtree=True) == node2.get_peak(subtree=True)
             if node2.is_branch:
                 assert node1.merge_level == node2.merge_level

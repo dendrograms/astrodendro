@@ -59,21 +59,21 @@ class Dendrogram(object):
         self.load_from = static_warning
 
     @staticmethod
-    def compute(data, min_intensity=-np.inf, min_npix=0, min_delta=0, verbose=False):
+    def compute(data, min_data_value=-np.inf, min_npix=0, min_delta=0, verbose=False):
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
         # For reference, store the parameters used:
-        self.min_intensity, self.min_npix, self.min_delta = min_intensity, min_npix, min_delta
+        self.min_data_value, self.min_npix, self.min_delta = min_data_value, min_npix, min_delta
 
-        # Create a list of all points in the cube above min_intensity
-        keep = self.data > min_intensity
-        intensity_values = self.data[keep]
-        coords = np.vstack(np.where(keep)).transpose()
+        # Create a list of all points in the cube above min_data_value
+        keep = self.data > min_data_value
+        data_values = self.data[keep]
+        indices = np.vstack(np.where(keep)).transpose()
 
         if verbose:
-            print("Generating dendrogram using {:,} of {:,} pixels ({}% of data)".format(intensity_values.size, self.data.size, (100 * intensity_values.size / self.data.size)))
-            progress_bar = AnimatedProgressBar(end=max(intensity_values.size, 1), width=40, fill='=', blank=' ')
+            print("Generating dendrogram using {:,} of {:,} pixels ({}% of data)".format(data_values.size, self.data.size, (100 * data_values.size / self.data.size)))
+            progress_bar = AnimatedProgressBar(end=max(data_values.size, 1), width=40, fill='=', blank=' ')
 
         # Define index array indicating what node each cell is part of
         # We expand each dimension by one, so the last value of each
@@ -84,7 +84,7 @@ class Dendrogram(object):
         # Dictionary of currently-defined nodes:
         nodes = {}
 
-        # Define a list of offsets we add to any coordinate to get the coords
+        # Define a list of offsets we add to any coordinate to get the indices
         # of all neighbouring pixels
         if self.n_dim == 3:
             neighbour_offsets = np.array([(0, 0, -1), (0, 0, 1), (0, -1, 0), (0, 1, 0), (-1, 0, 0), (1, 0, 0)])
@@ -98,19 +98,19 @@ class Dendrogram(object):
                 np.identity(self.n_dim, dtype=int) * -1
             ))
 
-        # Loop from largest to smallest intensity value. Each time, check if
+        # Loop from largest to smallest data_value value. Each time, check if
         # the pixel connects to any existing leaf. Otherwise, create new leaf.
 
         count = 0
 
-        for i in np.argsort(intensity_values)[::-1]:
+        for i in np.argsort(data_values)[::-1]:
 
             def next_idx():
                 return i + 1
                 # Generate IDs index i. We add one to avoid ID 0
 
-            intensity = intensity_values[i]
-            coord = tuple(coords[i])
+            data_value = data_values[i]
+            coord = tuple(indices[i])
 
             # Print stats
             count += 1
@@ -122,7 +122,7 @@ class Dendrogram(object):
             # We don't worry about the edges, because overflow or underflow in
             # any one dimension will always land on an extra "padding" cell
             # with value zero added above when index_map was created
-            indices_adjacent = [tuple(c) for c in np.add(neighbour_offsets, coords[i])]
+            indices_adjacent = [tuple(c) for c in np.add(neighbour_offsets, indices[i])]
             adjacent = [self.index_map[c] for c in indices_adjacent if self.index_map[c]]
 
             # Replace adjacent elements by its ancestor
@@ -139,7 +139,7 @@ class Dendrogram(object):
                 idx = next_idx()
 
                 # Create leaf
-                leaf = Structure(coord, intensity, idx=idx)
+                leaf = Structure(coord, data_value, idx=idx)
 
                 # Add leaf to overall list
                 nodes[idx] = leaf
@@ -150,7 +150,7 @@ class Dendrogram(object):
             elif len(adjacent) == 1:  # Add to existing leaf or branch
 
                 # Add point to node
-                adjacent[0]._add_pixel(coord, intensity)
+                adjacent[0]._add_pixel(coord, data_value)
 
                 # Set absolute index of pixel in index map
                 self.index_map[coord] = adjacent[0].idx
@@ -165,8 +165,8 @@ class Dendrogram(object):
                 # under consideration
                 merge = [node for node in adjacent
                          if node.is_leaf and
-                         (node.vmax - intensity < min_delta or
-                          len(node.values) < min_npix or node.vmax == intensity)]
+                         (node.vmax - data_value < min_delta or
+                          len(node.values) < min_npix or node.vmax == data_value)]
 
                 # Remove merges from list of adjacent nodes
                 for node in merge:
@@ -179,14 +179,14 @@ class Dendrogram(object):
                     # There are no separate leaves left (and no branches), so pick the
                     # first one as the reference and merge all the others onto it
                     belongs_to = merge.pop()
-                    belongs_to._add_pixel(coord, intensity)
+                    belongs_to._add_pixel(coord, data_value)
                 elif len(adjacent) == 1:
                     # There is one significant adjacent leaf/branch left.
                     belongs_to = adjacent[0]
-                    belongs_to._add_pixel(coord, intensity)
+                    belongs_to._add_pixel(coord, data_value)
                 else:
                     # Create a branch
-                    belongs_to = Structure(coord, intensity, children=adjacent, idx=next_idx())
+                    belongs_to = Structure(coord, data_value, children=adjacent, idx=next_idx())
                     # Add branch to overall list
                     nodes[belongs_to.idx] = belongs_to
 
@@ -255,9 +255,9 @@ class Dendrogram(object):
     def to_newick(self):
         return "(%s);" % ','.join([node.newick for node in self.trunk])
 
-    def node_at(self, coords):
+    def node_at(self, indices):
         " Get the node at the given pixel coordinate, or None "
-        idx = self.index_map[coords]
+        idx = self.index_map[indices]
         if idx:
             return self.nodes_dict[idx]
         return None
