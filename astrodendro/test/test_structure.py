@@ -181,4 +181,29 @@ def test_init_branch_list(index):
     assert array[leaf_index] == 3.
     assert np.sum(array) == 9.
 
+
+@pytest.mark.xfail  # peak is cached and doesn't return the right value
+def test_add_pixel():
+
+    s = Structure(1, 10.)
+
+    assert s.get_npix() == 1
+    assert s.get_peak() == (1, 10)
+    assert s.vmin == 10.
+    assert s.vmax == 10.
+
+    s._add_pixel(2, 8.)
+
+    assert s.get_npix() == 2
+    assert s.get_peak() == (1, 10)
+    assert s.vmin == 8.
+    assert s.vmax == 10.
+
+    s._add_pixel(3, 12.)
+
+    assert s.get_npix() == 3
+    assert s.get_peak() == (3, 12.)
+    assert s.vmin == 8.
+    assert s.vmax == 12.
+
 # TODO: add newick tests
