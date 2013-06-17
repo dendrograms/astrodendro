@@ -18,6 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
+from itertools import izip
 
 import numpy as np
 
@@ -51,9 +52,9 @@ class Test2DimensionalData(object):
             assert leaf.ancestor == leaf
             assert leaf.get_npix() == 1
             if leaf.values[0] == 4:
-                assert leaf.indices[0] == (1, 1)
+                assert zip(*leaf.indices)[0] == (1, 1)
             elif leaf.values[0] == 3:
-                assert leaf.indices[0] == (3, 0)
+                assert zip(*leaf.indices)[0] == (3, 0)
             else:
                 self.fail("Invalid value of flux in one of the leaves")
 
@@ -131,6 +132,10 @@ class Test3DimensionalData(object):
         # The following loop construct may look crazy, but it is a more
         # efficient way of iterating through the array than using a regular
         # nditer with multi_index.
+        st_map = np.empty(self.data.shape, dtype=np.object)
+        for st in d.all_nodes:
+            st_map[st.indices] = st
+
         for coord in np.indices(self.data.shape).reshape(self.data.ndim, np.prod(self.data.shape)).transpose():
             coord = tuple(coord)
             f = self.data[coord]
@@ -140,7 +145,8 @@ class Test3DimensionalData(object):
                 node = d.node_at(coord)
                 if node:
                     # The current pixel is associated with part of the dendrogram.
-                    assert coord in node.indices, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
+                    assert st_map[coord] == node, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
+
                     vmax_indices, vmax = node.get_peak(subtree=True)
                     if d.node_at(vmax_indices) is node:
                         # The current pixel is the peak pixel in this node
@@ -184,4 +190,4 @@ class TestNDimensionalData(object):
         assert leaf.vmin == 2
         assert leaf.get_npix() == 1 + 6 + 2  # Contains 1x '5', 6x '3', and 2x '2'. The other '2' should be in the branch
         # Check that the only pixel in the branch is a '2' at [0,0,2,2]
-        assert (branches[0].indices, branches[0].values) == ([(0, 0, 2, 2), ], [2., ])
+        assert (zip(*branches[0].indices), branches[0].values) == ([(0, 0, 2, 2), ], [2., ])

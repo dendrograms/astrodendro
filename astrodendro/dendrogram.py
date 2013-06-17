@@ -232,6 +232,11 @@ class Dendrogram(object):
         s = tuple(slice(0, s, 1) for s in data.shape)
         self.index_map = self.index_map[s]
 
+        # add dendrogram index
+        ti = TreeIndex(self)
+        for s in self.nodes_dict.itervalues():
+            s._tree_index = ti
+
         # Return the newly-created dendrogram:
         return self
 
@@ -346,6 +351,7 @@ class TreeIndex(object):
         self._index = tuple(n.ravel()[index] for n in
                             np.indices(index_map.shape))
 
+        self._data = dendrogram.data
         self._offset = offset
         self._npix = npix
         self._npix_subtree = npix_subtree
@@ -376,3 +382,6 @@ class TreeIndex(object):
         i0 = self._offset[sid]
         di = self._npix_subtree[sid] if subtree else self._npix[sid]
         return tuple(ind[i0: i0 + di] for ind in self._index)
+
+    def values(self, sid, subtree=False):
+        return self._data[self.indices(sid, subtree=subtree)]

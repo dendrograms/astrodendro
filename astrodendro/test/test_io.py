@@ -27,7 +27,7 @@ import numpy as np
 
 from .. import Dendrogram
 from ..structure import Structure
-
+from .test_index import assert_permuted_fancyindex
 
 class TestIO(object):
 
@@ -60,7 +60,7 @@ class TestIO(object):
         # Now check that the nodes are the same:
         for idx in d2.nodes_dict:
             node1, node2 = d1.nodes_dict[idx], d2.nodes_dict[idx]
-            assert np.all(np.sort(node1.indices, axis=0) == np.sort(node2.indices, axis=0))
+            assert_permuted_fancyindex(node1.indices, node2.indices)
             assert np.all(np.sort(node1.values) == np.sort(node2.values))
             assert type(node1) == type(node2)
             # Compare the coordinates and data values of all peak pixels:

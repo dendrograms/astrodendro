@@ -1,20 +1,31 @@
 import numpy as np
 from ..dendrogram import Dendrogram, TreeIndex
 
+def assert_permuted_fancyindex(x, y):
+    """ Assert that two fancy indices (tuples of integer ndarrays)
+    are permutations of each other
+    """
+    if not isinstance(x, tuple) or not(isinstance(x[0], np.ndarray)):
+        raise TypeError("First argument not a fancy index: %s" % x)
+
+    if not isinstance(y, tuple) or not(isinstance(y[0], np.ndarray)):
+        raise TypeError("Second argument not a fancy index: %s" % y)
+
+    dtype = [('%i' % i, 'i') for i in range(len(x))]
+    x = np.array(zip(*x), dtype=dtype)
+    y = np.array(zip(*y), dtype=dtype)
+    np.testing.assert_array_equal(np.sort(x),
+                                  np.sort(y))
+
+def assert_identical_fancyindex(x, y):
+    for xx, yy in zip(x, y):
+        np.testing.assert_array_equal(xx, yy)
+
 
 class TestIndex(object):
 
     def setup_method(self, method):
         pass
-
-    def assert_equivalent_indices(self, x, y):
-        """Assert that two multidimensional indices
-        are permutations of each other"""
-        dtype = [('%i' % i, 'i') for i in range(len(x))]
-        x = np.array(zip(*x), dtype=dtype)
-        y = np.array(zip(*y), dtype=dtype)
-        np.testing.assert_array_equal(np.sort(x),
-                                      np.sort(y))
 
     def assert_valid_index(self, d, index):
         """Assert that a dendrogram index is correct"""
@@ -23,7 +34,7 @@ class TestIndex(object):
         for s in d.all_nodes:
             ind = index.indices(s.idx)
             expected = np.where(d.index_map == s.idx)
-            self.assert_equivalent_indices(ind, expected)
+            assert_permuted_fancyindex(ind, expected)
 
         #subtree=True is the same, but includes descendents
         for s in d.all_nodes:
@@ -31,7 +42,7 @@ class TestIndex(object):
             expected = [np.where(d.index_map == ss.idx) for
                         ss in [s] + s.descendants]
             expected = tuple(np.hstack(i) for i in zip(*expected))
-            self.assert_equivalent_indices(ind, expected)
+            assert_permuted_fancyindex(ind, expected)
 
     def test_single_trunk(self):
         data = np.array([[1, 1, 1, 1],
