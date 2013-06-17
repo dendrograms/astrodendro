@@ -301,9 +301,8 @@ class TreeIndex(object):
         assert index_map.min() >= 0
 
         #map ids to [0, 1, ...] for storage efficiency
-        #packed[s.idx]
         uniq, bins = np.unique(index_map, return_inverse=True)
-        packed = {u: i for i, u in enumerate(uniq)}
+        packed = dict((u, i) for i, u in enumerate(uniq))
 
         flat_idx = index_map.ravel()
         ri = np.argsort(bins)
