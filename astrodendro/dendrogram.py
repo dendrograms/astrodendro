@@ -228,6 +228,10 @@ class Dendrogram(object):
         # Save a list of all nodes accessible by ID
         self.nodes_dict = nodes
 
+        #remove border from index map
+        s = tuple(slice(0, s, 1) for s in data.shape)
+        self.index_map = self.index_map[s]
+
         # Return the newly-created dendrogram:
         return self
 
