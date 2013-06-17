@@ -57,9 +57,14 @@ class Structure(object):
 
         self.idx = idx
 
-        self._level = None  # Cached level property
-        self._ancestor = None  # Cached parent structures
-        self._descendants = None  # Cached children structures
+        self._reset_cache()
+
+    def _reset_cache(self):
+        self._level = None
+        self._ancestor = None
+        self._descendants = None
+        self._npix_total = None
+        self._peak = None
 
     @property
     def is_leaf(self):
@@ -144,6 +149,7 @@ class Structure(object):
         self._indices.append(index)
         self._values.append(value)
         self._vmin, self._vmax = min(value, self.vmin), max(value, self.vmax)
+        self._reset_cache()
 
     def _merge(self, structure):
         """
@@ -155,6 +161,7 @@ class Structure(object):
         self._indices.extend(structure._indices)
         self._values.extend(structure._values)
         self._vmin, self._vmax = min(structure.vmin, self.vmin), max(structure.vmax, self.vmax)
+        self._reset_cache()
 
     ###########################################################################
     #   The following methods can be used during OR after computation         #
@@ -296,7 +303,7 @@ class Structure(object):
         if not subtree:
             return len(self.values)
         else:
-            if not hasattr(self, '_npix_total'):  # _npix_total has not been cached
+            if self._npix_total is None:
                 self._npix_total = len(self.values_all)
             return self._npix_total
 
@@ -306,9 +313,10 @@ class Structure(object):
 
         If subtree=True, will search all descendant nodes too.
         """
-        if not hasattr(self, '_peak'):
+        if self._peak is None:
             self._peak = (self._indices[self._values.index(self.vmax)], self.vmax)
             # Note the above cached value never includes descendants
+
         if not subtree:
             return self._peak
         else:

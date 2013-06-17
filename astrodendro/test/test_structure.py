@@ -182,7 +182,6 @@ def test_init_branch_list(index):
     assert np.sum(array) == 9.
 
 
-@pytest.mark.xfail  # peak is cached and doesn't return the right value
 def test_add_pixel():
 
     s = Structure(1, 10.)
