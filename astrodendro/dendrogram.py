@@ -234,6 +234,7 @@ class Dendrogram(object):
 
         # add dendrogram index
         ti = TreeIndex(self)
+
         for s in self.nodes_dict.itervalues():
             s._tree_index = ti
 
@@ -312,7 +313,15 @@ class TreeIndex(object):
         flat_idx = index_map.ravel()
         ri = np.argsort(bins)
         idx_ct = np.bincount(bins)
+        idx_sub_ct = {}
         idx_cdf = np.hstack((0, np.cumsum(idx_ct)))
+
+        #efficiently build up npix values
+        nodes = reversed(sorted(dendrogram.nodes_dict.values(),
+                                key=lambda x: x.level))
+        for st in nodes:
+            idx_sub_ct[st.idx] = idx_ct[packed[st.idx]]
+            idx_sub_ct[st.idx] += sum(idx_sub_ct[c.idx] for c in st.children)
 
         #build a 1D index array with the following properties
         # - values in index reference locations in flattened index_map
@@ -340,8 +349,7 @@ class TreeIndex(object):
             sid = packed[o.idx]
             offset[sid] = pos
             npix[sid] = idx_ct[sid]
-            npix_subtree[sid] = npix[sid] + sum(idx_ct[packed[x.idx]]
-                                                for x in o.descendants)
+            npix_subtree[sid] = idx_sub_ct[o.idx]
             idx = ri[idx_cdf[sid] : idx_cdf[sid] + npix[sid]]
             assert (flat_idx[idx] == o.idx).all()
             index[pos : pos + npix[sid]] = idx

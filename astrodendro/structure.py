@@ -115,10 +115,10 @@ class Structure(object):
         if hasattr(self, '_tree_index'):
             return self._tree_index.values(self.idx, subtree=True)
 
-        sub_values = []
+        sub_values = [self.values]
         for child in self.children:
             sub_values.append(child.values_all)
-        return np.hstack([self.values] + sub_values)
+        return np.hstack(sub_values)
 
     @property
     def values(self):
