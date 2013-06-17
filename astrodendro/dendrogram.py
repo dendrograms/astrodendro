@@ -265,3 +265,115 @@ class Dendrogram(object):
         if idx:
             return self.nodes_dict[idx]
         return None
+
+    def prefix_nodelist(self):
+        """Return all structures in the dendrogram, in prefix order."""
+        result = []
+
+        todo = list(self.trunk)
+        while len(todo) > 0:
+            st = todo.pop(0)
+            result.append(st)
+            todo = st.children + todo
+
+        return result
+
+
+
+class TreeIndex(object):
+    def __init__(self, dendrogram):
+        """
+        Object that efficiently extracts
+        the locations of Structures in an ndarray
+
+        Parameters
+        ----------
+        dendrogram : Dendrogram instance
+                    The dendrogram to index
+        """
+        index_map = dendrogram.index_map
+        trunk = dendrogram.trunk
+
+        sz = index_map.size
+        nd = len(index_map.shape)
+
+        assert sz == dendrogram.data.size
+        assert index_map.min() >= 0
+
+        #map ids to [0, 1, ...] for storage efficiency
+        #packed[s.idx]
+        uniq, bins = np.unique(index_map, return_inverse=True)
+        packed = {u: i for i, u in enumerate(uniq)}
+
+        flat_idx = index_map.ravel()
+        ri = np.argsort(bins)
+        idx_ct = np.bincount(bins)
+        idx_cdf = np.hstack((0, np.cumsum(idx_ct)))
+
+        #build a 1D index array with the following properties
+        # - values in index reference locations in flattened index_map
+        # - every structure (+ subtree) is a continuous slice of index
+        # - index[offset[i]] is the first location for (packed) structure i
+        # - npix[i] gives number of pixels in (packed) structure i,
+        #   exluding subtree
+        # - npix_subtree[i] is like above, but includes subtrees
+        #
+        # In summary, the locations in the flattened_index map
+        # for structure i excluding subrees is
+        #    pi = packed[i]
+        #    index[offset[pi] : offset[pi] + npix[pi]]
+        # and including subtrees is
+        #    index[offset[pi] : offset[pi] + npix_subtree[pi]]
+        offset = np.zeros(idx_ct.size, dtype=np.int)
+        npix = offset * 0
+        npix_subtree = offset * 0
+
+        index = np.zeros(sz, dtype=np.int)
+        order = dendrogram.prefix_nodelist()
+
+        pos = 0
+        for o in order:
+            sid = packed[o.idx]
+            offset[sid] = pos
+            npix[sid] = idx_ct[sid]
+            npix_subtree[sid] = npix[sid] + sum(idx_ct[packed[x.idx]]
+                                                for x in o.descendants)
+            idx = ri[idx_cdf[sid] : idx_cdf[sid] + npix[sid]]
+            assert (flat_idx[idx] == o.idx).all()
+            index[pos : pos + npix[sid]] = idx
+            pos += npix[sid]
+
+        #turn inds back into an ndim index
+        self._index = tuple(n.ravel()[index] for n in
+                            np.indices(index_map.shape))
+
+        self._offset = offset
+        self._npix = npix
+        self._npix_subtree = npix_subtree
+        self.packed = packed
+
+    def indices(self, sid, subtree=False):
+        """
+        Return pixel indices associated with a dendrogram structure
+
+        Returns the pixels in the original dendrogram array
+        which are associated with a particular structure id.
+
+        Parameters
+        ----------
+        sid : integer
+              The structure index to lookup. Stored in `Structure.idx`
+        subtree : bool, optional
+              If true, return indices for subtrees as well. Default=False
+
+
+        Returns
+        -------
+        A tuple of integer ndarrays, akin to np.where().
+        This can be directly used as an index into the dendrogram
+        data array
+        """
+        sid = self.packed[sid]
+        i0 = self._offset[sid]
+        di = self._npix_subtree[sid] if subtree else self._npix[sid]
+        return tuple(ind[i0: i0 + di] for ind in self._index)
