@@ -34,5 +34,5 @@ def dendro_import_fits(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import pyfits
     from ..dendrogram import Dendrogram
-    from ..components import Leaf, Branch
+    from ..structure import Structure
     raise NotImplementedError("FITS import has not yet been implemented.")

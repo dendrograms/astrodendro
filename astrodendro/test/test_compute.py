@@ -22,7 +22,7 @@
 import numpy as np
 
 from .. import Dendrogram
-from ..components import Leaf, Branch
+from ..structure import Structure
 
 
 class Test2DimensionalData(object):
@@ -39,21 +39,21 @@ class Test2DimensionalData(object):
         ########################################
         # Check the trunk elements:
 
-        leaves = [node for node in d.trunk if type(node) == Leaf]
+        leaves = [node for node in d.trunk if node.is_leaf]
         branches = [node for node in d.trunk if node not in leaves]
 
         assert len(leaves) == 2, "We expect two leaves among the lowest structures (the trunk)"
         assert len(branches) == 1, "We expect one branch among the lowest structures (the trunk)"
 
         for leaf in leaves:
-            assert len(leaf.f) == 1, "Leaves in the trunk are only expected to contain one point"
+            assert len(leaf.values) == 1, "Leaves in the trunk are only expected to contain one point"
             assert leaf.parent is None
             assert leaf.ancestor == leaf
             assert leaf.get_npix() == 1
-            if leaf.f[0] == 4:
-                assert leaf.coords[0] == (1, 1)
-            elif leaf.f[0] == 3:
-                assert leaf.coords[0] == (3, 0)
+            if leaf.values[0] == 4:
+                assert leaf.indices[0] == (1, 1)
+            elif leaf.values[0] == 3:
+                assert leaf.indices[0] == (3, 0)
             else:
                 self.fail("Invalid value of flux in one of the leaves")
 
@@ -68,13 +68,13 @@ class Test2DimensionalData(object):
 
         assert len(branch.children) == 2
         for leaf in branch.children:
-            assert isinstance(leaf, Leaf)
+            assert leaf.is_leaf
             assert leaf.ancestor == branch
             assert leaf.parent == branch
-            if 5 in leaf.f:
-                assert sum(leaf.f) == 5
-            elif 3 in leaf.f:
-                assert sum(leaf.f) == 1 + 2 + 3 + 2
+            if 5 in leaf.values:
+                assert sum(leaf.values) == 5
+            elif 3 in leaf.values:
+                assert sum(leaf.values) == 1 + 2 + 3 + 2
             else:
                 self.fail("Invalid child of the branch")
 
@@ -87,7 +87,7 @@ class Test2DimensionalData(object):
         branch, leaf4, leaf5 = d.trunk[0], d.node_at((1, 1)), d.node_at((1, 3))
         assert branch.merge_level == 2
         assert leaf4.height == 2
-        assert leaf5.height == leaf5.fmax - branch.merge_level  # 3
+        assert leaf5.height == leaf5.vmax - branch.merge_level  # 3
 
         ### TODO: What is the appropriate value for branch.height ?
 
@@ -122,7 +122,7 @@ class Test3DimensionalData(object):
         self.data = data
 
     def test_dendrogramComputation(self):
-        d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_intensity=1.4)
+        d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_data_value=1.4)
 
         # This data with these parameters should produce 55 leaves
         assert len(d.leaves) == 55
@@ -140,13 +140,13 @@ class Test3DimensionalData(object):
                 node = d.node_at(coord)
                 if node:
                     # The current pixel is associated with part of the dendrogram.
-                    assert coord in node.coords, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
-                    fmax_coords, fmax = node.get_peak(subtree=True)
-                    if d.node_at(fmax_coords) is node:
+                    assert coord in node.indices, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
+                    vmax_indices, vmax = node.get_peak(subtree=True)
+                    if d.node_at(vmax_indices) is node:
                         # The current pixel is the peak pixel in this node
                         pass
                     else:
-                        assert fmax >= f
+                        assert vmax >= f
 
 
 class TestNDimensionalData(object):
@@ -156,19 +156,19 @@ class TestNDimensionalData(object):
         # N-dimensional data is hard to conceptualize so I've kept this simple.
         # Create a local maximum (value 5) at the centre
         data[2, 2, 2, 2] = 5
-        # add some points around it of intensity 3. Note that '1:4:2' is equivalent to saying indices '1' and '3'
+        # add some points around it with value 3. Note that '1:4:2' is equivalent to saying indices '1' and '3'
         data[2, 1:4:2, 2, 2] = data[2, 2, 1:4:2, 2] = data[2, 2, 2, 1:4:2] = 3
         # Add a trail of points of value 2 connecting one of those 3s to a 4
         data[0:3, 0, 2, 2] = 2  # Sets [0, 0, 2, 2], [1, 0, 2, 2], and [2, 0, 2, 2] all equal to 2 -> will connect to the '3' at [2, 1, 2, 2]
         data[0, 0, 2, 1] = 4
 
         # Now dendrogram it:
-        d = Dendrogram.compute(data, min_intensity=1)
+        d = Dendrogram.compute(data, min_data_value=1)
         # We expect two leaves:
         leaves = d.leaves
         assert len(leaves) == 2
         # We expect one branch:
-        branches = [i for i in d.all_nodes if type(i) is Branch]
+        branches = [i for i in d.all_nodes if i.is_branch]
         assert len(branches) == 1
         assert len(d.trunk) == 1
         assert d.trunk[0] == branches[0]
@@ -180,8 +180,8 @@ class TestNDimensionalData(object):
 
         # Check out a few more properties of the leaf around the global maximum:
         leaf = d.node_at((2, 2, 2, 2))
-        assert leaf.fmax == 5
-        assert leaf.fmin == 2
+        assert leaf.vmax == 5
+        assert leaf.vmin == 2
         assert leaf.get_npix() == 1 + 6 + 2  # Contains 1x '5', 6x '3', and 2x '2'. The other '2' should be in the branch
         # Check that the only pixel in the branch is a '2' at [0,0,2,2]
-        assert (branches[0].coords, branches[0].f) == ([(0, 0, 2, 2), ], [2., ])
+        assert (branches[0].indices, branches[0].values) == ([(0, 0, 2, 2), ], [2., ])

@@ -115,7 +115,7 @@ def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import h5py
     from ..dendrogram import Dendrogram
-    from ..components import Leaf, Branch
+    from ..structure import Structure
     h5f = h5py.File(filename, 'r')
     d = Dendrogram()
     d.n_dim = h5f.attrs['n_dim']
@@ -124,19 +124,19 @@ def dendro_import_hdf5(filename):
     d.nodes_dict = {}
 
     flux_by_node = {}
-    coords_by_node = {}
+    indices_by_node = {}
 
     def _construct_tree(repr):
         nodes = []
         for idx in repr:
-            node_coords = coords_by_node[idx]
+            node_indices = indices_by_node[idx]
             f = flux_by_node[idx]
             if type(repr[idx]) == tuple:
                 sub_nodes_repr = repr[idx][0]  # Parsed representation of sub nodes
                 sub_nodes = _construct_tree(sub_nodes_repr)
                 for i in sub_nodes:
                     d.nodes_dict[i.idx] = i
-                b = Branch(sub_nodes, node_coords, f, idx=idx)
+                b = Structure(node_indices, f, children=sub_nodes, idx=idx)
                 # Correct merge levels - complicated because of the
                 # order in which we are building the tree.
                 # What we do is look at the heights of this branch's
@@ -147,34 +147,34 @@ def dendro_import_hdf5(filename):
                     height = first_child_repr[1]
                 else:
                     height = first_child_repr
-                b.merge_level = sub_nodes[0].fmax - height
+                b.merge_level = sub_nodes[0].vmax - height
                 d.nodes_dict[idx] = b
                 nodes.append(b)
             else:
-                l = Leaf(node_coords, f, idx=idx)
+                l = Structure(node_indices, f, idx=idx)
                 nodes.append(l)
                 d.nodes_dict[idx] = l
         return nodes
 
-    # Do a fast iteration through d.data, adding the coords and intensity values
+    # Do a fast iteration through d.data, adding the indices and data values
     # to the two dictionaries declared above:
-    coords = np.indices(d.data.shape).reshape(d.data.ndim, np.prod(d.data.shape)).transpose()
+    indices = np.indices(d.data.shape).reshape(d.data.ndim, np.prod(d.data.shape)).transpose()
 
-    for coord in coords:
+    for coord in indices:
         coord = tuple(coord)
         idx = d.index_map[coord]
         if idx:
             try:
                 flux_by_node[idx].append(d.data[coord])
-                coords_by_node[idx].append(coord)
+                indices_by_node[idx].append(coord)
             except KeyError:
                 flux_by_node[idx] = [d.data[coord]]
-                coords_by_node[idx] = [coord]
+                indices_by_node[idx] = [coord]
 
     d.trunk = _construct_tree(_parse_newick(h5f['newick'].value))
     # To make the node.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
     for node in d.trunk:
-        node._level = 0  # See the @property level() definition in components.py
+        node._level = 0  # See the @property level() definition in structure.py
 
     return d
