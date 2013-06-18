@@ -28,19 +28,19 @@ dendrograms as pixels, which is likely not what you are interested in. There
 are several options to control the computation of the dendrogram and can be
 passed to the ``compute`` method:
 
-* ``min_intensity``: the minimum value to consider in the dataset - any value
+* ``min_value``: the minimum value to consider in the dataset - any value
   lower than this will not be considered in the dendrogram. If you are working
   with observations, it is likely that you will want to set this to the
   `detection` level, for example 3- or 5-sigma, so that only significant
   values are included in the dendrogram. By default, all values are used.
 
 * ``min_npix``: the minimum number of pixels/values needed for a leaf to be
-  considered an indepdendent entity. When the dendrogram is being computed,
+  considered an independent entity. When the dendrogram is being computed,
   and when a leaf is about to be joined onto a branch or another leaf, if the
   leaf has fewer than this number of pixels, then it is combined with the
   branch or leaf it is being merged with and is no longer considered a
   separate entity. By default, this parameter is set to zero, so there is no
-  minimum number of pixels required for leaves to remain indepdendent entities.
+  minimum number of pixels required for leaves to remain independent entities.
 
 * ``min_delta``: the minimum `height` a leaf has to have in order to be
   considered an independent entity. The `height` of the leaf is the difference
@@ -54,7 +54,7 @@ For example, if you have an observational dataset with values in mJy/beam, and
 a noise level of 0.1 mJy/beam, you could use::
 
    >>> sigma = 0.1
-   >>> d = Dendrogram.compute(array, min_intensity=3 * sigma,
+   >>> d = Dendrogram.compute(array, min_value=3 * sigma,
                              min_npix=10, min_delta=sigma)
 
 which will compute a dendrogram using only values above 3-sigma, and in which
@@ -75,77 +75,81 @@ you can now access the full tree from the ``d`` variable.
 
 The first place to start is the *trunk* of the tree (the ``trunk`` attribute),
 which is a list of all the structures at the lowest level. Unless you left
-``min_intensity`` to the default setting which means that all values in the
+``min_value`` to the default setting which means that all values in the
 dataset are used, it's possible that not all structures are connected. So the
 ``trunk`` is a collection of items at the lowest level, each of which could be
 a leaf or a branch (itself having leaves and branches). This is accessed with::
 
     >>> d.trunk
-    [<astrodendro.components.Branch object at 0x10279b250>]
+    [<Branch>]
 
 In the above case, the trunk only contains a single branch. Since ``trunk`` is
 just a list, you can access items in it with e.g.::
 
     >>> d.trunk[0]
-    <astrodendro.components.Branch object at 0x10279b250>
+    [<Structure type=branch>]
 
-Branches have an ``items`` attribute which returns a list of all
+Branches have an ``children`` attribute which returns a list of all
 sub-structures, which can include branches and leaves. Thus, we can return the
 sub-structures of the above branch with::
 
     >>> d.trunk[0].items
-    [<astrodendro.components.Branch object at 0x10279b1d0>, <astrodendro.components.Leaf object at 0x10279b210>]
+    [<Structure type=branch>, <Structure type=leaf>]
 
 which shows that the branch is composed of another branch, and a leaf. We can
 therefore access the sub-structures of this branch with::
 
     >>> d.trunk[0].items[0].items
-    [<astrodendro.components.Leaf object at 0x10279b150>, <astrodendro.components.Branch object at 0x10279b190>]
+    [<Structure type=leaf>, <Structure type=branch>]
 
 which again shows the branch splitting into a leaf and a branch.
 
 We can access the properties of leaves as follows::
 
-    >>> leaf = d.trunk[0].items[1]
-    >>> leaf.coords
+    >>> leaf = d.trunk[0].children[1]
+    >>> leaf.indices
     [(230, 50, 75),
     (230, 50, 74),
     (229, 50, 74),
     (229, 51, 74)]
-    >>> leaf.f
+    >>> leaf.values
     [1.4287809,
     1.4096074,
     1.4536692,
     1.4319911]
 
-The following attributes are available for leaves:
+The following attributes are available for leaves and branches:
 
-* ``coords``: a list of tuples giving the n-dimensional co-ordinates of the
-  pixels in the leaf.
+* ``indices``: a list of tuples giving the n-dimensional indices of the pixels
+  in the structure (excluding sub-structures).
 
-* ``f``: a list of the pixel values in the leaf, in the same order as
-  ``coords``.
+* ``values``: a list of the pixel values in the leaf, in the same order as
+  ``indices`` (excluding sub-structures)
 
-* ``fmin`` and ``fmax``: the minimum and maximum flux of values in the leaf
-  (this is equivalent to ``f.max()`` and ``f.min()``)
+* ``indices_all``: as for ``indices`` but including sub-structures
 
-* ``height``: if the leaf is not attached to the tree, then this is simply
-  ``fmax - fmin``. If the leaf is attached to a tree, then it is the
-  difference between the leaf and the value at which the leaf was merged into
-  the tree (which will be the next value that would have been included in the
-  leaf had the leaf not been merged).
+* ``values_all``: as for ``values`` but including sub-structures
 
-* ``parent``: the structure directly containing the leaf.
+* ``vmin`` and ``vmax``: the minimum and maximum flux of values in the structure
+  (this is equivalent to ``values.max()`` and ``values.min()``)
 
-* ``ancestor``: the largest structure containing the leaf.
+* ``height``: if the structure is not attached to a tree, then this is simply
+  ``vmax - vmin``. If the leaf is attached to a tree, then it is the difference
+  between the leaf and the value at which the structure was merged into the
+  tree (which will be the next value that would have been included in the leaf
+  had the structure not been merged).
 
-* ``level``: the level of the leaf in the tree, i.e. how many structures and
-  sub-structures need to be traversed to reach the leaf.
+* ``children``: all direct sub-structures to the present structure.
 
-Branches include the same attributes, with the following addition:
+* ``parent``: the structure directly containing the structure.
 
-* ``descendents``: a flattened list of all leaves and branches that are
-  sub-structures of the present branch.
+* ``ancestor``: the largest structure containing the structure.
+
+* ``level``: the level of the structure in the tree, i.e. how many structures
+  and sub-structures need to be traversed to reach the present structure.
+
+* ``descendents``: a flattened list of all sub-structures of the present
+  structure.
 
 Saving the dendrogram
 ---------------------

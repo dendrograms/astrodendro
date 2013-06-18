@@ -328,6 +328,6 @@ class Structure(object):
 
     def __repr__(self):
         if self.is_leaf:
-            return "<Leaf>"
+            return "<Structure type=leaf>"
         else:
-            return "<Branch>"
+            return "<Structure type=branch>"
