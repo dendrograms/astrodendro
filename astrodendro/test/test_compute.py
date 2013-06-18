@@ -18,7 +18,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-from itertools import izip
 
 import numpy as np
 
@@ -52,9 +51,9 @@ class Test2DimensionalData(object):
             assert leaf.ancestor == leaf
             assert leaf.get_npix() == 1
             if leaf.values[0] == 4:
-                assert zip(*leaf.indices)[0] == (1, 1)
+                assert list(zip(*leaf.indices))[0] == (1, 1)
             elif leaf.values[0] == 3:
-                assert zip(*leaf.indices)[0] == (3, 0)
+                assert list(zip(*leaf.indices))[0] == (3, 0)
             else:
                 self.fail("Invalid value of flux in one of the leaves")
 
