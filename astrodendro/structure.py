@@ -65,6 +65,7 @@ class Structure(object):
         self._descendants = None
         self._npix_total = None
         self._peak = None
+        self._tree_index = None
 
     @property
     def is_leaf(self):
@@ -87,7 +88,7 @@ class Structure(object):
         """
         # We only need to look at children, not all children structures,
         # since child.indices will include all children recursively.
-        if hasattr(self, '_tree_index'):
+        if self._tree_index is not None:
             return self._tree_index.indices(self.idx, subtree=True)
 
         sub_indices = [self.indices]
@@ -100,7 +101,7 @@ class Structure(object):
         """
         The indices of the pixels in this branch, excluding sub-structures
         """
-        if hasattr(self, '_tree_index'):
+        if self._tree_index is not None:
             return self._tree_index.indices(self.idx, subtree=False)
 
         return tuple(np.atleast_1d(i) for i in zip(*self._indices))
@@ -112,7 +113,7 @@ class Structure(object):
         """
         # We only need to look at children, not all children structures,
         # ``values`` for all children will include all children recursively.
-        if hasattr(self, '_tree_index'):
+        if self._tree_index is not None:
             return self._tree_index.values(self.idx, subtree=True)
 
         sub_values = [self.values]
@@ -125,7 +126,7 @@ class Structure(object):
         """
         The values of the pixels in this branch, excluding sub-structures
         """
-        if hasattr(self, '_tree_index'):
+        if self._tree_index is not None:
             return self._tree_index.values(self.idx, subtree=False)
 
         return np.atleast_1d(self._values)
