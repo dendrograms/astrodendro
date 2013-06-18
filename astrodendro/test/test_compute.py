@@ -129,30 +129,35 @@ class Test3DimensionalData(object):
         assert len(d.leaves) == 55
 
         # Now check every pixel in the data cube (this takes a while).
-        # The following loop construct may look crazy, but it is a more
-        # efficient way of iterating through the array than using a regular
-        # nditer with multi_index.
-        st_map = np.empty(self.data.shape, dtype=np.object)
+        st_map = np.zeros(self.data.shape, dtype=np.int)
         for st in d.all_nodes:
-            st_map[st.indices] = st
+            st_map[st.indices] = st.idx
 
-        for coord in np.indices(self.data.shape).reshape(self.data.ndim, np.prod(self.data.shape)).transpose():
+        #check that vmin/vmax/peak are correct
+        for st in d.all_nodes:
+            assert st.vmin == self.data[st.indices].min()
+            assert st.vmax == self.data[st.indices].max()
+            pk_exp = self.data[st.indices_all].max()
+
+            ind, pk = st.get_peak(subtree=True)
+            assert self.data[ind] == pk
+            assert pk_exp == pk
+
+        # The "right" way to do this is loop through indices,
+        # and repeatedly call node_at(). However, this is quite slow
+        # node_at is a thin wrapper around index_map,
+        # and we compare index_map to st_map instead
+        np.testing.assert_array_equal(st_map, d.index_map)
+
+        # here, we test a few values of node_at
+        for coord in np.indices(self.data.shape).reshape(self.data.ndim, np.prod(self.data.shape)).transpose()[::100]:
             coord = tuple(coord)
             f = self.data[coord]
-            if (f < 1.4):
-                assert d.node_at(coord) is None
+            node = d.node_at(coord)
+            if node is not None:
+                assert node.idx == st_map[coord], "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
             else:
-                node = d.node_at(coord)
-                if node:
-                    # The current pixel is associated with part of the dendrogram.
-                    assert st_map[coord] == node, "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
-
-                    vmax_indices, vmax = node.get_peak(subtree=True)
-                    if d.node_at(vmax_indices) is node:
-                        # The current pixel is the peak pixel in this node
-                        pass
-                    else:
-                        assert vmax >= f
+                assert st_map[coord] == 0
 
 
 class TestNDimensionalData(object):
