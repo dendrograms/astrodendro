@@ -65,6 +65,7 @@ class Structure(object):
         self._descendants = None
         self._npix_total = None
         self._peak = None
+        self._tree_index = None
 
     @property
     def is_leaf(self):
@@ -87,17 +88,23 @@ class Structure(object):
         """
         # We only need to look at children, not all children structures,
         # since child.indices will include all children recursively.
-        sub_indices = []
+        if self._tree_index is not None:
+            return self._tree_index.indices(self.idx, subtree=True)
+
+        sub_indices = [self.indices]
         for child in self.children:
-            sub_indices += child.indices_all
-        return self.indices + sub_indices
+            sub_indices.append(child.indices_all)
+        return tuple(np.hstack(arrs) for arrs in zip(*(sub_indices)))
 
     @property
     def indices(self):
         """
         The indices of the pixels in this branch, excluding sub-structures
         """
-        return self._indices
+        if self._tree_index is not None:
+            return self._tree_index.indices(self.idx, subtree=False)
+
+        return tuple(np.atleast_1d(i) for i in zip(*self._indices))
 
     @property
     def values_all(self):
@@ -106,17 +113,23 @@ class Structure(object):
         """
         # We only need to look at children, not all children structures,
         # ``values`` for all children will include all children recursively.
-        sub_values = []
+        if self._tree_index is not None:
+            return self._tree_index.values(self.idx, subtree=True)
+
+        sub_values = [self.values]
         for child in self.children:
-            sub_values += child.values_all
-        return self.values + sub_values
+            sub_values.append(child.values_all)
+        return np.hstack(sub_values)
 
     @property
     def values(self):
         """
         The values of the pixels in this branch, excluding sub-structures
         """
-        return self._values
+        if self._tree_index is not None:
+            return self._tree_index.values(self.idx, subtree=False)
+
+        return np.atleast_1d(self._values)
 
     @property
     def vmin(self):
@@ -227,8 +240,7 @@ class Structure(object):
         if recursive:
             for child in self.children:
                 child.fill_footprint(array, level + 1)
-        for index in self.indices:
-            array[index] = level
+        array[self.indices] = level
 
     @property
     def level(self):
@@ -304,7 +316,7 @@ class Structure(object):
             return len(self.values)
         else:
             if self._npix_total is None:
-                self._npix_total = len(self.values_all)
+                self._npix_total = self.values_all.size
             return self._npix_total
 
     def get_peak(self, subtree=False):
