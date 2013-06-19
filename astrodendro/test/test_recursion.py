@@ -64,17 +64,13 @@ class TestRecursionLimit(object):
         sys.setrecursionlimit(100000)
         _ = mid_node.level
 
-        # Now check the .level property of all nodes, in random order:
-        import random
-        nodes = random.sample(list(d.all_nodes), len(d.nodes_dict))
-        for node in nodes:
-            obj = node
-            level = node.level
-            while level > 0:
-                obj = obj.parent
-                level -= 1
-            assert obj.parent == None
-            assert obj.level == 0
+        # Check that .level satisfies the recurrence relation:
+        # 0 if root else parent.level + 1
+        for node in d.all_nodes:
+            if node.parent is None:
+                assert node.level == 0
+            else:
+                assert node.level == node.parent.level + 1
 
     def teardown_method(self, method):
         sys.setrecursionlimit(self._oldlimit)
