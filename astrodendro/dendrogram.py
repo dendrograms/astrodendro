@@ -300,6 +300,7 @@ class Dendrogram(object):
         for structure in self.prefix_nodelist():
             if structure.is_branch:
                 structure.children = sorted(structure.children, key=key, reverse=reverse)
+        self.trunk = sorted(self.trunk, key=key, reverse=reverse)
 
     def get_lines(self, key=None):
         """
