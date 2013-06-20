@@ -284,6 +284,82 @@ class Dendrogram(object):
 
         return result
 
+    def sort(self, key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
+        """
+        Sort the tree
+
+        Parameters
+        ----------
+        key : function, optional
+            A function that given a leaf will return a scalar that the tree
+            should be sorted by. By default, this is the peak value in the
+            structure and its descendents
+        reverse : bool, optional
+            Whether to reverse the sorting
+        """
+        for structure in self.prefix_nodelist():
+            if structure.is_branch:
+                structure.children = sorted(structure.children, key=key, reverse=reverse)
+
+    def get_lines(self, key=None):
+        """
+        Get a list of Line2D objects for the tree
+
+        Parameters
+        ----------
+        key : function, optional
+            A function that given a leaf will return its x position in the
+            plot.
+
+        Returns
+        -------
+        lines : list
+            List of Line2D objects
+        mapping : dict
+            Mapping from line objects to structures
+        """
+
+        # Get all structures in the tree in prefix order
+        structures = self.prefix_nodelist()
+
+        # Initialize dictionary of positions to plot structures at
+        pos = {}
+
+        # Find leaves and assign their positions
+        x = 0
+        for structure in structures:
+            if structure.is_leaf:
+                if key is None:
+                    pos[structure] = x
+                else:
+                    pos[structure] = key(structure)
+                x += 1
+
+        # Sort structures from the top-down
+        sorted_structures = sorted(structures, key=lambda s: s.level, reverse=True)
+
+        # Loop through structures and assing position of branches as the mean
+        # of the leaves
+        for structure in sorted_structures:
+            if not structure.is_leaf:
+                pos[structure] = np.mean([pos[child] for child in structure.children])
+
+        # Generate the plot
+        from matplotlib.lines import Line2D
+        lines = []
+        mapping = {}
+        for item in structures:
+            x = pos[item]
+            line = Line2D([x, x], [item.vmax - item.height, item.vmax])
+            lines.append(line)
+            mapping[line] = item
+            if item.is_branch:
+                pc = [pos[c] for c in item.children]
+                line = Line2D([np.min(pc), np.max(pc)], [item.vmax, item.vmax])
+                lines.append(line)
+                mapping[line] = item
+
+        return lines, mapping
 
 
 class TreeIndex(object):
