@@ -1,11 +1,18 @@
-Astronomical Dendrograms
-========================
+Astronomical Dendrograms in Python
+==================================
 
-The aim of this module is to provide an easy way to compute dendrograms of
-observed or simulated Astronomical data in Python. The easiest way to think of
-a dendrogram is to think of a tree that represents the hierarchy of the
-structures in your data. If you consider a two-dimensional map of a
-hierarchical structure that looks like:
+The ``astrodendro`` package provides an easy way to compute dendrograms of
+observed or simulated Astronomical data in Python. This package is still under
+development, although a first release will be available in the near future.
+You can already try out the existing package, but we recommend that you get in
+contect with the developers to be kept up-to-date with changes and bug fixes.
+
+About dendrograms
+-----------------
+
+The easiest way to think of a dendrogram is to think of a tree that represents
+the hierarchy of the structures in your data. If you consider a
+two-dimensional map of a hierarchical structure that looks like:
 
 .. image:: schematic_structure_1.png
    :width: 300px
