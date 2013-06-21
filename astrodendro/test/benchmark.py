@@ -31,11 +31,11 @@ def benchmark_compute():
     print("Data loaded. Starting dendrogram computations...")
 
     def test1():
-        Dendrogram.compute(data, min_npix=4, min_data_value=1.4, min_delta=0.3)
+        Dendrogram.compute(data, min_npix=4, min_value=1.4, min_delta=0.3)
         print("  Completed an iteration of test1.")
 
     def test2():
-        Dendrogram.compute(data, min_npix=8, min_data_value=1.4)
+        Dendrogram.compute(data, min_npix=8, min_value=1.4)
         print("  Completed an iteration of test2.")
 
     num = 3
@@ -51,7 +51,7 @@ def benchmark_compute():
 
 def benchmark_hdf5():
     print("\nGenerating complex dendrogram for HDF5 import/export...")
-    d = Dendrogram.compute(data, min_npix=2, min_data_value=1.4, min_delta=0.01)
+    d = Dendrogram.compute(data, min_npix=2, min_value=1.4, min_delta=0.01)
     print("Dendrogram generated. Testing import and export...")
 
     filename = '.astrodendro-hdf5-benchmark.hdf5'

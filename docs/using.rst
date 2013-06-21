@@ -34,14 +34,6 @@ passed to the ``compute`` method:
   `detection` level, for example 3- or 5-sigma, so that only significant
   values are included in the dendrogram. By default, all values are used.
 
-* ``min_npix``: the minimum number of pixels/values needed for a leaf to be
-  considered an independent entity. When the dendrogram is being computed,
-  and when a leaf is about to be joined onto a branch or another leaf, if the
-  leaf has fewer than this number of pixels, then it is combined with the
-  branch or leaf it is being merged with and is no longer considered a
-  separate entity. By default, this parameter is set to zero, so there is no
-  minimum number of pixels required for leaves to remain independent entities.
-
 * ``min_delta``: the minimum `height` a leaf has to have in order to be
   considered an independent entity. The `height` of the leaf is the difference
   between its peak flux and the value at which it is being merged into the
@@ -50,12 +42,20 @@ passed to the ``compute`` method:
   combined with its neighboring leaf or branch and is no longer considered a
   separate entity.
 
+* ``min_npix``: the minimum number of pixels/values needed for a leaf to be
+  considered an independent entity. When the dendrogram is being computed,
+  and when a leaf is about to be joined onto a branch or another leaf, if the
+  leaf has fewer than this number of pixels, then it is combined with the
+  branch or leaf it is being merged with and is no longer considered a
+  separate entity. By default, this parameter is set to zero, so there is no
+  minimum number of pixels required for leaves to remain independent entities.
+
 For example, if you have an observational dataset with values in mJy/beam, and
 a noise level of 0.1 mJy/beam, you could use::
 
    >>> sigma = 0.1
    >>> d = Dendrogram.compute(array, min_value=3 * sigma,
-                             min_npix=10, min_delta=sigma)
+                              min_delta=sigma, min_npix=10)
 
 which will compute a dendrogram using only values above 3-sigma, and in which
 all leaves will have 10 or more pixels and will have a height of at least
