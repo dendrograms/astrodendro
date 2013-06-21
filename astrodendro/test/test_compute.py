@@ -122,7 +122,7 @@ class Test3DimensionalData(object):
         self.data = data
 
     def test_dendrogramComputation(self):
-        d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_data_value=1.4)
+        d = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_value=1.4)
 
         # This data with these parameters should produce 55 leaves
         assert len(d.leaves) == 55
@@ -173,7 +173,7 @@ class TestNDimensionalData(object):
         data[0, 0, 2, 1] = 4
 
         # Now dendrogram it:
-        d = Dendrogram.compute(data, min_data_value=1)
+        d = Dendrogram.compute(data, min_value=1)
         # We expect two leaves:
         leaves = d.leaves
         assert len(leaves) == 2

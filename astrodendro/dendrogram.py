@@ -59,15 +59,48 @@ class Dendrogram(object):
         self.load_from = static_warning
 
     @staticmethod
-    def compute(data, min_data_value=-np.inf, min_npix=0, min_delta=0, verbose=False):
+    def compute(data, min_value=-np.inf, min_delta=0, min_npix=0, verbose=False):
+        """
+        Compute a dendrogram from a Numpy array
+
+        Parameters
+        ----------
+        data : `~numpy.ndarray`
+            The n-dimensional array to compute the dendrogram for
+        min_value : float, optional
+            The minimum data value to go down to when computing the
+            dendrogram. Values below this threshold will be ignored.
+        min_delta : float, optional
+            The minimum height a leaf has to have in order to be considered an
+            independent entity.
+        min_npix : int, optional
+            The minimum number of pixels/values needed for a leaf to be considered
+            an independent entity.
+
+        Example
+        -------
+
+        The following example demonstrates how to compute a dendrogram from an
+        dataset contained in a FITS file::
+
+            >>> from astropy.io import fits
+            >>> array = fits.getdata('observations.fits')
+            >>> from astrodendro import Dendrogram
+            >>> d = Dendrogram.compute(array)
+
+        Notes
+        -----
+        More information about the above parameters is available from the
+        online documentation at [www.dendrograms.org](www.dendrograms.org).
+        """
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
         # For reference, store the parameters used:
-        self.min_data_value, self.min_npix, self.min_delta = min_data_value, min_npix, min_delta
+        self.min_value, self.min_npix, self.min_delta = min_value, min_npix, min_delta
 
-        # Create a list of all points in the cube above min_data_value
-        keep = self.data > min_data_value
+        # Create a list of all points in the cube above min_value
+        keep = self.data > min_value
         data_values = self.data[keep]
         indices = np.vstack(np.where(keep)).transpose()
 
@@ -243,11 +276,41 @@ class Dendrogram(object):
 
     @staticmethod
     def load_from(filename, format="autodetect"):
+        """
+        Load a previously computed dendrogram from a file
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to load the dendrogram from. By default, the
+            file format will be automatically detected from the file
+            extension. At this time, only HDF5 files (extension ``.hdf5``) are
+            supported.
+        format : str, optional
+            The format to use to read the file. By default, this is not used
+            and the format is auto-detected from the file extension. At this
+            time, the only format supported is ``'hdf5'``.
+        """
         if format == "autodetect":
             format = filename.rsplit('.', 1)[-1].lower()
         return IO_FORMATS[format][1](filename)
 
     def save_to(self, filename, format="autodetect"):
+        """
+        Save the dendrogram to a file
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to save the dendrogram to. By default, the
+            file format will be automatically detected from the file
+            extension. At this time, only HDF5 files (extension ``.hdf5``) are
+            supported.
+        format : str, optional
+            The format to use for the file. By default, this is not used and
+            the format is auto-detected from the file extension. At this time,
+            the only format supported is ``'hdf5'``.
+        """
         if format == "autodetect":
             format = filename.rsplit('.', 1)[-1].lower()
         return IO_FORMATS[format][0](self, filename)

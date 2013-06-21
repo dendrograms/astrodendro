@@ -58,7 +58,7 @@ class TestIndex(object):
                          [1, 5, 1, 1],
                          [1, 4, 1, 5],
                          [1, 1, 1, 4]])
-        d = Dendrogram.compute(data, min_data_value=2)
+        d = Dendrogram.compute(data, min_value=2)
         assert len(d.trunk) == 2
         self.assert_valid_index(d, TreeIndex(d))
 
