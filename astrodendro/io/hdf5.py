@@ -147,7 +147,6 @@ def dendro_import_hdf5(filename):
                     height = first_child_repr[1]
                 else:
                     height = first_child_repr
-                b.merge_level = sub_nodes[0].vmax - height
                 d.nodes_dict[idx] = b
                 nodes.append(b)
             else:

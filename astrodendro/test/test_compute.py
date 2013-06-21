@@ -62,7 +62,6 @@ class Test2DimensionalData(object):
         branch = branches[0]
         assert branch.parent is None
         assert branch.ancestor == branch
-        assert branch.merge_level == 0
         assert branch.get_npix(subtree=False) == 1  # only pixel is a 0
         assert branch.get_npix(subtree=True) == 7
 
@@ -85,7 +84,6 @@ class Test2DimensionalData(object):
                          [n, n, n, n, 0, ]])
         d = Dendrogram.compute(data)
         branch, leaf4, leaf5 = d.trunk[0], d.node_at((1, 1)), d.node_at((1, 3))
-        assert branch.merge_level == 2
         assert leaf4.height == 2
         assert leaf5.height == leaf5.vmax - branch.merge_level  # 3
 
