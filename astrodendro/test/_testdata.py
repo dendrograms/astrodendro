@@ -32,6 +32,7 @@ _indices = arrays['coords']
 # (these will later be filtered out, but that filtering should be part of
 # the tests and benchmark)
 
+np.random.seed(42)
 data = np.random.normal(0, 0.25, (107, 107, 602))
 
 for i in range(_flux_values.size):
