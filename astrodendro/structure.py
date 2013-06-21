@@ -34,11 +34,6 @@ class Structure(object):
 
     def __init__(self, indices, values, children=[], idx=None):
 
-        # If this is a branch, record the exact flux level that triggered
-        # creation of this structure
-        if children:
-            self.merge_level = values
-
         self.parent = None
         self.children = children
 
@@ -182,10 +177,7 @@ class Structure(object):
 
     @property
     def height(self):
-        if self.parent == None:
-            return self.vmax - self.vmin
-        else:
-            return self.vmax - self.parent.merge_level
+        return min(c.vmin for c in self.children) if self.children else self.vmax
 
     @property
     def ancestor(self):
@@ -343,3 +335,92 @@ class Structure(object):
             return "<Structure type=leaf>"
         else:
             return "<Structure type=branch>"
+
+    def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False, subtree=False):
+        if self.is_leaf:
+            return [self]
+        leaves = []
+        for structure in sorted(self.children, key=sort_key, reverse=reverse):
+            if structure.is_leaf:
+                leaves.append(structure)
+            elif subtree:
+                leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
+        return leaves
+
+    def get_lines(self, subtree=True, collection=True, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False, start_index=0):
+        """
+        Get a list of lines to draw the structure
+
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to include the subtree in the lines
+        collection : bool, optional
+            Whether to return a LineCollection (``collection=True``) or a list
+            of Line2D objects.
+        sort_key : function, optional
+            If ``subtree=True``, this is used to determine how to sort the
+            sub-structures.
+        reverse : bool, optional
+            Whether to reverse the sorting
+
+        Returns
+        -------
+        lines : list
+            List of Line2D objects
+        mapping : dict
+            Mapping from line objects to structures
+        """
+
+        if subtree:
+
+            # Get sorted leaves
+            sorted_leaves = self.get_sorted_leaves(subtree=True, reverse=True)
+
+            # Loop over leaves and assign positions
+            x = start_index
+            pos = {}
+            for leaf in sorted_leaves:
+                pos[leaf] = x
+                x += 1
+
+        # Sort structures from the top-down
+        sorted_structures = sorted(self.descendants, key=lambda s: s.level, reverse=True) + [self]
+
+        # Loop through structures and assing position of branches as the mean
+        # of the leaves
+        for structure in sorted_structures:
+            if not structure.is_leaf:
+                pos[structure] = np.mean([pos[child] for child in structure.children])
+
+        # Generate the plot
+        if collection:
+            from matplotlib.collections import LineCollection
+        else:
+            from matplotlib.lines import Line2D
+
+        lines = []
+        mapping = {}
+        for item in sorted_structures:
+            x = pos[item]
+            bot = item.parent.height if item.parent is not None else item.vmin
+            top = item.height
+            if collection:
+                line = ([x, bot], [x, top])
+            else:
+                line = Line2D([x, x], [bot, top])
+                mapping[line] = item
+            lines.append(line)
+            if item.is_branch:
+                pc = [pos[c] for c in item.children]
+                if collection:
+                    line = ([min(pc), top], [max(pc), top])
+                else:
+                    line = Line2D([np.min(pc), np.max(pc)], [item.vmax, item.vmax])
+                    mapping[line] = item
+                lines.append(line)
+
+        if collection:
+            return LineCollection(lines)
+        else:
+            return lines, mapping

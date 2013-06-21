@@ -302,7 +302,7 @@ class Dendrogram(object):
                 structure.children = sorted(structure.children, key=key, reverse=reverse)
         self.trunk = sorted(self.trunk, key=key, reverse=reverse)
 
-    def get_lines(self, key=None):
+    def get_lines(self, collection=True, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
         """
         Get a list of Line2D objects for the tree
 
@@ -320,47 +320,39 @@ class Dendrogram(object):
             Mapping from line objects to structures
         """
 
-        # Get all structures in the tree in prefix order
-        structures = self.prefix_nodelist()
+        # Get trunk structures sorted by key
+        sorted_trunk_structures = sorted(self.trunk, key=sort_key, reverse=reverse)
 
-        # Initialize dictionary of positions to plot structures at
-        pos = {}
-
-        # Find leaves and assign their positions
-        x = 0
-        for structure in structures:
+        pos = 0
+        lines_all = []
+        mapping_all = {}
+        for structure in sorted_trunk_structures:
+            if collection:
+                lines = structure.get_lines(collection=collection,
+                                            sort_key=sort_key, reverse=reverse,
+                                            subtree=True, start_index=pos)
+                lines_all.append(lines)
+            else:
+                lines, mapping = structure.get_lines(collection=collection,
+                                                     sort_key=sort_key, reverse=reverse,
+                                                     subtree=True, start_index=pos)
+                mapping_all.update(mapping)
+                lines_all += lines
             if structure.is_leaf:
-                if key is None:
-                    pos[structure] = x
-                else:
-                    pos[structure] = key(structure)
-                x += 1
+                n_leaves = 1
+            else:
+                n_leaves = len([x for x in structure.descendants if x.is_leaf])
+            pos += n_leaves
 
-        # Sort structures from the top-down
-        sorted_structures = sorted(structures, key=lambda s: s.level, reverse=True)
-
-        # Loop through structures and assing position of branches as the mean
-        # of the leaves
-        for structure in sorted_structures:
-            if not structure.is_leaf:
-                pos[structure] = np.mean([pos[child] for child in structure.children])
-
-        # Generate the plot
-        from matplotlib.lines import Line2D
-        lines = []
-        mapping = {}
-        for item in structures:
-            x = pos[item]
-            line = Line2D([x, x], [item.vmax - item.height, item.vmax])
-            lines.append(line)
-            mapping[line] = item
-            if item.is_branch:
-                pc = [pos[c] for c in item.children]
-                line = Line2D([np.min(pc), np.max(pc)], [item.vmax, item.vmax])
-                lines.append(line)
-                mapping[line] = item
-
-        return lines, mapping
+        if collection:
+            vertices = []
+            for lc in lines_all:
+                for path in lc.get_paths():
+                    vertices.append(path.vertices)
+            from matplotlib.collections import LineCollection
+            return LineCollection(vertices)
+        else:
+            return lines_all, mapping_all
 
 
 class TreeIndex(object):
