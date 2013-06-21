@@ -7,7 +7,8 @@ import astropy.units as u
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
-                        _missing_metadata, MetaData, _warn_missing_metadata)
+                        _missing_metadata, MetaData, _warn_missing_metadata,
+                        PPStatistic, pp_catalog)
 
 try:
     import astropy
@@ -150,7 +151,6 @@ class TestScalar2D(object):
         assert_allclose(np.abs(np.dot(v2, v2ex)), 1)
 
 
-
 class TestScalarNan(TestScalar2D):
     def setup_method(self, method):
         x = np.array([213, 213, 214, 211, 212, 212])
@@ -240,7 +240,7 @@ class TestPPVStatistic(object):
     def test_luminosity(self):
         p = PPVStatistic(self.stat, self.metadata(dist=10))
         v = benchmark_values()
-        assert_allclose(p.luminosity(), v['mom0'] * 100 * np.radians(1)**2)
+        assert_allclose(p.luminosity(), v['mom0'] * 100 * np.radians(1) ** 2)
 
         p = PPVStatistic(self.stat, self.metadata(dist=10, dx=1 * u.rad))
         assert_allclose(p.luminosity(), v['mom0'] * 100)
@@ -258,29 +258,81 @@ class TestPPVStatistic(object):
         assert p.luminosity().unit == u.km / u.s * u.K * u.pc ** 2
 
 
-class TestPPVCataloger(object):
+class TestPPStatistic(object):
+    def setup_method(self, method):
+        self.stat = benchmark_stat()
+        #this trick essentially collapses along the 0th axis
+        #should preserve sky_maj, sky_min
+        self.stat.indices = (self.stat.indices[1], self.stat.indices[2])
+        self.v = benchmark_values()
+
+    def metadata(self, **kwargs):
+        result = dict(distance=1,
+                      dx=1,
+                      )
+        result.update(**kwargs)
+        return result
+
+    def test_flux(self):
+        p = PPStatistic(self.stat, self.metadata(dx = 5))
+        assert_allclose(p.flux(), self.v['mom0'] * 25)
+
+    def test_sky_maj(self):
+        p = PPStatistic(self.stat, self.metadata(dx=2))
+
+        assert_allclose(p.sky_maj(), self.v['sig_maj'] * 2)
+
+    def test_sky_min(self):
+        p = PPStatistic(self.stat, self.metadata(dx=4))
+        assert_allclose(p.sky_min(), self.v['sig_min'] * 4)
+
+    def test_sky_rad(self):
+        p = PPStatistic(self.stat, self.metadata(dx=4))
+        assert_allclose(p.sky_rad(), np.sqrt(self.v['sig_min'] *
+                                             self.v['sig_maj']) * 4)
+
+    def test_pa(self):
+        x = np.array([0, 1, 2])
+        y = np.array([1, 1, 1])
+        v = np.array([1, 1, 1])
+
+        ind = (y, x)
+        stat = ScalarStatistic(v, ind)
+        p = PPStatistic(stat, self.metadata())
+        assert_allclose(p.sky_pa(), 0)
+
+        ind = (x, y)
+        stat = ScalarStatistic(v, ind)
+        p = PPStatistic(stat, self.metadata())
+        assert_allclose(p.sky_pa(), 90)
+
+
+class TestCataloger(object):
+    files = []
+    cataloger = None
+
+    def stat(self):
+        raise NotImplementedError()
+
+    def metadata(self):
+        raise NotImplementedError()
 
     def make_catalog(self, s=None, md=None, fields=None):
-        s = s or [benchmark_stat()]
-        md = md or dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
-                        bmaj=1, bmin=1, bunit=1)
-        return ppv_catalog(s, md, fields)
+        s = s or [self.stat()]
+        md = md or self.metadata()
+        return self.cataloger(s, md, fields)
 
     def test_benchmark(self):
         c = self.make_catalog()
-        assert c.dtype.names == tuple(sorted(['flux', 'luminosity',
-                                              'sky_maj', 'sky_min', 'sky_rad',
-                                              'vrms', 'sky_deconvolved_rad',
-                                              'sky_pa']))
+        assert c.dtype.names == tuple(sorted(self.fields))
         assert len(c) == 1
-        c = self.make_catalog(s=[benchmark_stat()] * 3)
+        c = self.make_catalog(s=[self.stat()] * 3)
         assert len(c) == 3
         return c
 
     def test_field_selection(self):
-        stat = benchmark_stat()
-        md = dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
-                  bmaj=1, bmin=1, bunit=1)
+        stat = self.stat()
+        md = self.metadata()
         c = ppv_catalog([stat], md, fields=['flux'])
         assert c.dtype.names == ('flux',)
 
@@ -290,6 +342,42 @@ class TestPPVCataloger(object):
             c = self.test_benchmark()
             self.test_field_selection()
         assert isinstance(c, np.ndarray)
+
+
+class TestPPVCataloger(TestCataloger):
+    fields = ['flux', 'luminosity',
+              'sky_maj', 'sky_min', 'sky_rad',
+              'vrms', 'sky_deconvolved_rad',
+              'sky_pa']
+    cataloger = staticmethod(ppv_catalog)
+
+    def stat(self):
+        return benchmark_stat()
+
+    def metadata(self):
+        return dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
+                    bmaj=1, bmin=1, bunit=1)
+
+
+class TestPPCataloger(TestCataloger):
+    fields = ['flux', 'luminosity',
+              'sky_maj', 'sky_min', 'sky_rad',
+              'sky_deconvolved_rad',
+              'sky_pa']
+    cataloger = staticmethod(pp_catalog)
+
+    def stat(self):
+        bs = benchmark_stat()
+        bs.indices = (bs.indices[1], bs.indices[2])
+        return bs
+
+    def metadata(self):
+        return dict(dx=1, dist=1, lum2mass=1,
+                    bmaj=1, bmin=1, bunit=1)
+
+
+#don't let pytest test abstract class
+del TestCataloger
 
 def test_find_missing_ppv_metadata():
     md = dict(dx=1, dv=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1)
@@ -328,6 +416,10 @@ def test_warn_missing_metadata():
     with patch('warnings.warn') as mock:
         _warn_missing_metadata(Foo, {})
     assert mock.call_count == 1
+
+    with patch('warnings.warn') as mock:
+        _warn_missing_metadata(Foo, {}, verbose=False)
+    assert mock.call_count == 0
 
     with pytest.raises(RuntimeError):
         _warn_missing_metadata(Bar, {})

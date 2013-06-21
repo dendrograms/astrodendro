@@ -25,8 +25,14 @@ def _data_to_astropy(data):
     """Convert a list of dicts to an astropy table"""
     from astropy.table import Table, Column
     names = sorted(data[0].keys())
+    units = [_unit(data[0][c]) for c in names]
+
     cols = [ [d[c] for d in data] for c in names]
-    return Table(cols, names=names)
+    result = Table(cols, names=names)
+    for c, u in zip(names, units):
+        result[c].units = u
+    return result
+
 
 def _data_to_numpy(data):
     """Convert a list of dicts to an numpy structured array"""
@@ -42,6 +48,10 @@ def _qsplit(q):
 
     return 1, q
 
+def _unit(q):
+    """Return the units associated with a number, array, unit, or Quantity"""
+    if isinstance(1 * q, Quantity):
+        return (1 * q).unit
 
 class ScalarStatistic(object):
     #This class does all of the heavy computation
@@ -106,6 +116,7 @@ class ScalarStatistic(object):
         w = np.atleast_2d(direction).astype(np.float)
         for row in w:
             row /= np.linalg.norm(row)
+
         result = np.dot(np.dot(w, self.mom2()), w.T)
         if result.size == 1:
             result = np.asscalar(result)
@@ -217,10 +228,11 @@ def _missing_metadata(cl, md):
     md : metadata dictionary
     """
     result = []
-    return [m for m in cl.__dict__.values() if isinstance(m, MetaData)
+    attrs = [getattr(cl, t) for t in dir(cl)]
+    return [m for m in attrs if isinstance(m, MetaData)
             and m.key not in md]
 
-def _warn_missing_metadata(cl, md):
+def _warn_missing_metadata(cl, md, verbose=True):
     missing = _missing_metadata(cl, md)
     if len(missing) == 0:
         return
@@ -231,40 +243,20 @@ def _warn_missing_metadata(cl, md):
             "The following missing metadata items are required:\n\t" +
             "\n\t".join(str(m) for m in required))
 
+    if not verbose:
+        return
+
     for m in missing:
         warnings.warn("Missing Metadata:\n\t %s\n\t Defaulting to %s=%s" %
                       (m, m.key, m.default))
 
 
-class PPVStatistic(object):
+class SpatialMixin(object):
     dx = MetaData('dx', 'Angular length of a pixel')
-    dv = MetaData('dv', 'Velocity channel width')
-    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
     bmaj = MetaData('bmaj', 'Beam major axis, sigma', default=0)
     bmin = MetaData('bmin', 'Beam minor axis, sigma', default=0)
     bunit = MetaData('bunit', 'Unit of intensity')
     dist = MetaData('dist', 'Distance')
-
-    def __init__(self, stat, metadata):
-        """
-        Compute properties of structures in a PPV cube
-
-        Parameters
-        ----------
-        stat :   ScalarStatistic instance
-        metadata : dict
-                 Key-value paris of metadata
-        """
-        self.stat = stat
-        self.metadata = metadata
-
-    def flux(self):
-        """Integrated flux
-
-        sum(v_i * dx^2 * dv)
-        """
-        fac = self.bunit * self.dx ** 2 * self.dv
-        return fac * self.stat.mom0()
 
     def luminosity(self):
         """Integrated luminosity
@@ -282,15 +274,7 @@ class PPVStatistic(object):
         return self.dist ** 2 * self.flux() * fac ** 2
 
     def _sky_paxes(self):
-        vaxis = self.vaxis
-        ax = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        ax.pop(vaxis)
-        a, b = self.stat.projected_paxes(ax)
-        a = list(a)
-        a.insert(0, vaxis)
-        b = list(b)
-        b.insert(0, vaxis)
-        return a, b
+        raise NotImplementedError()
 
     def sky_maj(self):
         """Major axis of the projection onto the PP plane
@@ -318,18 +302,56 @@ class PPVStatistic(object):
         u, b = _qsplit(self.sky_min())
         return u * np.sqrt(a * b)
 
-    def vrms(self):
-        """Intensity-weighted second moment of velocity"""
-        ax = [0, 0, 0]
-        ax[self.vaxis] = 1
-        return self.dv * np.sqrt(self.stat.mom2_along(ax))
-
     def sky_deconvolved_rad(self):
         """sky_rad corrected for beam-smearing"""
         beam = self.bmaj * self.bmin
         u, a = _qsplit(self.sky_maj())
         u, b = _qsplit(self.sky_min())
         return u * np.sqrt(np.sqrt(a**2 - beam) * np.sqrt(b **2 - beam))
+
+
+class PPVStatistic(SpatialMixin):
+    dv = MetaData('dv', 'Velocity channel width')
+    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
+
+    def __init__(self, stat, metadata):
+        """
+        Compute properties of structures in a PPV cube
+
+        Parameters
+        ----------
+        stat :   ScalarStatistic instance
+        metadata : dict
+                 Key-value paris of metadata
+        """
+        self.stat = stat
+        self.metadata = metadata
+
+    def _sky_paxes(self):
+        vaxis = self.vaxis
+        ax = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        ax.pop(vaxis)
+        a, b = self.stat.projected_paxes(ax)
+        a = list(a)
+        a.insert(0, vaxis)
+        b = list(b)
+        b.insert(0, vaxis)
+        return a, b
+
+    def flux(self):
+        """Integrated flux
+
+        sum(v_i * dx^2 * dv)
+        """
+        fac = self.bunit * self.dx ** 2 * self.dv
+        return fac * self.stat.mom0()
+
+
+    def vrms(self):
+        """Intensity-weighted second moment of velocity"""
+        ax = [0, 0, 0]
+        ax[self.vaxis] = 1
+        return self.dv * np.sqrt(self.stat.mom2_along(ax))
 
     def sky_pa(self):
         """The position angle of sky_maj, sky_min
@@ -340,6 +362,28 @@ class PPVStatistic(object):
         a.pop(self.vaxis)
         return np.degrees(np.arctan2(a[0], a[1]))
 
+
+class PPStatistic(SpatialMixin):
+
+    def __init__(self, stat, metadata):
+        self.stat = stat
+        self.metadata = metadata
+
+    def _sky_paxes(self):
+        return self.stat.paxes()
+
+    def flux(self):
+        """ Integrated flux """
+        fac = self.bunit * self.dx ** 2
+        return fac * self.stat.mom0()
+
+    def sky_pa(self):
+        """The position angle of sky_maj, sky_min
+
+        Returns the angle in degrees counter-clockwise from the +x axis
+        """
+        a, b = self._sky_paxes()
+        return np.degrees(np.arctan2(a[0], a[1]))
 
 class PPPStatistics(object):
 
@@ -381,7 +425,20 @@ class PPPStatistics(object):
         pass
 
 
-def ppv_catalog(structures, metadata, fields=None):
+def _make_catalog(structures, fields, metadata, statistic, verbose):
+    _warn_missing_metadata(statistic, metadata, verbose=verbose)
+
+    result = []
+
+    for struct in structures:
+        stat = ScalarStatistic(struct.values, struct.indices)
+        stat = statistic(stat, metadata)
+        result.append(dict((lbl, getattr(stat, lbl)())
+                           for lbl in fields))
+
+    return _build_table(result)
+
+def ppv_catalog(structures, metadata, fields=None, verbose=False):
     """
     Iterate over a collection of PPV structures,
     extracting several quantities from each, and building
@@ -396,19 +453,35 @@ def ppv_catalog(structures, metadata, fields=None):
     fields : list of strings, optional
              The quantities to extract. If not provided,
              defaults to all PPV statistics
+    verbose : bool, optional
+             If True (the default), will generate warnings
+             about missing metadata
     """
-    _warn_missing_metadata(PPVStatistic, metadata)
+    fields = fields or ['flux', 'luminosity', 'sky_maj',
+                        'sky_min', 'sky_rad', 'sky_deconvolved_rad',
+                        'sky_pa', 'vrms']
+    return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
-    result = []
-    fields = fields or [k for k, v in PPVStatistic.__dict__.items()
-                        if isinstance(v, FunctionType) and
-                        not k.startswith('_')]
-    print fields
+def pp_catalog(structures, metadata, fields=None, verbose=False):
+    """
+    Iterate over a collection of PP structures,
+    extracting several quantities from each, and building
+    a catalog
 
-    for struct in structures:
-        stat = ScalarStatistic(struct.values, struct.indices)
-        stat = PPVStatistic(stat, metadata)
-        result.append(dict((lbl, getattr(stat, lbl)())
-                           for lbl in fields))
+    Parameters
+    ----------
+    structures : Iterable of Structures
+         The structures to catalog (e.g., a dendrogram)
 
-    return _build_table(result)
+    metadata : dict of metadata
+    fields : list of strings, optional
+             The quantities to extract. If not provided,
+             defaults to all PPV statistics
+    verbose : bool, optional
+             If True (the default), will generate warnings
+             about missing metadata
+    """
+    fields = fields or ['flux', 'luminosity', 'sky_maj',
+                        'sky_min', 'sky_rad', 'sky_deconvolved_rad',
+                        'sky_pa']
+    return _make_catalog(structures, fields, metadata, PPStatistic, verbose)
