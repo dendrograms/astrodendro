@@ -1,3 +1,6 @@
+from types import FunctionType
+import warnings
+
 import numpy as np
 
 try:
@@ -6,6 +9,31 @@ except ImportError:
     class Quantity(object):
         pass
 
+    class rad(object):
+        pass
+
+
+def _build_table(data):
+    """Turn a list of dicts into an astropy table
+    if possible, or a numpy structured array otherwise"""
+    try:
+       return _data_to_astropy(data)
+    except ImportError:
+        return _data_to_numpy(data)
+
+def _data_to_astropy(data):
+    """Convert a list of dicts to an astropy table"""
+    from astropy.table import Table, Column
+    names = sorted(data[0].keys())
+    cols = [ [d[c] for d in data] for c in names]
+    return Table(cols, names=names)
+
+def _data_to_numpy(data):
+    """Convert a list of dicts to an numpy structured array"""
+    names = sorted(data[0].keys())
+    data = [tuple(d[c] for c in names) for d in data]
+    dtypes = [(n, np.dtype(d)) for n, d in zip(names, data[0])]
+    return np.array(data, dtype=dtypes)
 
 def _qsplit(q):
     """Split a potential astropy Quantity into unit/quantity"""
@@ -144,7 +172,78 @@ class VectorStatistic(object):
         raise NotImplementedError
 
 
+class MetaData(object):
+    """A descriptor to wrap around metadata dictionaries
+
+    Let's classes reference self.x instead of self.metadata['x'],
+    """
+    def __init__(self, key, description, default=1, strict=False):
+        """
+        Parameters
+        ----------
+        key : str
+               Metadata name.
+        description : str
+               What the quantity describes
+        default : scalar
+               Default value if metadata not provided
+        strict : bool
+               If True, raise KeyError if metadata not provided.
+               This overrides default
+        """
+        self.key = key
+        self.description = description or 'no description'
+        self.default = default
+        self.strict = strict
+
+    def __get__(self, instance, type=None):
+        if instance is None:
+            return self
+
+        if self.strict and self.key not in instance.metadata:
+            raise KeyError("Required metadata item not found: %s" % self)
+        return instance.metadata.get(self.key, self.default)
+
+    def __str__(self):
+        return "%s (%s)" % (self.key, self.description)
+
+
+def _missing_metadata(cl, md):
+    """Find missing metadata entries in a metadata dict
+
+    Paramters
+    ---------
+    cls : Class with MetaData descriptors
+    md : metadata dictionary
+    """
+    result = []
+    return [m for m in cl.__dict__.values() if isinstance(m, MetaData)
+            and m.key not in md]
+
+def _warn_missing_metadata(cl, md):
+    missing = _missing_metadata(cl, md)
+    if len(missing) == 0:
+        return
+
+    required = [m for m in missing if m.strict]
+    if len(required):
+        raise RuntimeError(
+            "The following missing metadata items are required:\n\t" +
+            "\n\t".join(str(m) for m in required))
+
+    for m in missing:
+        warnings.warn("Missing Metadata:\n\t %s\n\t Defaulting to %s=%s" %
+                      (m, m.key, m.default))
+
+
 class PPVStatistic(object):
+    dx = MetaData('dx', 'Angular length of a pixel')
+    dv = MetaData('dv', 'Velocity channel width')
+    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
+    bmaj = MetaData('bmaj', 'Beam major axis, sigma', default=0)
+    bmin = MetaData('bmin', 'Beam minor axis, sigma', default=0)
+    bunit = MetaData('bunit', 'Unit of intensity')
+    dist = MetaData('dist', 'Distance')
 
     def __init__(self, stat, metadata):
         """
@@ -164,8 +263,7 @@ class PPVStatistic(object):
 
         sum(v_i * dx^2 * dv)
         """
-        md = self.metadata
-        fac = md['bunit'] * md['dx'] ** 2 * md['dv']
+        fac = self.bunit * self.dx ** 2 * self.dv
         return fac * self.stat.mom0()
 
     def luminosity(self):
@@ -176,15 +274,15 @@ class PPVStatistic(object):
         #disambiguate between degree/radian dx
         #if astropy unit is used
         try:
-            fac = (1 * self.metadata['dx']).unit.to(rad)
-            fac /= (1 * self.metadata['dx']).unit
+            fac = (1 * self.dx).unit.to(rad)
+            fac /= (1 * self.dx).unit
         except AttributeError:
             # metadata not a quantity. Assuming dx=degrees
             fac = np.radians(1)
-        return self.metadata['dist'] ** 2 * self.flux() * fac ** 2
+        return self.dist ** 2 * self.flux() * fac ** 2
 
     def _sky_paxes(self):
-        vaxis = self.metadata['vaxis']
+        vaxis = self.vaxis
         ax = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         ax.pop(vaxis)
         a, b = self.stat.projected_paxes(ax)
@@ -200,7 +298,7 @@ class PPVStatistic(object):
         Intensity weighted second moment in direction
         of greatest elongation in the PP plane
         """
-        dx = self.metadata['dx']
+        dx = self.dx
         a, b = self._sky_paxes()
         return dx * np.sqrt(self.stat.mom2_along(a))
 
@@ -210,7 +308,7 @@ class PPVStatistic(object):
         Intensity-weighted second moment perpendicular
         to major axis, in PP plane
         """
-        dx = self.metadata['dx']
+        dx = self.dx
         a, b = self._sky_paxes()
         return dx * np.sqrt(self.stat.mom2_along(b))
 
@@ -223,12 +321,12 @@ class PPVStatistic(object):
     def vrms(self):
         """Intensity-weighted second moment of velocity"""
         ax = [0, 0, 0]
-        ax[self.metadata['vaxis']] = 1
-        return self.metadata['dv'] * np.sqrt(self.stat.mom2_along(ax))
+        ax[self.vaxis] = 1
+        return self.dv * np.sqrt(self.stat.mom2_along(ax))
 
     def sky_deconvolved_rad(self):
         """sky_rad corrected for beam-smearing"""
-        beam = self.metadata['bmaj'] * self.metadata['bmin']
+        beam = self.bmaj * self.bmin
         u, a = _qsplit(self.sky_maj())
         u, b = _qsplit(self.sky_min())
         return u * np.sqrt(np.sqrt(a**2 - beam) * np.sqrt(b **2 - beam))
@@ -239,7 +337,7 @@ class PPVStatistic(object):
         Returns the angle in degrees counter-clockwise from the +x axis
         """
         a, b = self._sky_paxes()
-        a.pop(self.metadata['vaxis'])
+        a.pop(self.vaxis)
         return np.degrees(np.arctan2(a[0], a[1]))
 
 
@@ -299,9 +397,13 @@ def ppv_catalog(structures, metadata, fields=None):
              The quantities to extract. If not provided,
              defaults to all PPV statistics
     """
+    _warn_missing_metadata(PPVStatistic, metadata)
+
     result = []
-    fields = fields or [f for f in PPVStatistic.__dict__.keys()
-                        if not f.startswith('_')]
+    fields = fields or [k for k, v in PPVStatistic.__dict__.items()
+                        if isinstance(v, FunctionType) and
+                        not k.startswith('_')]
+    print fields
 
     for struct in structures:
         stat = ScalarStatistic(struct.values, struct.indices)
@@ -309,4 +411,4 @@ def ppv_catalog(structures, metadata, fields=None):
         result.append(dict((lbl, getattr(stat, lbl)())
                            for lbl in fields))
 
-    return result
+    return _build_table(result)

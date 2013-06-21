@@ -1,9 +1,20 @@
+import pytest
+from mock import patch
+
 import numpy as np
 from numpy.testing import assert_allclose
 import astropy.units as u
 
 from ._testdata import data
-from ..analysis import ScalarStatistic, PPVStatistic, ppv_catalog
+from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
+                        _missing_metadata, MetaData, _warn_missing_metadata)
+
+try:
+    import astropy
+    has_astropy = True
+except ImportError:
+    has_astropy = False
+
 
 def benchmark_stat():
     x = np.array([216, 216, 216, 216, 216, 217, 216,
@@ -248,28 +259,75 @@ class TestPPVStatistic(object):
 
 
 class TestPPVCataloger(object):
+
+    def make_catalog(self, s=None, md=None, fields=None):
+        s = s or [benchmark_stat()]
+        md = md or dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
+                        bmaj=1, bmin=1, bunit=1)
+        return ppv_catalog(s, md, fields)
+
     def test_benchmark(self):
-        stat = benchmark_stat()
-        #anything with .values and .indices will do
-        s = [stat]
-
-        md = dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
-                  bmaj=1, bmin=1, bunit=1)
-        c = ppv_catalog(s, md)
+        c = self.make_catalog()
+        assert c.dtype.names == tuple(sorted(['flux', 'luminosity',
+                                              'sky_maj', 'sky_min', 'sky_rad',
+                                              'vrms', 'sky_deconvolved_rad',
+                                              'sky_pa']))
         assert len(c) == 1
-        assert set(c[0].keys()) == set(['flux', 'luminosity',
-                                        'sky_maj', 'sky_min', 'sky_rad',
-                                        'vrms', 'sky_deconvolved_rad',
-                                        'sky_pa'])
-
-        s = [stat, stat, stat]
-        c = ppv_catalog(s, md)
+        c = self.make_catalog(s=[benchmark_stat()] * 3)
         assert len(c) == 3
-
+        return c
 
     def test_field_selection(self):
         stat = benchmark_stat()
         md = dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
                   bmaj=1, bmin=1, bunit=1)
         c = ppv_catalog([stat], md, fields=['flux'])
-        assert c[0].keys() == ['flux']
+        assert c.dtype.names == ('flux',)
+
+    def test_numpy_fallback(self):
+        with patch('astrodendro.analysis._data_to_astropy') as mock:
+            mock.side_effect = ImportError
+            c = self.test_benchmark()
+            self.test_field_selection()
+        assert isinstance(c, np.ndarray)
+
+def test_find_missing_ppv_metadata():
+    md = dict(dx=1, dv=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1)
+    assert len(_missing_metadata(PPVStatistic, md)) == 0
+
+    md.pop('dx')
+    assert _missing_metadata(PPVStatistic, md)[0].key == 'dx'
+    assert len(_missing_metadata(PPVStatistic, {})) == 7
+
+def test_metadata_protocol():
+    class Foo(object):
+        x = MetaData('x', 'test')
+        y = MetaData('y', 'test', default=5)
+        z = MetaData('z', 'test', strict=True)
+
+        def __init__(self, md):
+            self.metadata = md
+
+    f = Foo(dict(x=10))
+    assert f.x == 10
+    assert f.y == 5
+    with pytest.raises(KeyError):
+        f.z
+
+def test_warn_missing_metadata():
+    class Foo(object):
+        x = MetaData('x', 'test description')
+
+    class Bar(object):
+        y = MetaData('y', 'test', strict=True)
+
+    with patch('warnings.warn') as mock:
+        _warn_missing_metadata(Foo, {'x':3})
+    assert mock.call_count == 0
+
+    with patch('warnings.warn') as mock:
+        _warn_missing_metadata(Foo, {})
+    assert mock.call_count == 1
+
+    with pytest.raises(RuntimeError):
+        _warn_missing_metadata(Bar, {})
