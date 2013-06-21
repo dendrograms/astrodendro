@@ -28,6 +28,7 @@ class BasicDendrogramViewer(object):
         self.ax1.imshow(array, origin='lower')
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
+        self.selected_label = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18)
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
         y = [p.vertices[:, 1] for p in self.lines.get_paths()]
         xmin = np.min(x)
@@ -55,8 +56,6 @@ class BasicDendrogramViewer(object):
 
             # Select the structure
             structure = self.dendrogram.node_at((iy, ix))
-            if structure is None:
-                return
             self.select(structure)
 
             # Re-draw
@@ -83,11 +82,19 @@ class BasicDendrogramViewer(object):
         # Remove previously selected collection
         if self.selected is not None:
             self.ax2.collections.remove(self.selected)
+            self.selected = None
 
         # Remove previously selected contour
         if self.selected_contour is not None:
             for collection in self.selected_contour.collections:
                 self.ax1.collections.remove(collection)
+            self.selected_contour = None
+
+        if structure is None:
+            self.selected_label.set_text("No structure selected")
+            return
+
+        self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
         self.selected = self.plotter.get_lines(structure=structure)
