@@ -12,16 +12,9 @@ class StructureCollection(LineCollection):
     def structures(self, values):
         self._structures = values
 
-    def __add__(self, other):
-        vertices = []
-        for path in self.get_paths() + other.get_paths():
-            vertices.append(path.vertices)
-        sc = StructureCollection(vertices)
-        sc.structures = self.structures + other.structures
-        return sc
-
 
 class DendrogramPlotter(object):
+
     """
     A class to plot a dendrogram object
     """
@@ -30,7 +23,7 @@ class DendrogramPlotter(object):
         # should we copy to ensure immutability?
         self.dendrogram = dendrogram
         self._cached_positions = None
-        
+
     def sort(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
         """
         Sort the position of the leaves for plotting
