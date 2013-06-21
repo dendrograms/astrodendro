@@ -332,9 +332,9 @@ class Structure(object):
 
     def __repr__(self):
         if self.is_leaf:
-            return "<Structure type=leaf>"
+            return "<Structure type=leaf idx={0}>".format(self.idx)
         else:
-            return "<Structure type=branch>"
+            return "<Structure type=branch idx={0}>".format(self.idx)
 
     def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False, subtree=False):
         if self.is_leaf:
