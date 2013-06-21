@@ -17,9 +17,10 @@ def _build_table(data):
     """Turn a list of dicts into an astropy table
     if possible, or a numpy structured array otherwise"""
     try:
-       return _data_to_astropy(data)
+        return _data_to_astropy(data)
     except ImportError:
         return _data_to_numpy(data)
+
 
 def _data_to_astropy(data):
     """Convert a list of dicts to an astropy table"""
@@ -27,7 +28,7 @@ def _data_to_astropy(data):
     names = sorted(data[0].keys())
     units = [_unit(data[0][c]) for c in names]
 
-    cols = [ [d[c] for d in data] for c in names]
+    cols = [[d[c] for d in data] for c in names]
     result = Table(cols, names=names)
     for c, u in zip(names, units):
         result[c].units = u
@@ -41,6 +42,7 @@ def _data_to_numpy(data):
     dtypes = [(n, np.dtype(d)) for n, d in zip(names, data[0])]
     return np.array(data, dtype=dtypes)
 
+
 def _qsplit(q):
     """Split a potential astropy Quantity into unit/quantity"""
     if isinstance(1 * q, Quantity):
@@ -48,10 +50,12 @@ def _qsplit(q):
 
     return 1, q
 
+
 def _unit(q):
     """Return the units associated with a number, array, unit, or Quantity"""
     if isinstance(1 * q, Quantity):
         return (1 * q).unit
+
 
 class ScalarStatistic(object):
     #This class does all of the heavy computation
@@ -232,6 +236,7 @@ def _missing_metadata(cl, md):
     return [m for m in attrs if isinstance(m, MetaData)
             and m.key not in md]
 
+
 def _warn_missing_metadata(cl, md, verbose=True):
     missing = _missing_metadata(cl, md)
     if len(missing) == 0:
@@ -307,7 +312,7 @@ class SpatialMixin(object):
         beam = self.bmaj * self.bmin
         u, a = _qsplit(self.sky_maj())
         u, b = _qsplit(self.sky_min())
-        return u * np.sqrt(np.sqrt(a**2 - beam) * np.sqrt(b **2 - beam))
+        return u * np.sqrt(np.sqrt(a ** 2 - beam) * np.sqrt(b ** 2 - beam))
 
 
 class PPVStatistic(SpatialMixin):
@@ -346,7 +351,6 @@ class PPVStatistic(SpatialMixin):
         fac = self.bunit * self.dx ** 2 * self.dv
         return fac * self.stat.mom0()
 
-
     def vrms(self):
         """Intensity-weighted second moment of velocity"""
         ax = [0, 0, 0]
@@ -384,6 +388,7 @@ class PPStatistic(SpatialMixin):
         """
         a, b = self._sky_paxes()
         return np.degrees(np.arctan2(a[0], a[1]))
+
 
 class PPPStatistics(object):
 
@@ -438,6 +443,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
 
     return _build_table(result)
 
+
 def ppv_catalog(structures, metadata, fields=None, verbose=False):
     """
     Iterate over a collection of PPV structures,
@@ -461,6 +467,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=False):
                         'sky_min', 'sky_rad', 'sky_deconvolved_rad',
                         'sky_pa', 'vrms']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
+
 
 def pp_catalog(structures, metadata, fields=None, verbose=False):
     """

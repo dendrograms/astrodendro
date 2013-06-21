@@ -134,7 +134,7 @@ class TestScalar2D(object):
     def test_mom2(self):
         assert_allclose(self.stat.mom2(),
                         [[1.0321983103326871, 0.3604276691031663],
-                        [0.3604276691031663,  1.0435691076146387]])
+                        [0.3604276691031663, 1.0435691076146387]])
 
     def test_mom2_along(self):
         assert_allclose(self.stat.mom2_along([0, 1]), 1.0435691076146387)
@@ -184,10 +184,10 @@ class TestPPVStatistic(object):
 
     def test_flux(self):
         p = PPVStatistic(self.stat, self.metadata())
-        assert_allclose(p.flux(),  self.v['mom0'])
+        assert_allclose(p.flux(), self.v['mom0'])
 
         p = PPVStatistic(self.stat, self.metadata(dx=5))
-        assert_allclose(p.flux(),  self.v['mom0'] * 25)
+        assert_allclose(p.flux(), self.v['mom0'] * 25)
 
         p = PPVStatistic(self.stat, self.metadata(dv=3))
         assert_allclose(p.flux(), self.v['mom0'] * 3)
@@ -246,8 +246,8 @@ class TestPPVStatistic(object):
         assert_allclose(p.luminosity(), v['mom0'] * 100)
 
     def test_units(self):
-        m = self.metadata(dx = 1 * u.deg, dv = 1 * u.km / u.s,
-                          bunit = 1 * u.K, dist = 1 * u.pc)
+        m = self.metadata(dx=1 * u.deg, dv=1 * u.km / u.s,
+                          bunit=1 * u.K, dist=1 * u.pc)
         p = PPVStatistic(self.stat, m)
 
         assert p.vrms().unit == u.km / u.s
@@ -274,7 +274,7 @@ class TestPPStatistic(object):
         return result
 
     def test_flux(self):
-        p = PPStatistic(self.stat, self.metadata(dx = 5))
+        p = PPStatistic(self.stat, self.metadata(dx=5))
         assert_allclose(p.flux(), self.v['mom0'] * 25)
 
     def test_sky_maj(self):
@@ -379,6 +379,7 @@ class TestPPCataloger(TestCataloger):
 #don't let pytest test abstract class
 del TestCataloger
 
+
 def test_find_missing_ppv_metadata():
     md = dict(dx=1, dv=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1)
     assert len(_missing_metadata(PPVStatistic, md)) == 0
@@ -386,6 +387,7 @@ def test_find_missing_ppv_metadata():
     md.pop('dx')
     assert _missing_metadata(PPVStatistic, md)[0].key == 'dx'
     assert len(_missing_metadata(PPVStatistic, {})) == 7
+
 
 def test_metadata_protocol():
     class Foo(object):
@@ -402,6 +404,7 @@ def test_metadata_protocol():
     with pytest.raises(KeyError):
         f.z
 
+
 def test_warn_missing_metadata():
     class Foo(object):
         x = MetaData('x', 'test description')
@@ -410,7 +413,7 @@ def test_warn_missing_metadata():
         y = MetaData('y', 'test', strict=True)
 
     with patch('warnings.warn') as mock:
-        _warn_missing_metadata(Foo, {'x':3})
+        _warn_missing_metadata(Foo, {'x': 3})
     assert mock.call_count == 0
 
     with patch('warnings.warn') as mock:
