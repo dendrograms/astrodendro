@@ -424,3 +424,9 @@ class Structure(object):
             return LineCollection(lines)
         else:
             return lines, mapping
+
+    def get_mask(self, shape, subtree=False):
+        indices = self.indices_all if subtree else self.indices
+        mask = np.zeros(shape, dtype=bool)
+        mask[indices] = True
+        return mask
