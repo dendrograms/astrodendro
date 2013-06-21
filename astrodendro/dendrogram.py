@@ -347,6 +347,10 @@ class Dendrogram(object):
 
         return result
 
+    def __iter__(self):
+        return self.nodes_dict.itervalues()
+
+
 
 class TreeIndex(object):
     def __init__(self, dendrogram):
@@ -455,5 +459,3 @@ class TreeIndex(object):
 
     def values(self, sid, subtree=False):
         return self._data[self.indices(sid, subtree=subtree)]
-    def __iter__(self):
-        return self.nodes_dict.itervalues()
