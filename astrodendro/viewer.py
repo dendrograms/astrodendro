@@ -24,19 +24,43 @@ class BasicDendrogramViewer(object):
 
         # Initiate plot
         self.fig = plt.figure(figsize=(14, 8))
+
         self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.7])
-        self.image = None
-        self.update_slice()
+
+        from matplotlib.widgets import Slider
+
+        if self.array.ndim == 2:
+
+            self.slice = None
+            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest')
+
+        else:
+
+            self.slice = int(round(self.array.shape[0] / 2.))
+            self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest')
+
+            self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
+            self.slice_slider_ax.set_xticklabels("")
+            self.slice_slider_ax.set_yticklabels("")
+            self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, array.shape[0], valinit=self.slice)
+            self.slice_slider.on_changed(self.update_slice)
+
+        self._clim = array.min(), array.max()
+
+        self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
+        self.vmin_slider_ax.set_xticklabels("")
+        self.vmin_slider_ax.set_yticklabels("")
+        self.vmin_slider = Slider(self.vmin_slider_ax, "vmin", self._clim[0], self._clim[1], valinit=self._clim[0])
+        self.vmin_slider.on_changed(self.update_vmin)
+
+        self.vmax_slider_ax = self.fig.add_axes([0.1, 0.85, 0.4, 0.03])
+        self.vmax_slider_ax.set_xticklabels("")
+        self.vmax_slider_ax.set_yticklabels("")
+        self.vmax_slider = Slider(self.vmax_slider_ax, "vmax", self._clim[0], self._clim[1], valinit=self._clim[1])
+        self.vmax_slider.on_changed(self.update_vmax)
+
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
-
-        if array.ndim == 3:
-            from matplotlib.widgets import Slider
-            self.slider_ax = self.fig.add_axes([0.1, 0.85, 0.4, 0.05])
-            self.slider_ax.set_xticklabels("")
-            self.slider_ax.set_yticklabels("")
-            self.slider = Slider(self.slider_ax, "3-d slice", 0, array.shape[0])
-            self.slider.on_changed(self.update_slice)
 
         self.selected_label = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18)
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
@@ -58,22 +82,30 @@ class BasicDendrogramViewer(object):
 
     def update_slice(self, pos=None):
         if self.array.ndim == 2:
-            self.slice = None
-            if self.image is None:
-                self.image = self.ax1.imshow(self.array, origin='lower')
-            else:
-                self.image.set_array(self.array)
+            self.image.set_array(self.array)
         else:
-            if pos is None:
-                self.slice = int(round(self.array.shape[0] / 2.))
-            else:
-                self.slice = int(round(pos))
-            if self.image is None:
-                self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower')
-            else:
-                self.image.set_array(self.array[self.slice,:,:])
+            self.slice = int(round(pos))
+            self.image.set_array(self.array[self.slice,:,:])
+
+    def update_vmin(self, vmin):
+        if vmin > self._clim[1]:
+            self._clim = (self._clim[1], self._clim[1])
+        else:
+            self._clim = (vmin, self._clim[1])
+        self.image.set_clim(*self._clim)
+
+    def update_vmax(self, vmax):
+        if vmax < self._clim[0]:
+            self._clim = (self._clim[0], self._clim[0])
+        else:
+            self._clim = (self._clim[0], vmax)
+        self.image.set_clim(*self._clim)
 
     def select_from_map(self, event):
+
+        # Only do this if no tools are currently selected
+        if event.canvas.toolbar.mode != '':
+            return
 
         if event.inaxes is self.ax1:
 
@@ -90,6 +122,10 @@ class BasicDendrogramViewer(object):
 
     def line_picker(self, event):
 
+        # Only do this if no tools are currently selected
+        if event.canvas.toolbar.mode != '':
+            return
+
         # event.ind gives the indices of the paths that have been selected
 
         # Find levels of selected paths
@@ -104,7 +140,7 @@ class BasicDendrogramViewer(object):
         # If 3-d, select the slice
         if self.array.ndim == 3:
             peak_index = structure.get_peak(subtree=True)
-            self.slider.set_val(peak_index[0][0])
+            self.slice_slider.set_val(peak_index[0][0])
 
         # Select the structure
         self.select(structure)
