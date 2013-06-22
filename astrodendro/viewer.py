@@ -29,23 +29,23 @@ class BasicDendrogramViewer(object):
 
         from matplotlib.widgets import Slider
 
+        self._clim = array.min(), array.max()
+
         if self.array.ndim == 2:
 
             self.slice = None
-            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest')
+            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1])
 
         else:
 
             self.slice = int(round(self.array.shape[0] / 2.))
-            self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest')
+            self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1])
 
             self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
             self.slice_slider_ax.set_xticklabels("")
             self.slice_slider_ax.set_yticklabels("")
             self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, array.shape[0], valinit=self.slice)
             self.slice_slider.on_changed(self.update_slice)
-
-        self._clim = array.min(), array.max()
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
