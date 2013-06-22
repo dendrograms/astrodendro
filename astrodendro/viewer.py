@@ -7,8 +7,8 @@ class BasicDendrogramViewer(object):
 
     def __init__(self, array, dendrogram):
 
-        if array.ndim != 2:
-            raise ValueError("Only 2-dimensional arrays are supported at this time")
+        if array.ndim not in [2, 3]:
+            raise ValueError("Only 2- and 3-dimensional arrays are supported at this time")
 
         self.array = array
         self.dendrogram = dendrogram
@@ -24,10 +24,20 @@ class BasicDendrogramViewer(object):
 
         # Initiate plot
         self.fig = plt.figure(figsize=(14, 8))
-        self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.8])
-        self.ax1.imshow(array, origin='lower')
+        self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.7])
+        self.image = None
+        self.update_slice()
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
+
+        if array.ndim == 3:
+            from matplotlib.widgets import Slider
+            self.slider_ax = self.fig.add_axes([0.1, 0.85, 0.4, 0.05])
+            self.slider_ax.set_xticklabels("")
+            self.slider_ax.set_yticklabels("")
+            self.slider = Slider(self.slider_ax, "3-d slice", 0, array.shape[0])
+            self.slider.on_changed(self.update_slice)
+
         self.selected_label = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18)
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
         y = [p.vertices[:, 1] for p in self.lines.get_paths()]
@@ -45,6 +55,23 @@ class BasicDendrogramViewer(object):
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
 
         plt.show()
+
+    def update_slice(self, pos=None):
+        if self.array.ndim == 2:
+            self.slice = None
+            if self.image is None:
+                self.image = self.ax1.imshow(self.array, origin='lower')
+            else:
+                self.image.set_array(self.array)
+        else:
+            if pos is None:
+                self.slice = int(round(self.array.shape[0] / 2.))
+            else:
+                self.slice = int(round(pos))
+            if self.image is None:
+                self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower')
+            else:
+                self.image.set_array(self.array[self.slice,:,:])
 
     def select_from_map(self, event):
 
@@ -71,8 +98,16 @@ class BasicDendrogramViewer(object):
         # Find position of minimum level (may be duplicates, let Numpy decide)
         ind = event.ind[np.argmax(peaks)]
 
+        # Extract structure
+        structure = event.artist.structures[ind]
+
+        # If 3-d, select the slice
+        if self.array.ndim == 3:
+            peak_index = structure.get_peak(subtree=True)
+            self.slider.set_val(peak_index[0][0])
+
         # Select the structure
-        self.select(event.artist.structures[ind])
+        self.select(structure)
 
         # Re-draw
         event.canvas.draw()
@@ -107,4 +142,6 @@ class BasicDendrogramViewer(object):
 
         # Draw contour
         mask = structure.get_mask(self.array.shape, subtree=True)
+        if self.array.ndim == 3:
+            mask = mask[self.slice, :, :]
         self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
