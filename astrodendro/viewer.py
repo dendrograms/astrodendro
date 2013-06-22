@@ -113,8 +113,13 @@ class BasicDendrogramViewer(object):
             ix = int(round(event.xdata))
             iy = int(round(event.ydata))
 
+            if self.array.ndim == 2:
+                indices = (iy, ix)
+            else:
+                indices = (self.slice, iy, ix)
+
             # Select the structure
-            structure = self.dendrogram.node_at((iy, ix))
+            structure = self.dendrogram.node_at(indices)
             self.select(structure)
 
             # Re-draw
