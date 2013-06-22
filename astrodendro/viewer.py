@@ -86,6 +86,7 @@ class BasicDendrogramViewer(object):
         else:
             self.slice = int(round(pos))
             self.image.set_array(self.array[self.slice,:,:])
+        self.fig.canvas.draw()
 
     def update_vmin(self, vmin):
         if vmin > self._clim[1]:
@@ -93,6 +94,7 @@ class BasicDendrogramViewer(object):
         else:
             self._clim = (vmin, self._clim[1])
         self.image.set_clim(*self._clim)
+        self.fig.canvas.draw()
 
     def update_vmax(self, vmax):
         if vmax < self._clim[0]:
@@ -100,6 +102,7 @@ class BasicDendrogramViewer(object):
         else:
             self._clim = (self._clim[0], vmax)
         self.image.set_clim(*self._clim)
+        self.fig.canvas.draw()
 
     def select_from_map(self, event):
 
@@ -168,6 +171,7 @@ class BasicDendrogramViewer(object):
 
         if structure is None:
             self.selected_label.set_text("No structure selected")
+            self.fig.canvas.draw()
             return
 
         self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
