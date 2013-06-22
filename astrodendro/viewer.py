@@ -1,6 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from astrodendro.plot import DendrogramPlotter
+from .plot import DendrogramPlotter
 
 
 class BasicDendrogramViewer(object):
@@ -23,6 +22,7 @@ class BasicDendrogramViewer(object):
         self.selected_contour = None
 
         # Initiate plot
+        import matplotlib.pyplot as plt
         self.fig = plt.figure(figsize=(14, 8))
 
         self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.7])

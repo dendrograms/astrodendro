@@ -1,16 +1,4 @@
 import numpy as np
-from matplotlib.collections import LineCollection
-
-
-class StructureCollection(LineCollection):
-
-    @property
-    def structures(self):
-        return self._structures
-
-    @structures.setter
-    def structures(self, values):
-        self._structures = values
 
 
 class DendrogramPlotter(object):
@@ -99,6 +87,7 @@ class DendrogramPlotter(object):
                 lines.append(([min(pc), top], [max(pc), top]))
                 mapping.append(s)
 
+        from .structure_collection import StructureCollection
         sc = StructureCollection(lines)
         sc.structures = mapping
         return sc
