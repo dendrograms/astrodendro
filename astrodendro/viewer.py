@@ -29,7 +29,8 @@ class BasicDendrogramViewer(object):
 
         from matplotlib.widgets import Slider
 
-        self._clim = array.min(), array.max()
+        self._clim = (np.min(array[~np.isnan(array) & ~np.isinf(array)]),
+                      np.max(array[~np.isnan(array) & ~np.isinf(array)]))
 
         if self.array.ndim == 2:
 
