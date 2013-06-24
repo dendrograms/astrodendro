@@ -52,7 +52,41 @@ class DendrogramPlotter(object):
 
         self._cached_positions = positions
 
-    def get_lines(self, structure=None):
+    def plot_tree(self, ax, structure=None, subtree=True, autoscale=True, **kwargs):
+        """
+        Plot the dendrogram tree or a substructure
+
+        Parameters
+        ----------
+        ax : `matplotlib.axes.Axes` instance
+            The Axes inside which to plot the dendrogram
+        structure : int or `~astrodendro.structure.Structure`, optional
+            If specified, only plot this structure
+        subtree : bool, optional
+            If a structure is specified, by default the whole subtree will be
+            plotted, but this can be disabled with this option.
+        autoscale : bool, optional
+            Whether to automatically adapt the window limits to the tree
+
+        Notes
+        -----
+        Any additional keyword arguments are passed to
+        `~matplotlib.collections.LineCollection` and can be used to control the
+        appearance of the plot.
+        """
+
+        # Get the lines for the dendrogram
+        lines = self.get_lines(structure=structure, **kwargs)
+
+        # Add the lines to the axes
+        ax.add_collection(lines)
+
+        # Auto-scale axes (doesn't happen by default with ``add_collection``)
+        if autoscale:
+            ax.margins(0.05)
+            ax.autoscale_view(True, True, True)
+
+    def get_lines(self, structure=None, **kwargs):
         """
         Get a collection of lines to draw the dendrogram
 
@@ -65,6 +99,11 @@ class DendrogramPlotter(object):
         -------
         lines : `astrodendro.plot.StructureCollection`
             The lines (sub-class of LineCollection) which can be directly used in Matplotlib
+
+        Notes
+        -----
+        Any additional keyword arguments are passed to the
+        `~matplotlib.collections.LineCollection` class.
         """
 
         if self._cached_positions is None:
@@ -73,6 +112,8 @@ class DendrogramPlotter(object):
         if structure is None:
             structures = self.dendrogram.all_nodes
         else:
+            if type(structure) is int:
+                structure = self.dendrogram.nodes_dict[structure]
             structures = structure.descendants + [structure]
 
         lines = []
@@ -89,6 +130,6 @@ class DendrogramPlotter(object):
                 mapping.append(s)
 
         from .structure_collection import StructureCollection
-        sc = StructureCollection(lines)
+        sc = StructureCollection(lines, **kwargs)
         sc.structures = mapping
         return sc
