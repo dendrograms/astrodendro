@@ -12,6 +12,7 @@ except ImportError:
     class rad(object):
         pass
 
+__all__ = ['ppv_catalog', 'pp_catalog']
 
 def _build_table(data):
     """Turn a list of dicts into an astropy table
@@ -440,11 +441,13 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
         stat = statistic(stat, metadata)
         result.append(dict((lbl, getattr(stat, lbl)())
                            for lbl in fields))
+        if hasattr(struct, 'idx'):
+            result[-1].update(_idx = struct.idx)
 
     return _build_table(result)
 
 
-def ppv_catalog(structures, metadata, fields=None, verbose=False):
+def ppv_catalog(structures, metadata, fields=None, verbose=True):
     """
     Iterate over a collection of PPV structures,
     extracting several quantities from each, and building
