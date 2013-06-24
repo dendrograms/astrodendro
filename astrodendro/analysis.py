@@ -257,7 +257,7 @@ def _warn_missing_metadata(cl, md, verbose=True):
                       (m, m.key, m.default))
 
 
-class SpatialMixin(object):
+class SpatialBase(object):
     dx = MetaData('dx', 'Angular length of a pixel')
     bmaj = MetaData('bmaj', 'Beam major axis, sigma', default=0)
     bmin = MetaData('bmin', 'Beam minor axis, sigma', default=0)
@@ -316,7 +316,7 @@ class SpatialMixin(object):
         return u * np.sqrt(np.sqrt(a ** 2 - beam) * np.sqrt(b ** 2 - beam))
 
 
-class PPVStatistic(SpatialMixin):
+class PPVStatistic(SpatialBase):
     dv = MetaData('dv', 'Velocity channel width')
     vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
 
@@ -368,7 +368,7 @@ class PPVStatistic(SpatialMixin):
         return np.degrees(np.arctan2(a[0], a[1]))
 
 
-class PPStatistic(SpatialMixin):
+class PPStatistic(SpatialBase):
 
     def __init__(self, stat, metadata):
         self.stat = stat
@@ -391,11 +391,11 @@ class PPStatistic(SpatialMixin):
         return np.degrees(np.arctan2(a[0], a[1]))
 
 
-class PPPStatistics(object):
+class PPPStatistic(object):
 
     def __init__(self, rhostat, vstat, metadata):
         """
-        Derive proeprties from PPP density and velocity fields
+        Derive properties from PPP density and velocity fields
 
         This is not currently implemented
 
