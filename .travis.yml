@@ -29,6 +29,7 @@ install:
    - export PYTHONIOENCODING=UTF8 # just in case
    - pip -q install --upgrade "numpy==$NUMPY_VERSION" --use-mirrors
    - pip -q install h5py
+   - pip -q install astropy
 
 script:
    - python setup.py $SETUP_CMD
