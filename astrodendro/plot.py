@@ -11,6 +11,7 @@ class DendrogramPlotter(object):
         # should we copy to ensure immutability?
         self.dendrogram = dendrogram
         self._cached_positions = None
+        self.sort()
 
     def sort(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
         """
