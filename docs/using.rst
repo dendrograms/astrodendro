@@ -186,12 +186,12 @@ Dendrogram structure::
      Defaulting to vaxis=1 [astrodendro.analysis]
 
    >>> print cat[:3]
-   _idx      flux         luminosity    ...    sky_rad         vrms
+   _idx      flux         luminosity    ...  sky_radius        vrms
    ---- ------------- ----------------- ... ------------- -------------
     191 64.1306480569   0.0195353125403 ... 2.85334306153 2.96246166695
      12 4.63582743919   0.0014121537931 ...  3.2987034401  3.5720567466
     >>> print cat.columns
-       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_rad','sky_maj','sky_min','sky_pa','sky_rad','vrms')>
+       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_rad','sky_maj','sky_min','sky_pa','sky_radius','vrms')>
 
 The catalog functions return an astropy `Table` object.
 
@@ -217,7 +217,7 @@ Here's a sensible looking metadata dictionary::
    sky_maj deg
    sky_min deg
    sky_pa None
-   sky_rad deg
+   sky_radius deg
    vrms km / (s)
 
 Here's a brief description of each quantity computed in the catalog functions:
@@ -228,7 +228,7 @@ Here's a brief description of each quantity computed in the catalog functions:
 * ``sky_mag`` : The intensity-weighted second moment of emission, along the major axis of the structure projected onto the sky
 * ``sky_min`` : The intensity-weighted second moment of emission, perpendicular to the major axis of the structure projected onto the sky
 * ``sky_pa`` : The position angle of the structure projected onto the sky. Given in radians CCW from the +x axis (note that this is the +x axis in pixel coordinates, which is the ``-x`` axis for conventional astronomy images)
-* ``sky_rad`` : The geometric mean of ``sky_maj`` and ``sky_min``
+* ``sky_radius`` : The geometric mean of ``sky_maj`` and ``sky_min``
 * ``vrms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
 * ``sky_deconvolved_rad``: The size of the structure, corrected for the effects of beam-smearing.
 

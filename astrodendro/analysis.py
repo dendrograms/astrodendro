@@ -302,14 +302,14 @@ class SpatialMixin(object):
         a, b = self._sky_paxes()
         return dx * np.sqrt(self.stat.mom2_along(b))
 
-    def sky_rad(self):
+    def sky_radius(self):
         """ Geometric mean of sky_maj and sky_min """
         u, a = _qsplit(self.sky_maj())
         u, b = _qsplit(self.sky_min())
         return u * np.sqrt(a * b)
 
     def sky_deconvolved_rad(self):
-        """sky_rad corrected for beam-smearing"""
+        """sky_radius corrected for beam-smearing"""
         beam = self.bmaj * self.bmin
         u, a = _qsplit(self.sky_maj())
         u, b = _qsplit(self.sky_min())
@@ -467,7 +467,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
              about missing metadata
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
-                        'sky_min', 'sky_rad', 'sky_deconvolved_rad',
+                        'sky_min', 'sky_radius', 'sky_deconvolved_rad',
                         'sky_pa', 'vrms']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
@@ -492,6 +492,6 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
              about missing metadata
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
-                        'sky_min', 'sky_rad', 'sky_deconvolved_rad',
+                        'sky_min', 'sky_radius', 'sky_deconvolved_rad',
                         'sky_pa']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)

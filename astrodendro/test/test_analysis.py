@@ -202,9 +202,9 @@ class TestPPVStatistic(object):
         p = PPVStatistic(self.stat, self.metadata(dx=4))
         assert_allclose(p.sky_min(), self.v['sig_min'] * 4)
 
-    def test_sky_rad(self):
+    def test_sky_radius(self):
         p = PPVStatistic(self.stat, self.metadata(dx=4))
-        assert_allclose(p.sky_rad(), np.sqrt(self.v['sig_min'] *
+        assert_allclose(p.sky_radius(), np.sqrt(self.v['sig_min'] *
                                              self.v['sig_maj']) * 4)
 
     def test_sky_vrms(self):
@@ -257,7 +257,7 @@ class TestPPVStatistic(object):
         assert p.flux().unit == u.deg ** 2 * u.km / u.s * u.K
         assert p.sky_maj().unit == u.deg
         assert p.sky_min().unit == u.deg
-        assert p.sky_rad().unit == u.deg
+        assert p.sky_radius().unit == u.deg
         assert p.luminosity().unit == u.km / u.s * u.K * u.pc ** 2
 
 
@@ -289,9 +289,9 @@ class TestPPStatistic(object):
         p = PPStatistic(self.stat, self.metadata(dx=4))
         assert_allclose(p.sky_min(), self.v['sig_min'] * 4)
 
-    def test_sky_rad(self):
+    def test_sky_radius(self):
         p = PPStatistic(self.stat, self.metadata(dx=4))
-        assert_allclose(p.sky_rad(), np.sqrt(self.v['sig_min'] *
+        assert_allclose(p.sky_radius(), np.sqrt(self.v['sig_min'] *
                                              self.v['sig_maj']) * 4)
 
     def test_pa(self):
@@ -349,7 +349,7 @@ class TestCataloger(object):
 
 class TestPPVCataloger(TestCataloger):
     fields = ['flux', 'luminosity',
-              'sky_maj', 'sky_min', 'sky_rad',
+              'sky_maj', 'sky_min', 'sky_radius',
               'vrms', 'sky_deconvolved_rad',
               'sky_pa']
     cataloger = staticmethod(ppv_catalog)
@@ -364,7 +364,7 @@ class TestPPVCataloger(TestCataloger):
 
 class TestPPCataloger(TestCataloger):
     fields = ['flux', 'luminosity',
-              'sky_maj', 'sky_min', 'sky_rad',
+              'sky_maj', 'sky_min', 'sky_radius',
               'sky_deconvolved_rad',
               'sky_pa']
     cataloger = staticmethod(pp_catalog)
