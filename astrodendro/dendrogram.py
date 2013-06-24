@@ -348,7 +348,6 @@ class Dendrogram(object):
         return result
 
 
-
 class TreeIndex(object):
     def __init__(self, dendrogram):
         """

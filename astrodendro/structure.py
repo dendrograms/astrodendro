@@ -34,11 +34,6 @@ class Structure(object):
 
     def __init__(self, indices, values, children=[], idx=None):
 
-        # If this is a branch, record the exact flux level that triggered
-        # creation of this structure
-        if children:
-            self.merge_level = values
-
         self.parent = None
         self.children = children
 
@@ -182,10 +177,7 @@ class Structure(object):
 
     @property
     def height(self):
-        if self.parent == None:
-            return self.vmax - self.vmin
-        else:
-            return self.vmax - self.parent.merge_level
+        return min(c.vmin for c in self.children) if self.children else self.vmax
 
     @property
     def ancestor(self):
@@ -309,7 +301,16 @@ class Structure(object):
         """
         Return the number of pixels in this structure.
 
-        If subtree is True, the result is a sum that includes all child nodes.
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to recursively include all sub-structures when counting the
+            pixels.
+
+        Returns
+        -------
+        n_pix : int
+            The number of pixels in this structure
         """
 
         if not subtree:
@@ -321,9 +322,20 @@ class Structure(object):
 
     def get_peak(self, subtree=False):
         """
-        Return (indices, values) for the pixel with maximum value
+        Return (index, value) for the pixel with maximum value
 
-        If subtree=True, will search all descendant nodes too.
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to recursively include all sub-structures when searching
+            for the peak.
+
+        Returns
+        -------
+        index : tuple
+            The n-dimensional index of the peak pixel
+        value : float
+            The value of the peak pixel
         """
         if self._peak is None:
             self._peak = (self._indices[self._values.index(self.vmax)], self.vmax)
@@ -340,6 +352,60 @@ class Structure(object):
 
     def __repr__(self):
         if self.is_leaf:
-            return "<Structure type=leaf>"
+            return "<Structure type=leaf idx={0}>".format(self.idx)
         else:
-            return "<Structure type=branch>"
+            return "<Structure type=branch idx={0}>".format(self.idx)
+
+    def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
+                          reverse=False, subtree=False):
+        """
+        Return a list of sorted leaves
+
+        Parameters
+        ----------
+        sort_key : function, optional
+            A function which given a structure will return a scalar that is
+            then used for sorting. By default, this is set to a function that
+            returns the peak flux of a structure (including descendants).
+        reverse : bool, optional
+            Whether to reverse the sorting.
+        subtree : bool, optional
+            Whether to recursively include all sub-structures in the list.
+
+        Returns
+        -------
+        leaves : list
+            A list of sorted leaves
+        """
+
+        if self.is_leaf:
+            return [self]
+        leaves = []
+        for structure in sorted(self.children, key=sort_key, reverse=reverse):
+            if structure.is_leaf:
+                leaves.append(structure)
+            elif subtree:
+                leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
+        return leaves
+
+    def get_mask(self, shape, subtree=False):
+        """
+        Return a boolean mask outlining the structure
+
+        Parameters
+        ----------
+        shape : tuple
+            The shape of the array upon which to compute the mask.
+        subtree : bool, optional
+            Whether to recursively include all sub-structures in the mask.
+
+        Returns
+        -------
+        mask : `~numpy.ndarray`
+            The mask outlining the structure (``False`` values are used outside
+            the structure, and ``True`` values inside).
+        """
+        indices = self.indices_all if subtree else self.indices
+        mask = np.zeros(shape, dtype=bool)
+        mask[indices] = True
+        return mask

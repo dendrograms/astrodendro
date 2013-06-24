@@ -27,7 +27,7 @@ def test_init_leaf_scalar(index):
     assert np.all(s.values_all == s.values)
     assert s.vmin == 1.5
     assert s.vmax == 1.5
-    assert s.height == 0.
+    assert s.height == 1.5
     assert s.level == 0
     assert s.ancestor is s
     assert s.parent is None
@@ -64,7 +64,7 @@ def test_init_leaf_list(index):
     assert np.all(s.values_all == s.values)
     assert s.vmin == 3.1
     assert s.vmax == 5.3
-    assert_allclose(s.height, 2.2)
+    assert s.height == 5.3
     assert s.level == 0
     assert s.ancestor is s
     assert s.parent is None
@@ -107,7 +107,7 @@ def test_init_branch_scalar(index):
     assert np.all(s.values_all == np.hstack(([1.5], leaf.values)))
     assert s.vmin == 1.5
     assert s.vmax == 1.5
-    assert s.height == 0.
+    assert s.height == 20.
     assert s.level == 0
     assert s.ancestor is s
     assert s.parent is None
@@ -164,7 +164,7 @@ def test_init_branch_list(index):
     assert np.all(s.values_all == np.hstack(([3.1, 4.2, 5.3], leaf.values)))
     assert s.vmin == 3.1
     assert s.vmax == 5.3
-    assert_allclose(s.height, 2.2)
+    assert s.height == 20.
     assert s.level == 0
     assert s.ancestor is s
     assert s.parent is None
@@ -221,7 +221,7 @@ def test_init_branch_scalar_3_level(index):
     assert np.all(s.values_all == np.hstack((s.values, branch.values, leaf.values)))
     assert s.vmin == 1.5
     assert s.vmax == 1.5
-    assert s.height == 0.
+    assert s.height == 15.
     assert s.level == 0
     assert s.ancestor is s
     assert s.parent is None
@@ -289,7 +289,7 @@ def test_init_branch_list_3_level(index):
     assert np.all(s.values_all == np.hstack((s.values, branch.values, leaf.values)))
     assert s.vmin == 3.1
     assert s.vmax == 5.3
-    assert_allclose(s.height, 2.2)
+    assert s.height == 15.
     assert s.level == 0
     assert s.ancestor is s
     assert s.parent is None

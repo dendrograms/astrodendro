@@ -65,8 +65,6 @@ class TestIO(object):
             assert type(node1) == type(node2)
             # Compare the coordinates and data values of all peak pixels:
             assert node1.get_peak(subtree=True) == node2.get_peak(subtree=True)
-            if node2.is_branch:
-                assert node1.merge_level == node2.merge_level
 
     # Below are the actual tests for each import/export format:
 
