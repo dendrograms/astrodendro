@@ -227,6 +227,9 @@ class SpatialBase(object):
     bmin = MetaData('bmin', 'Beam minor axis, sigma', default=0)
     bunit = MetaData('bunit', 'Unit of intensity')
     dist = MetaData('dist', 'Distance')
+    wcs = MetaData('wcs', 'WCS object', default=None)
+    wcs_origin = MetaData('wcs_origin', 'origin (1=FITS standard, 0=numpy)',
+                          default=1)
 
     def luminosity(self):
         """Integrated luminosity
@@ -245,6 +248,12 @@ class SpatialBase(object):
 
     def _sky_paxes(self):
         raise NotImplementedError()
+
+    def _world_pos(self):
+        xyz = self.stat.mom1()[::-1]
+        if self.wcs is not None:
+            return self.wcs.all_pix2world([xyz], self.wcs_origin).ravel()[::-1]
+        return xyz[::-1]
 
     def sky_maj(self):
         """Major axis of the projection onto the PP plane
@@ -308,6 +317,18 @@ class PPVStatistic(SpatialBase):
         b.insert(0, vaxis)
         return a, b
 
+    def xcen(self):
+        p = self._world_pos()
+        return p[2] if self.vaxis != 2 else p[1]
+
+    def ycen(self):
+        p = self._world_pos()
+        return p[1] if self.vaxis == 0 else p[0]
+
+    def vcen(self):
+        p = self._world_pos()
+        return p[self.vaxis]
+
     def flux(self):
         """Integrated flux
 
@@ -353,6 +374,13 @@ class PPStatistic(SpatialBase):
         """
         a, b = self._sky_paxes()
         return np.degrees(np.arctan2(a[0], a[1]))
+
+    def xcen(self):
+        return self._world_pos()[1]
+
+    def ycen(self):
+        return self._world_pos()[0]
+
 
 
 class PPPStatistic(object):
@@ -444,7 +472,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
                         'sky_min', 'sky_radius', 'sky_deconvolved_rad',
-                        'sky_pa', 'vrms']
+                        'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
 
@@ -469,5 +497,5 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
                         'sky_min', 'sky_radius', 'sky_deconvolved_rad',
-                        'sky_pa']
+                        'sky_pa', 'xcen', 'ycen']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)

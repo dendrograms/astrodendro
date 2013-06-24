@@ -4,6 +4,8 @@ from mock import patch
 import numpy as np
 from numpy.testing import assert_allclose
 import astropy.units as u
+from astropy.wcs import WCS
+
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
@@ -11,6 +13,12 @@ from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
                         PPStatistic, pp_catalog)
 from .. import Dendrogram
 
+
+wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=0,
+                         cdelt2=2, crval2=0, crpix2=0))
+wcs_3d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=0,
+                         cdelt2=2, crval2=0, crpix2=0,
+                         cdelt3=3, crval3=0, crpix3=0))
 
 def benchmark_stat():
     x = np.array([216, 216, 216, 216, 216, 217, 216,
@@ -173,6 +181,8 @@ class TestPPVStatistic(object):
                       dv=1,
                       vaxis=0,
                       bunit=1,
+                      wcs=wcs_3d,
+                      wcs_origin=1,
                       )
         result.update(**kwargs)
         return result
@@ -186,6 +196,27 @@ class TestPPVStatistic(object):
 
         p = PPVStatistic(self.stat, self.metadata(dv=3))
         assert_allclose(p.flux(), self.v['mom0'] * 3)
+
+    def test_xcen(self):
+        p = PPVStatistic(self.stat, self.metadata())
+        assert_allclose(p.xcen(), self.v['mom1'][2])
+
+        p = PPVStatistic(self.stat, self.metadata(vaxis=2))
+        assert_allclose(p.xcen(), self.v['mom1'][1] * 2)
+
+    def test_ycen(self):
+        p = PPVStatistic(self.stat, self.metadata())
+        assert_allclose(p.ycen(), self.v['mom1'][1] * 2)
+
+        p = PPVStatistic(self.stat, self.metadata(vaxis=2))
+        assert_allclose(p.ycen(), self.v['mom1'][0] * 3)
+
+    def test_vcen(self):
+        p = PPVStatistic(self.stat, self.metadata())
+        assert_allclose(p.vcen(), self.v['mom1'][0] * 3)
+
+        p = PPVStatistic(self.stat, self.metadata(vaxis=2))
+        assert_allclose(p.vcen(), self.v['mom1'][2])
 
     def test_sky_maj(self):
         p = PPVStatistic(self.stat, self.metadata(dx=2))
@@ -336,7 +367,7 @@ class TestPPVCataloger(TestCataloger):
     fields = ['flux', 'luminosity',
               'sky_maj', 'sky_min', 'sky_radius',
               'vrms', 'sky_deconvolved_rad',
-              'sky_pa']
+              'sky_pa', 'xcen', 'ycen', 'vcen']
     cataloger = staticmethod(ppv_catalog)
 
     def stat(self):
@@ -344,14 +375,14 @@ class TestPPVCataloger(TestCataloger):
 
     def metadata(self):
         return dict(vaxis=1, dx=1, dv=1, dist=1, lum2mass=1,
-                    bmaj=1, bmin=1, bunit=1)
+                    bmaj=1, bmin=1, bunit=1, wcs=wcs_3d)
 
 
 class TestPPCataloger(TestCataloger):
     fields = ['flux', 'luminosity',
               'sky_maj', 'sky_min', 'sky_radius',
               'sky_deconvolved_rad',
-              'sky_pa']
+              'sky_pa', 'xcen', 'ycen']
     cataloger = staticmethod(pp_catalog)
 
     def stat(self):
@@ -361,7 +392,7 @@ class TestPPCataloger(TestCataloger):
 
     def metadata(self):
         return dict(dx=1, dist=1, lum2mass=1,
-                    bmaj=1, bmin=1, bunit=1)
+                    bmaj=1, bmin=1, bunit=1, wcs=wcs_2d)
 
 
 #don't let pytest test abstract class
@@ -369,12 +400,13 @@ del TestCataloger
 
 
 def test_find_missing_ppv_metadata():
-    md = dict(dx=1, dv=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1)
+    md = dict(dx=1, dv=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1,
+              wcs=wcs_3d, wcs_origin=0)
     assert len(_missing_metadata(PPVStatistic, md)) == 0
 
     md.pop('dx')
     assert _missing_metadata(PPVStatistic, md)[0].key == 'dx'
-    assert len(_missing_metadata(PPVStatistic, {})) == 7
+    assert len(_missing_metadata(PPVStatistic, {})) == 9
 
 
 def test_metadata_protocol():

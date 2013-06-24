@@ -218,7 +218,10 @@ Here's a sensible looking metadata dictionary::
    sky_min deg
    sky_pa None
    sky_radius deg
+   vcen None
    vrms km / (s)
+   xcen None
+   ycen None
 
 Here's a brief description of each quantity computed in the catalog functions:
 
@@ -231,6 +234,9 @@ Here's a brief description of each quantity computed in the catalog functions:
 * ``sky_radius`` : The geometric mean of ``sky_maj`` and ``sky_min``
 * ``vrms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
 * ``sky_deconvolved_rad``: The size of the structure, corrected for the effects of beam-smearing.
+* ``xcen`` : X-position of intensity-weighted centroid (in world units if a ``WCS`` object is stored in ``metadta['wcs']``
+* ``ycen`` : Y-position of intensity-weighted centroid (see above)
+* ``vcen`` : V-position of intensity-weighted centroid (see above)
 
 For more information on these quantities, consult the paper on `Bias Free Measurements of Molecular Cloud Properties <http://adsabs.harvard.edu/abs/2006PASP..118..590R>`_ or `the original dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the terminology of the dendrogram paper, the quantities in ``ppv_catalog`` and ``pp_catalog`` adopt the "bijection" paradigm.
 
