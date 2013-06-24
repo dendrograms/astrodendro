@@ -3,19 +3,13 @@ from mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
+import astropy.units as u
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
                         _missing_metadata, MetaData, _warn_missing_metadata,
                         PPStatistic, pp_catalog)
 from .. import Dendrogram
-
-try:
-    import astropy
-    import astropy.units as u
-    missing_astropy = False
-except ImportError:
-    missing_astropy = True
 
 
 def benchmark_stat():
@@ -205,7 +199,7 @@ class TestPPVStatistic(object):
     def test_sky_radius(self):
         p = PPVStatistic(self.stat, self.metadata(dx=4))
         assert_allclose(p.sky_radius(), np.sqrt(self.v['sig_min'] *
-                                             self.v['sig_maj']) * 4)
+                                                self.v['sig_maj']) * 4)
 
     def test_sky_vrms(self):
         p = PPVStatistic(self.stat, self.metadata())
@@ -238,7 +232,6 @@ class TestPPVStatistic(object):
         dcr = np.sqrt(np.sqrt(a ** 2 - .04) * np.sqrt(b ** 2 - .04))
         assert_allclose(p.sky_deconvolved_rad(), dcr)
 
-    @pytest.mark.skipif('missing_astropy')
     def test_luminosity(self):
         p = PPVStatistic(self.stat, self.metadata(dist=10))
         v = benchmark_values()
@@ -247,7 +240,6 @@ class TestPPVStatistic(object):
         p = PPVStatistic(self.stat, self.metadata(dist=10, dx=1 * u.rad))
         assert_allclose(p.luminosity(), v['mom0'] * 100)
 
-    @pytest.mark.skipif('missing_astropy')
     def test_units(self):
         m = self.metadata(dx=1 * u.deg, dv=1 * u.km / u.s,
                           bunit=1 * u.K, dist=1 * u.pc)
@@ -292,7 +284,7 @@ class TestPPStatistic(object):
     def test_sky_radius(self):
         p = PPStatistic(self.stat, self.metadata(dx=4))
         assert_allclose(p.sky_radius(), np.sqrt(self.v['sig_min'] *
-                                             self.v['sig_maj']) * 4)
+                                                self.v['sig_maj']) * 4)
 
     def test_pa(self):
         x = np.array([0, 1, 2])
@@ -338,13 +330,6 @@ class TestCataloger(object):
         md = self.metadata()
         c = ppv_catalog([stat], md, fields=['flux'])
         assert c.dtype.names == ('flux',)
-
-    def test_numpy_fallback(self):
-        with patch('astrodendro.analysis._data_to_astropy') as mock:
-            mock.side_effect = ImportError
-            c = self.test_benchmark()
-            self.test_field_selection()
-        assert isinstance(c, np.ndarray)
 
 
 class TestPPVCataloger(TestCataloger):
@@ -430,12 +415,14 @@ def test_warn_missing_metadata():
     with pytest.raises(RuntimeError):
         _warn_missing_metadata(Bar, {})
 
+
 def test_dendrogram_ppv_catalog():
     x = np.random.random((5, 5, 5))
     d = Dendrogram.compute(x)
     c = ppv_catalog(d, {})
     for ct, st in zip(c['flux'], d):
         assert ct == st.values.sum()
+
 
 def test_dendrogram_ppv_catalog():
     x = np.random.random((5, 5))

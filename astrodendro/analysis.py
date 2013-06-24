@@ -2,46 +2,10 @@ from types import FunctionType
 import warnings
 
 import numpy as np
-
-try:
-    from astropy.units import Quantity, rad
-except ImportError:
-    class Quantity(object):
-        pass
-
-    class rad(object):
-        pass
+from astropy.units import Quantity, rad
+from astropy.table import Table
 
 __all__ = ['ppv_catalog', 'pp_catalog']
-
-def _build_table(data):
-    """Turn a list of dicts into an astropy table
-    if possible, or a numpy structured array otherwise"""
-    try:
-        return _data_to_astropy(data)
-    except ImportError:
-        return _data_to_numpy(data)
-
-
-def _data_to_astropy(data):
-    """Convert a list of dicts to an astropy table"""
-    from astropy.table import Table, Column
-    names = sorted(data[0].keys())
-    units = [_unit(data[0][c]) for c in names]
-
-    cols = [[d[c] for d in data] for c in names]
-    result = Table(cols, names=names)
-    for c, u in zip(names, units):
-        result[c].units = u
-    return result
-
-
-def _data_to_numpy(data):
-    """Convert a list of dicts to an numpy structured array"""
-    names = sorted(data[0].keys())
-    data = [tuple(d[c] for c in names) for d in data]
-    dtypes = [(n, np.dtype(d)) for n, d in zip(names, data[0])]
-    return np.array(data, dtype=dtypes)
 
 
 def _qsplit(q):
@@ -434,17 +398,25 @@ class PPPStatistic(object):
 def _make_catalog(structures, fields, metadata, statistic, verbose):
     _warn_missing_metadata(statistic, metadata, verbose=verbose)
 
-    result = []
+    result = None
 
     for struct in structures:
         stat = ScalarStatistic(struct.values, struct.indices)
         stat = statistic(stat, metadata)
-        result.append(dict((lbl, getattr(stat, lbl)())
-                           for lbl in fields))
+        row = dict((lbl, getattr(stat, lbl)())
+                   for lbl in fields)
         if hasattr(struct, 'idx'):
-            result[-1].update(_idx = struct.idx)
+            row.update(_idx=struct.idx)
 
-    return _build_table(result)
+        # first row
+        if result is None:
+            result = Table(names=sorted(row.keys()))
+            for k, v in row.items():
+                result[k].units = _unit(v)
+
+        result.add_row(row)
+
+    return result
 
 
 def ppv_catalog(structures, metadata, fields=None, verbose=True):
@@ -465,6 +437,10 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     verbose : bool, optional
              If True (the default), will generate warnings
              about missing metadata
+
+    Returns
+    -------
+    An Astropy Table
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
                         'sky_min', 'sky_radius', 'sky_deconvolved_rad',
