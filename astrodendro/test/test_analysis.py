@@ -3,18 +3,19 @@ from mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
-import astropy.units as u
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
                         _missing_metadata, MetaData, _warn_missing_metadata,
                         PPStatistic, pp_catalog)
+from .. import Dendrogram
 
 try:
     import astropy
-    has_astropy = True
+    import astropy.units as u
+    missing_astropy = False
 except ImportError:
-    has_astropy = False
+    missing_astropy = True
 
 
 def benchmark_stat():
@@ -237,6 +238,7 @@ class TestPPVStatistic(object):
         dcr = np.sqrt(np.sqrt(a ** 2 - .04) * np.sqrt(b ** 2 - .04))
         assert_allclose(p.sky_deconvolved_rad(), dcr)
 
+    @pytest.mark.skipif('missing_astropy')
     def test_luminosity(self):
         p = PPVStatistic(self.stat, self.metadata(dist=10))
         v = benchmark_values()
@@ -245,6 +247,7 @@ class TestPPVStatistic(object):
         p = PPVStatistic(self.stat, self.metadata(dist=10, dx=1 * u.rad))
         assert_allclose(p.luminosity(), v['mom0'] * 100)
 
+    @pytest.mark.skipif('missing_astropy')
     def test_units(self):
         m = self.metadata(dx=1 * u.deg, dv=1 * u.km / u.s,
                           bunit=1 * u.K, dist=1 * u.pc)
@@ -426,3 +429,17 @@ def test_warn_missing_metadata():
 
     with pytest.raises(RuntimeError):
         _warn_missing_metadata(Bar, {})
+
+def test_dendrogram_ppv_catalog():
+    x = np.random.random((5, 5, 5))
+    d = Dendrogram.compute(x)
+    c = ppv_catalog(d, {})
+    for ct, st in zip(c['flux'], d):
+        assert ct == st.values.sum()
+
+def test_dendrogram_ppv_catalog():
+    x = np.random.random((5, 5))
+    d = Dendrogram.compute(x)
+    c = pp_catalog(d, {})
+    for ct, st in zip(c['flux'], d):
+        assert ct == st.values.sum()
