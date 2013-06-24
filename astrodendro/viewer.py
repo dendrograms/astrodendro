@@ -19,6 +19,7 @@ class BasicDendrogramViewer(object):
 
         # Define the currently selected subtree
         self.selected = None
+        self.selected_lines = None
         self.selected_contour = None
 
         # Initiate plot
@@ -87,6 +88,10 @@ class BasicDendrogramViewer(object):
         else:
             self.slice = int(round(pos))
             self.image.set_array(self.array[self.slice,:,:])
+
+        self.remove_contour()
+        self.update_contour()
+
         self.fig.canvas.draw()
 
     def update_vmin(self, vmin):
@@ -160,34 +165,43 @@ class BasicDendrogramViewer(object):
     def select(self, structure):
 
         # Remove previously selected collection
-        if self.selected is not None:
-            self.ax2.collections.remove(self.selected)
-            self.selected = None
+        if self.selected_lines is not None:
+            self.ax2.collections.remove(self.selected_lines)
+            self.selected_lines = None
 
-        # Remove previously selected contour
-        if self.selected_contour is not None:
-            for collection in self.selected_contour.collections:
-                self.ax1.collections.remove(collection)
-            self.selected_contour = None
+        self.remove_contour()
 
         if structure is None:
             self.selected_label.set_text("No structure selected")
             self.fig.canvas.draw()
             return
 
+        self.selected = structure
+
         self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
-        self.selected = self.plotter.get_lines(structure=structure)
-        self.selected.set_color('red')
-        self.selected.set_linewidth(2)
-        self.selected.set_alpha(0.5)
+        self.selected_lines = self.plotter.get_lines(structure=structure)
+        self.selected_lines.set_color('red')
+        self.selected_lines.set_linewidth(2)
+        self.selected_lines.set_alpha(0.5)
 
         # Add to axes
-        self.ax2.add_collection(self.selected)
+        self.ax2.add_collection(self.selected_lines)
+
+        self.update_contour()
+
+    def remove_contour(self):
+
+        if self.selected_contour is not None:
+            for collection in self.selected_contour.collections:
+                self.ax1.collections.remove(collection)
+            self.selected_contour = None
+
+    def update_contour(self):
 
         # Draw contour
-        mask = structure.get_mask(self.array.shape, subtree=True)
+        mask = self.selected.get_mask(self.array.shape, subtree=True)
         if self.array.ndim == 3:
             mask = mask[self.slice, :, :]
         self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
