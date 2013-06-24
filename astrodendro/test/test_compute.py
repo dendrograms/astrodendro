@@ -84,10 +84,9 @@ class Test2DimensionalData(object):
                          [n, n, n, n, 0, ]])
         d = Dendrogram.compute(data)
         branch, leaf4, leaf5 = d.trunk[0], d.node_at((1, 1)), d.node_at((1, 3))
-        assert leaf4.height == 2
-        assert leaf5.height == leaf5.vmax - branch.merge_level  # 3
-
-        ### TODO: What is the appropriate value for branch.height ?
+        assert leaf4.height == 4.
+        assert leaf5.height == 5.
+        assert branch.height == 4.
 
     def test_dendrogramWithConstBackground(self):
         # Test a highly artificial array containing a lot of equal pixels
@@ -111,7 +110,7 @@ class Test2DimensionalData(object):
         # hence number of nodes is currently 7 and not 6 as expected.
         # Fixing this is probably more trouble than it's worth.
         leaf_with_twos = d.node_at((10, 9))
-        assert leaf_with_twos.height == 1
+        assert leaf_with_twos.height == 2
 
 
 class Test3DimensionalData(object):
