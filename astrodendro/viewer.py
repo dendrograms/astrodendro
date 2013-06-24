@@ -35,12 +35,12 @@ class BasicDendrogramViewer(object):
         if self.array.ndim == 2:
 
             self.slice = None
-            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1])
+            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
         else:
 
             self.slice = int(round(self.array.shape[0] / 2.))
-            self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1])
+            self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
             self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
             self.slice_slider_ax.set_xticklabels("")
