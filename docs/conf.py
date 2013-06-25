@@ -25,7 +25,39 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
+extensions = ['matplotlib.sphinxext.plot_directive',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.doctest']
+
+plot_template = """
+{{ source_code }}
+
+{{ only_html }}
+
+   {% for img in images %}
+   .. image:: {{ build_dir }}/{{ img.basename }}.png
+      {%- for option in options %}
+      {{ option }}
+      {% endfor %}
+   {% endfor %}
+
+{{ only_latex }}
+
+   {% for img in images %}
+   .. image:: {{ build_dir }}/{{ img.basename }}.pdf
+   {% endfor %}
+
+{{ only_texinfo }}
+
+   {% for img in images %}
+   .. image:: {{ build_dir }}/{{ img.basename }}.png
+      {%- for option in options %}
+      {{ option }}
+      {% endfor %}
+
+   {% endfor %}
+
+"""
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
