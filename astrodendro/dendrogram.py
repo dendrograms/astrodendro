@@ -335,17 +335,17 @@ class Dendrogram(object):
             return self.nodes_dict[idx]
         return None
 
-    def prefix_nodelist(self):
-        """Return all structures in the dendrogram, in prefix order."""
-        result = []
+    def prefix_nodes(self):
+        """Yield all structures in the dendrogram, in prefix order."""
 
         todo = list(self.trunk)
         while len(todo) > 0:
             st = todo.pop(0)
-            result.append(st)
+            yield st
             todo = st.children + todo
 
-        return result
+    def __iter__(self):
+        return self.prefix_nodes()
 
 
 class TreeIndex(object):
@@ -404,7 +404,7 @@ class TreeIndex(object):
         npix_subtree = offset * 0
 
         index = np.zeros(sz, dtype=np.int)
-        order = dendrogram.prefix_nodelist()
+        order = dendrogram.prefix_nodes()
 
         pos = 0
         for o in order:
