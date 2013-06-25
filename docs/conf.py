@@ -27,7 +27,14 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest']
+              'sphinx.ext.intersphinx',
+              'astropy.sphinx.ext.numpydoc',
+              'astropy.sphinx.ext.astropyautosummary'
+             ]
+
+autosummary_generate = True
+numpydoc_show_class_members = False
+autoclass_content = 'class'
 
 plot_template = """
 {{ source_code }}
@@ -96,7 +103,7 @@ release = '0.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_templates']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None

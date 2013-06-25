@@ -65,10 +65,11 @@ This package was developed by:
 * Thomas Robitaille
 * Erik Rosolowsky
 
-Indices and tables
-==================
+Reference/API
+-------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :maxdepth: 1
 
+   api/astrodendro.dendrogram.Dendrogram
+   api/astrodendro.structure.Structure

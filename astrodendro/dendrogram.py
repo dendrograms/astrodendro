@@ -61,7 +61,7 @@ class Dendrogram(object):
     @staticmethod
     def compute(data, min_value=-np.inf, min_delta=0, min_npix=0, verbose=False):
         """
-        Compute a dendrogram from a Numpy array
+        Compute a dendrogram from a Numpy array.
 
         Parameters
         ----------
@@ -77,8 +77,8 @@ class Dendrogram(object):
             The minimum number of pixels/values needed for a leaf to be considered
             an independent entity.
 
-        Example
-        -------
+        Examples
+        --------
 
         The following example demonstrates how to compute a dendrogram from an
         dataset contained in a FITS file::
@@ -277,7 +277,7 @@ class Dendrogram(object):
     @staticmethod
     def load_from(filename, format="autodetect"):
         """
-        Load a previously computed dendrogram from a file
+        Load a previously computed dendrogram from a file.
 
         Parameters
         ----------
@@ -297,7 +297,7 @@ class Dendrogram(object):
 
     def save_to(self, filename, format="autodetect"):
         """
-        Save the dendrogram to a file
+        Save the dendrogram to a file.
 
         Parameters
         ----------
