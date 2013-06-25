@@ -4,12 +4,12 @@ from .plot import DendrogramPlotter
 
 class BasicDendrogramViewer(object):
 
-    def __init__(self, array, dendrogram):
+    def __init__(self, dendrogram):
 
-        if array.ndim not in [2, 3]:
+        if dendrogram.data.ndim not in [2, 3]:
             raise ValueError("Only 2- and 3-dimensional arrays are supported at this time")
 
-        self.array = array
+        self.array = dendrogram.data
         self.dendrogram = dendrogram
         self.plotter = DendrogramPlotter(dendrogram)
         self.plotter.sort(reverse=True)
@@ -30,8 +30,8 @@ class BasicDendrogramViewer(object):
 
         from matplotlib.widgets import Slider
 
-        self._clim = (np.min(array[~np.isnan(array) & ~np.isinf(array)]),
-                      np.max(array[~np.isnan(array) & ~np.isinf(array)]))
+        self._clim = (np.min(self.array[~np.isnan(self.array) & ~np.isinf(self.array)]),
+                      np.max(self.array[~np.isnan(self.array) & ~np.isinf(self.array)]))
 
         if self.array.ndim == 2:
 
@@ -46,20 +46,23 @@ class BasicDendrogramViewer(object):
             self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
             self.slice_slider_ax.set_xticklabels("")
             self.slice_slider_ax.set_yticklabels("")
-            self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, array.shape[0], valinit=self.slice)
+            self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice, valfmt="%i")
             self.slice_slider.on_changed(self.update_slice)
+            self.slice_slider.drawon = False
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
         self.vmin_slider_ax.set_yticklabels("")
         self.vmin_slider = Slider(self.vmin_slider_ax, "vmin", self._clim[0], self._clim[1], valinit=self._clim[0])
         self.vmin_slider.on_changed(self.update_vmin)
+        self.vmin_slider.drawon = False
 
         self.vmax_slider_ax = self.fig.add_axes([0.1, 0.85, 0.4, 0.03])
         self.vmax_slider_ax.set_xticklabels("")
         self.vmax_slider_ax.set_yticklabels("")
         self.vmax_slider = Slider(self.vmax_slider_ax, "vmax", self._clim[0], self._clim[1], valinit=self._clim[1])
         self.vmax_slider.on_changed(self.update_vmax)
+        self.vmax_slider.drawon = False
 
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
