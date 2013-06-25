@@ -46,7 +46,7 @@ class BasicDendrogramViewer(object):
             self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
             self.slice_slider_ax.set_xticklabels("")
             self.slice_slider_ax.set_yticklabels("")
-            self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice)
+            self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice, valfmt="%i")
             self.slice_slider.on_changed(self.update_slice)
             self.slice_slider.drawon = False
 
