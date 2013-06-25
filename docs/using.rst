@@ -1,5 +1,5 @@
-Using ``astrodendro``
-=====================
+Computing and exploring dendrograms
+===================================
 
 Computing a Dendrogram
 ----------------------

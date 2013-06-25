@@ -54,12 +54,11 @@ provide a plotting tool::
 
 and then use this to make the plot you need. The following complete example
 shows how to make a plot of the dendrogram of an extinction map of the Perseus
-region:
+region, highlighting two of the main branches:
 
 .. plot::
    :include-source:
-   :context:
-   
+
     import matplotlib.pyplot as plt
     from astropy.io import fits
     from astrodendro import Dendrogram
@@ -70,21 +69,46 @@ region:
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
+
+    # Plot the whole tree
     p.plot_tree(ax, color='black')
+
+    # Highlight two branches
+    p.plot_tree(ax, structure=2077, color='red', lw=2, alpha=0.5)
+    p.plot_tree(ax, structure=3262, color='orange', lw=2, alpha=0.5)
+
+    # Add axis labels
     ax.set_xlabel("Structure")
     ax.set_ylabel("Flux")
-
-It is also possible to overplot certain structures by structure ID or by
-passing a structure object directly:
-
-.. plot::
-   :context:
-   :include-source:
-
-    p.plot_tree(ax, structure=2077, color='red', lw=2, alpha=0.5)
 
 You can find out the structure ID you need either from the interactive viewer
 presented above, or programmatically by accessing the ``idx`` attribute of a
 Structure.
 
-A ``plot_contour`` method is also provided to overlay contours for a given structure.
+A ``plot_contour`` method is also provided to outline the contours of
+structures. Calling ``plot_contour`` without any arguments results in a contour
+corresponding to the value of ``min_value`` used being shown.
+
+.. plot::
+   :include-source:
+
+    import matplotlib.pyplot as plt
+    from astropy.io import fits
+    from astrodendro import Dendrogram
+
+    image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
+    p = d.plotter()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.imshow(image, origin='lower', interpolation='nearest', cmap=plt.cm.Blues, vmax=4.0)
+
+    # Show contour for ``min_value``
+    p.plot_contour(ax, color='black')
+
+    # Highlight two branches
+    p.plot_contour(ax, structure=2077, lw=3, colors='red')
+    p.plot_contour(ax, structure=3262, lw=3, colors='orange')
+
+
