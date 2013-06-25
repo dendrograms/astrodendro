@@ -347,6 +347,14 @@ class Dendrogram(object):
 
         return result
 
+    def plotter(self):
+        from .plot import DendrogramPlotter
+        return DendrogramPlotter(self)
+
+    def viewer(self):
+        from .viewer import BasicDendrogramViewer
+        return BasicDendrogramViewer(self)
+
 
 class TreeIndex(object):
     def __init__(self, dendrogram):
