@@ -237,7 +237,7 @@ class Dendrogram(object):
                 merge = [structure for structure in adjacent
                          if structure.is_leaf and
                          (structure.vmax - data_value < min_delta or
-                          len(structure.values) < min_npix or structure.vmax == data_value)]
+                          len(structure.values()) < min_npix or structure.vmax == data_value)]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -285,7 +285,7 @@ class Dendrogram(object):
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
         for leaf in leaves_in_trunk:
-            if (len(leaf.values) < min_npix or leaf.vmax - leaf.vmin < min_delta):
+            if (len(leaf.values()) < min_npix or leaf.vmax - leaf.vmin < min_delta):
                 # This leaf is an orphan, so remove all references to it:
                 structures.pop(leaf.idx)
                 self.trunk.remove(leaf)

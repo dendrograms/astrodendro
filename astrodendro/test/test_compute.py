@@ -46,14 +46,14 @@ class Test2DimensionalData(object):
         assert len(branches) == 1, "We expect one branch among the lowest structures (the trunk)"
 
         for leaf in leaves:
-            assert len(leaf.values) == 1, "Leaves in the trunk are only expected to contain one point"
+            assert len(leaf.values()) == 1, "Leaves in the trunk are only expected to contain one point"
             assert leaf.parent is None
             assert leaf.ancestor == leaf
             assert leaf.get_npix() == 1
-            if leaf.values[0] == 4:
-                assert list(zip(*leaf.indices))[0] == (1, 1)
-            elif leaf.values[0] == 3:
-                assert list(zip(*leaf.indices))[0] == (3, 0)
+            if leaf.values()[0] == 4:
+                assert list(zip(*leaf.indices()))[0] == (1, 1)
+            elif leaf.values()[0] == 3:
+                assert list(zip(*leaf.indices()))[0] == (3, 0)
             else:
                 self.fail("Invalid value of flux in one of the leaves")
 
@@ -70,10 +70,10 @@ class Test2DimensionalData(object):
             assert leaf.is_leaf
             assert leaf.ancestor == branch
             assert leaf.parent == branch
-            if 5 in leaf.values:
-                assert sum(leaf.values) == 5
-            elif 3 in leaf.values:
-                assert sum(leaf.values) == 1 + 2 + 3 + 2
+            if 5 in leaf.values():
+                assert sum(leaf.values()) == 5
+            elif 3 in leaf.values():
+                assert sum(leaf.values()) == 1 + 2 + 3 + 2
             else:
                 self.fail("Invalid child of the branch")
 
@@ -127,13 +127,13 @@ class Test3DimensionalData(object):
         # Now check every pixel in the data cube (this takes a while).
         st_map = np.zeros(self.data.shape, dtype=np.int)
         for st in d.all_structures:
-            st_map[st.indices] = st.idx
+            st_map[st.indices()] = st.idx
 
         #check that vmin/vmax/peak are correct
         for st in d.all_structures:
-            assert st.vmin == self.data[st.indices].min()
-            assert st.vmax == self.data[st.indices].max()
-            pk_exp = self.data[st.indices_all].max()
+            assert st.vmin == self.data[st.indices()].min()
+            assert st.vmax == self.data[st.indices()].max()
+            pk_exp = self.data[st.indices(subtree=True)].max()
 
             ind, pk = st.get_peak(subtree=True)
             assert self.data[ind] == pk
@@ -191,4 +191,4 @@ class TestNDimensionalData(object):
         assert leaf.vmin == 2
         assert leaf.get_npix() == 1 + 6 + 2  # Contains 1x '5', 6x '3', and 2x '2'. The other '2' should be in the branch
         # Check that the only pixel in the branch is a '2' at [0,0,2,2]
-        assert (zip(*branches[0].indices), branches[0].values) == ([(0, 0, 2, 2), ], [2., ])
+        assert (zip(*branches[0].indices()), branches[0].values()) == ([(0, 0, 2, 2), ], [2., ])

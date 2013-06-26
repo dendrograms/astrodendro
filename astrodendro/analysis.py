@@ -5,6 +5,8 @@ import numpy as np
 from astropy.units import Quantity, rad
 from astropy.table import Table
 
+from .structure import Structure
+
 __all__ = ['ppv_catalog', 'pp_catalog']
 
 
@@ -429,7 +431,10 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     result = None
 
     for struct in structures:
-        stat = ScalarStatistic(struct.values, struct.indices)
+        if isinstance(struct, Structure):
+            stat = ScalarStatistic(struct.values(), struct.indices())
+        else:
+            stat = ScalarStatistic(struct.values, struct.indices)
         stat = statistic(stat, metadata)
         row = dict((lbl, getattr(stat, lbl)())
                    for lbl in fields)

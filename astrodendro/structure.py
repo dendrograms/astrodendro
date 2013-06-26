@@ -42,11 +42,12 @@ class Structure(object):
         [<Structure type=branch idx=1680>, <Structure type=branch idx=5771>]
 
     A number of attributes and methods are available to explore the structure
-    in more detail, such as the ``indices`` and ``values`` attributes, which
-    contain the indices and values of the pixels that are part of the
-    structure (and the corresponding ``indices_all`` and ``values_all``
-    attributes that can be used to get all the pixels that are part of the
-    structure including all sub-structures).
+    in more detail, such as the ``indices`` and ``values`` methods, which
+    return the indices and values of the pixels that are part of the
+    structure. These and other methods have a ``subtree=`` option that can be
+    set to ``True`` in order to return the quantity for all sub-structures. The
+    default is ``False``, which returns only the quantities related to the
+    actual pixels that are part of the structure but not sub-structures.
     """
 
     ###########################################################################
@@ -120,55 +121,47 @@ class Structure(object):
         """
         return not self.is_leaf
 
-    @property
-    def indices_all(self):
+    def indices(self, subtree=False):
         """
-        The indices of the pixels in the branch, and sub-structures
+        The indices of the pixels in this branch.
+
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to recursively include all sub-structures
         """
-        # We only need to look at children, not all children structures,
-        # since child.indices will include all children recursively.
+
         if self._tree_index is not None:
-            return self._tree_index.indices(self.idx, subtree=True)
+            return self._tree_index.indices(self.idx, subtree=subtree)
 
-        sub_indices = [self.indices]
-        for child in self.children:
-            sub_indices.append(child.indices_all)
-        return tuple(np.hstack(arrs) for arrs in zip(*(sub_indices)))
+        if subtree:
+            sub_indices = [self.indices(subtree=False)]
+            for child in self.children:
+                sub_indices.append(child.indices(subtree=True))
+            return tuple(np.hstack(arrs) for arrs in zip(*(sub_indices)))
+        else:
+            return tuple(np.atleast_1d(i) for i in zip(*self._indices))
 
-    @property
-    def indices(self):
+    def values(self, subtree=False):
         """
-        The indices of the pixels in this branch, excluding sub-structures
+        The values of the pixels in this branch.
+
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to recursively include all sub-structures
         """
+
         if self._tree_index is not None:
-            return self._tree_index.indices(self.idx, subtree=False)
+            return self._tree_index.values(self.idx, subtree=subtree)
 
-        return tuple(np.atleast_1d(i) for i in zip(*self._indices))
-
-    @property
-    def values_all(self):
-        """
-        The values of the pixels in the branch, and sub-structures
-        """
-        # We only need to look at children, not all children structures,
-        # ``values`` for all children will include all children recursively.
-        if self._tree_index is not None:
-            return self._tree_index.values(self.idx, subtree=True)
-
-        sub_values = [self.values]
-        for child in self.children:
-            sub_values.append(child.values_all)
-        return np.hstack(sub_values)
-
-    @property
-    def values(self):
-        """
-        The values of the pixels in this branch, excluding sub-structures
-        """
-        if self._tree_index is not None:
-            return self._tree_index.values(self.idx, subtree=False)
-
-        return np.atleast_1d(self._values)
+        if subtree:
+            sub_values = [self.values(subtree=False)]
+            for child in self.children:
+                sub_values.append(child.values(subtree=True))
+            return np.hstack(sub_values)
+        else:
+            return np.atleast_1d(self._values)
 
     @property
     def vmin(self):
@@ -276,7 +269,7 @@ class Structure(object):
         if recursive:
             for child in self.children:
                 child._fill_footprint(array, level + 1)
-        array[self.indices] = level
+        array[self.indices(subtree=False)] = level
 
     @property
     def level(self):
@@ -357,12 +350,12 @@ class Structure(object):
             The number of pixels in this structure
         """
 
-        if not subtree:
-            return len(self.values)
-        else:
+        if subtree:
             if self._npix_total is None:
-                self._npix_total = self.values_all.size
+                self._npix_total = self.values(subtree=True).size
             return self._npix_total
+        else:
+            return len(self.values(subtree=False))
 
     def get_peak(self, subtree=False):
         """
@@ -449,7 +442,7 @@ class Structure(object):
             The mask outlining the structure (``False`` values are used outside
             the structure, and ``True`` values inside).
         """
-        indices = self.indices_all if subtree else self.indices
+        indices = self.indices(subtree=True) if subtree else self.indices
         mask = np.zeros(shape, dtype=bool)
         mask[indices] = True
         return mask

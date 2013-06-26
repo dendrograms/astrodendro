@@ -12,10 +12,6 @@ astrodendro.structure.Structure
 
       ~Structure.is_leaf
       ~Structure.is_branch
-      ~Structure.indices
-      ~Structure.values
-      ~Structure.indices_all
-      ~Structure.values_all
       ~Structure.vmin
       ~Structure.vmax
       ~Structure.height
@@ -30,6 +26,8 @@ astrodendro.structure.Structure
 
    .. autosummary::
 
+      ~Structure.indices
+      ~Structure.values
       ~Structure.get_npix
       ~Structure.get_peak
       ~Structure.get_sorted_leaves
@@ -37,6 +35,8 @@ astrodendro.structure.Structure
 
    .. rubric:: Methods (detail)
 
+   .. automethod:: Structure.indices
+   .. automethod:: Structure.values
    .. automethod:: Structure.get_npix
    .. automethod:: Structure.get_peak
    .. automethod:: Structure.get_sorted_leaves
