@@ -75,3 +75,4 @@ Public API
    api/astrodendro.dendrogram.Dendrogram
    api/astrodendro.structure.Structure
    api/astrodendro.plot.DendrogramPlotter
+   api/astrodendro.analysis

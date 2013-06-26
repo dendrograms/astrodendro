@@ -449,26 +449,26 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
 
 def ppv_catalog(structures, metadata, fields=None, verbose=True):
     """
-    Iterate over a collection of PPV structures,
-    extracting several quantities from each, and building
-    a catalog
+    Iterate over a collection of position-position-velocity (PPV) structures,
+    extracting several quantities from each, and building a catalog
 
     Parameters
     ----------
-    structures : Iterable of Structures
+    structures : iterable of Structures
          The structures to catalog (e.g., a dendrogram)
-
-    metadata : dict of metadata
+    metadata : dict
+        The metadata used to compute the catalog
     fields : list of strings, optional
-             The quantities to extract. If not provided,
-             defaults to all PPV statistics
+        The quantities to extract. If not provided,
+        defaults to all PPV statistics
     verbose : bool, optional
-             If True (the default), will generate warnings
-             about missing metadata
+        If True (the default), will generate warnings
+        about missing metadata
 
     Returns
     -------
-    An Astropy Table
+    table : a :class:`~astropy.table.table.Table` instance
+        The resulting catalog
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
                         'sky_min', 'sky_radius', 'sky_deconvolved_rad',
@@ -478,22 +478,26 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
 
 def pp_catalog(structures, metadata, fields=None, verbose=False):
     """
-    Iterate over a collection of PP structures,
-    extracting several quantities from each, and building
-    a catalog
+    Iterate over a collection of position-position (PP) structures, extracting
+    several quantities from each, and building a catalog.
 
     Parameters
     ----------
-    structures : Iterable of Structures
+    structures : iterable of Structures
          The structures to catalog (e.g., a dendrogram)
-
-    metadata : dict of metadata
+    metadata : dict
+        The metadata used to compute the catalog
     fields : list of strings, optional
-             The quantities to extract. If not provided,
-             defaults to all PPV statistics
+        The quantities to extract. If not provided,
+        defaults to all PPV statistics
     verbose : bool, optional
-             If True (the default), will generate warnings
-             about missing metadata
+        If True (the default), will generate warnings
+        about missing metadata
+
+    Returns
+    -------
+    table : a :class:`~astropy.table.table.Table` instance
+        The resulting catalog
     """
     fields = fields or ['flux', 'luminosity', 'sky_maj',
                         'sky_min', 'sky_radius', 'sky_deconvolved_rad',

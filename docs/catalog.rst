@@ -1,9 +1,10 @@
 Computing Dendrogram Statistics
 ===============================
 
-For 2D (PP) and 3D (PPV) observational data, you can use the ``pp_catalog``
-and ``ppv_catalog`` functions to compute basic properties for each
-Dendrogram structure::
+For 2D position-position (PP) and 3D position-position-velocity (PPV)
+observational data, you can use the :func:`astrodendro.analysis.pp_catalog` and
+:func:`astrodendro.analysis.ppv_catalog` functions to compute basic properties
+for each Dendrogram structure::
 
    >>> import numpy as np
    >>> from astrodendro import Dendrogram, ppv_catalog
@@ -41,9 +42,13 @@ Dendrogram structure::
     >>> print cat.columns
        <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_rad','sky_maj','sky_min','sky_pa','sky_radius','vrms')>
 
-The catalog functions return an astropy `Table` object.
+The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
-The ``metadata`` dictionary provides information about how to convert pixel-level quantities to meaningful units. By default, ``ppv_catalog`` generates warnings about missing metadata items (these can be suppressed by setting ``verbose=False`` in the call to ``ppv_catalog``).
+The ``metadata`` dictionary provides information about how to convert
+pixel-level quantities to meaningful units. By default,
+:func:`astrodendro.analysis.ppv_catalog` generates warnings about missing
+metadata items (these can be suppressed by setting ``verbose=False`` in the
+call to :func:`astrodendro.analysis.ppv_catalog`).
 
 Here's a sensible looking metadata dictionary::
 
@@ -86,4 +91,10 @@ Here's a brief description of each quantity computed in the catalog functions:
 * ``ycen`` : Y-position of intensity-weighted centroid (see above)
 * ``vcen`` : V-position of intensity-weighted centroid (see above)
 
-For more information on these quantities, consult the paper on `Bias Free Measurements of Molecular Cloud Properties <http://adsabs.harvard.edu/abs/2006PASP..118..590R>`_ or `the original dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the terminology of the dendrogram paper, the quantities in ``ppv_catalog`` and ``pp_catalog`` adopt the "bijection" paradigm.
+For more information on these quantities, consult the paper on `Bias Free
+Measurements of Molecular Cloud Properties
+<http://adsabs.harvard.edu/abs/2006PASP..118..590R>`_ or `the original
+dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the
+terminology of the dendrogram paper, the quantities in
+:func:`astrodendro.analysis.pp_catalog` and
+:func:`astrodendro.analysis.ppv_catalog` adopt the "bijection" paradigm.
