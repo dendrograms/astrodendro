@@ -34,13 +34,13 @@ passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
   `detection` level, for example 3- or 5-sigma, so that only significant
   values are included in the dendrogram. By default, all values are used.
 
-* ``min_delta``: the minimum `height` a leaf has to have in order to be
-  considered an independent entity. The `height` of the leaf is the difference
-  between its peak flux and the value at which it is being merged into the
-  tree at. If you are working with observational data, then you could set this
-  to e.g. 1-sigma, which means that any leaf that is less than 1-sigma tall is
-  combined with its neighboring leaf or branch and is no longer considered a
-  separate entity.
+* ``min_delta``: how significant a leaf a leaf has to have in order to be
+  considered an independent entity. The significance is measure from the
+  difference between its peak flux and the value at which it is being merged
+  into the tree at. If you are working with observational data, then you could
+  set this to e.g. 1-sigma, which means that any leaf that is less than 1-sigma
+  tall is combined with its neighboring leaf or branch and is no longer
+  considered a separate entity.
 
 * ``min_npix``: the minimum number of pixels/values needed for a leaf to be
   considered an independent entity. When the dendrogram is being computed,
