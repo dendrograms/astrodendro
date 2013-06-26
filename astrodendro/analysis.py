@@ -133,7 +133,7 @@ class ScalarStatistic(object):
 
     def count(self):
         """Number of elements in the dataset"""
-        return self.values().size
+        return self.values(subtree=True).size
 
     def surface_area(self):
         raise NotImplementedError
