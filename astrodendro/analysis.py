@@ -432,7 +432,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
 
     for struct in structures:
         if isinstance(struct, Structure):
-            stat = ScalarStatistic(struct.values(), struct.indices())
+            stat = ScalarStatistic(struct.values(subtree=False), struct.indices(subtree=False))
         else:
             stat = ScalarStatistic(struct.values, struct.indices)
         stat = statistic(stat, metadata)
