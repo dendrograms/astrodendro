@@ -389,10 +389,9 @@ class Dendrogram(object):
             return self.structures_dict[idx]
         return None
 
-    @property
     def prefix_structures(self):
         """
-        A flattened list of all structures in the dendrogram, in prefix order.
+        Yields a flattened list of all structures in the dendrogram, in prefix order.
         """
 
         todo = list(self.trunk)
