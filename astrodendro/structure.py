@@ -25,6 +25,26 @@ import numpy as np
 class Structure(object):
     """
     A structure in the dendrogram, for example a leaf or a branch.
+
+    A structure that is part of a dendrogram knows which other structures it is
+    related to. For example, it is possible to get the parent structure
+    containing the present structure ``s`` by using the ``parent`` attribute::
+
+        >>> s.parent
+        <Structure type=branch idx=2152>
+
+    Likewise, the ``children`` attribute can be used to get a list of all
+    sub-structures::
+
+        >>> s.children
+        [<Structure type=branch idx=1680>, <Structure type=branch idx=5771>]
+
+    A number of attributes and methods are available to explore the structure
+    in more detail, such as the ``indices`` and ``values`` attributes, which
+    contain the indices and values of the pixels that are part of the
+    structure (and the corresponding ``indices_all`` and ``values_all``
+    attributes that can be used to get all the pixels that are part of the
+    structure including all sub-structures).
     """
 
     ###########################################################################
@@ -61,6 +81,28 @@ class Structure(object):
         self._npix_total = None
         self._peak = None
         self._tree_index = None
+
+    @property
+    def parent(self):
+        """
+        The parent structure containing the present structure.
+        """
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        self._parent = value
+
+    @property
+    def children(self):
+        """
+        A list of all the sub-structures contained in the present structure.
+        """
+        return self._children
+
+    @children.setter
+    def children(self, value):
+        self._children = value
 
     @property
     def is_leaf(self):
@@ -220,7 +262,7 @@ class Structure(object):
 
     def fill_footprint(self, array, level, recursive=True):
         """
-        Set all corresponding points in `array` to the level of the structure
+        Set all corresponding points in `array` to the level of the structure.
 
         Parameters
         ----------
@@ -267,7 +309,7 @@ class Structure(object):
     @property
     def newick(self):
         """
-        Newick representation of this structure
+        Newick representation of this structure.
         """
         if self.idx is None:
             raise ValueError("Cannot return Newick representation if idx is not set")
@@ -322,7 +364,7 @@ class Structure(object):
 
     def get_peak(self, subtree=False):
         """
-        Return (index, value) for the pixel with maximum value
+        Return (index, value) for the pixel with maximum value.
 
         Parameters
         ----------
@@ -359,7 +401,7 @@ class Structure(object):
     def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
                           reverse=False, subtree=False):
         """
-        Return a list of sorted leaves
+        Return a list of sorted leaves.
 
         Parameters
         ----------
@@ -390,7 +432,7 @@ class Structure(object):
 
     def get_mask(self, shape, subtree=False):
         """
-        Return a boolean mask outlining the structure
+        Return a boolean mask outlining the structure.
 
         Parameters
         ----------
