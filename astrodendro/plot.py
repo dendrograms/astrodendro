@@ -121,7 +121,7 @@ class DendrogramPlotter(object):
             mask = self.dendrogram.data > self.dendrogram.min_value
         else:
             if type(structure) is int:
-                structure = self.dendrogram.nodes_dict[structure]
+                structure = self.dendrogram.structures_dict[structure]
             mask = structure.get_mask(self.dendrogram.data.shape, subtree=subtree)
             if self.dendrogram.data.ndim == 3:
                 if slice is None:
@@ -159,10 +159,10 @@ class DendrogramPlotter(object):
             raise Exception("Leaves have not yet been sorted")
 
         if structure is None:
-            structures = self.dendrogram.all_nodes
+            structures = self.dendrogram.all_structures
         else:
             if type(structure) is int:
-                structure = self.dendrogram.nodes_dict[structure]
+                structure = self.dendrogram.structures_dict[structure]
             structures = structure.descendants + [structure]
 
         lines = []

@@ -53,18 +53,18 @@ class TestIO(object):
 
     def compare_dendrograms(self, d1, d2):
         " Helper method that ensures d1 and d2 are equivalent "
-        # Do we get the same number of nodes?
-        assert len(d1.nodes_dict) == len(d2.nodes_dict)
+        # Do we get the same number of structures?
+        assert len(d1.structures_dict) == len(d2.structures_dict)
         # Do we recover the data exactly?
         np.testing.assert_array_equal(d1.data, d2.data)
-        # Now check that the nodes are the same:
-        for idx in d2.nodes_dict:
-            node1, node2 = d1.nodes_dict[idx], d2.nodes_dict[idx]
-            assert_permuted_fancyindex(node1.indices, node2.indices)
-            assert np.all(np.sort(node1.values) == np.sort(node2.values))
-            assert type(node1) == type(node2)
+        # Now check that the structures are the same:
+        for idx in d2.structures_dict:
+            structure1, structure2 = d1.structures_dict[idx], d2.structures_dict[idx]
+            assert_permuted_fancyindex(structure1.indices, structure2.indices)
+            assert np.all(np.sort(structure1.values) == np.sort(structure2.values))
+            assert type(structure1) == type(structure2)
             # Compare the coordinates and data values of all peak pixels:
-            assert node1.get_peak(subtree=True) == node2.get_peak(subtree=True)
+            assert structure1.get_peak(subtree=True) == structure2.get_peak(subtree=True)
 
     # Below are the actual tests for each import/export format:
 

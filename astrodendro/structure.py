@@ -283,7 +283,7 @@ class Structure(object):
         """
         The level of the structure, i.e. how many structures need to be traversed to reach the present structure.
 
-        This is 0 for nodes in the trunk, with values increasing in steps of 1
+        This is 0 for structures in the trunk, with values increasing in steps of 1
         towards the leaves.
         """
 
@@ -302,7 +302,7 @@ class Structure(object):
                     obj = obj.parent
                     diff += 1
                     # Note: we are counting on the dendrogram computation to
-                    # ensure that ._level=0 for all nodes in the trunk
+                    # ensure that ._level=0 for all structures in the trunk
                 self._level = obj._level + diff
                 self.parent._level = self._level - 1
 
@@ -389,9 +389,9 @@ class Structure(object):
             return self._peak
         else:
             found = self._peak
-            for node in self.descendants:
-                if found[1] < node.vmax:
-                    found = node.get_peak()
+            for structure in self.descendants:
+                if found[1] < structure.vmax:
+                    found = structure.get_peak()
             return found
 
     def __repr__(self):

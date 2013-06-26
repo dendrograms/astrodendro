@@ -131,7 +131,7 @@ class BasicDendrogramViewer(object):
                 indices = (self.slice, iy, ix)
 
             # Select the structure
-            structure = self.dendrogram.node_at(indices)
+            structure = self.dendrogram.structure_at(indices)
             self.select(structure)
 
             # Re-draw
