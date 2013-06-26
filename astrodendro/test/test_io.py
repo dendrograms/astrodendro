@@ -60,8 +60,8 @@ class TestIO(object):
         # Now check that the structures are the same:
         for idx in d2.structures_dict:
             structure1, structure2 = d1.structures_dict[idx], d2.structures_dict[idx]
-            assert_permuted_fancyindex(structure1.indices(), structure2.indices())
-            assert np.all(np.sort(structure1.values()) == np.sort(structure2.values()))
+            assert_permuted_fancyindex(structure1.indices(subtree=False), structure2.indices(subtree=False))
+            assert np.all(np.sort(structure1.values(subtree=False)) == np.sort(structure2.values(subtree=False)))
             assert type(structure1) == type(structure2)
             # Compare the coordinates and data values of all peak pixels:
             assert structure1.get_peak(subtree=True) == structure2.get_peak(subtree=True)

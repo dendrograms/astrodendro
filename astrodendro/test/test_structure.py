@@ -18,11 +18,11 @@ def test_init_leaf_scalar(index):
     assert s.idx is None
     assert s.is_leaf
     assert not s.is_branch
-    assert_identical_fancyindex(s.indices(),
+    assert_identical_fancyindex(s.indices(subtree=False),
                                tuple(np.atleast_1d(i) for i in index))
-    assert np.all(s.indices(subtree=True) == s.indices())
-    assert np.all(s.values() == np.array([1.5]))
-    assert np.all(s.values(subtree=True) == s.values())
+    assert np.all(s.indices() == s.indices(subtree=True))
+    assert np.all(s.values(subtree=False) == np.array([1.5]))
+    assert np.all(s.values(subtree=True) == s.values(subtree=False))
     assert s.vmin == 1.5
     assert s.vmax == 1.5
     assert s.height == 1.5
@@ -56,10 +56,10 @@ def test_init_leaf_list(index):
     assert s.is_leaf
     assert not s.is_branch
     indices = tuple(np.atleast_1d(i) for i in zip(*index))
-    assert_identical_fancyindex(s.indices(), indices)
+    assert_identical_fancyindex(s.indices(subtree=False), indices)
     assert_identical_fancyindex(s.indices(subtree=True), indices)
-    assert np.all(s.values() == np.array([3.1, 4.2, 5.3]))
-    assert np.all(s.values(subtree=True) == s.values())
+    assert np.all(s.values(subtree=False) == np.array([3.1, 4.2, 5.3]))
+    assert np.all(s.values(subtree=True) == s.values(subtree=False))
     assert s.vmin == 3.1
     assert s.vmax == 5.3
     assert s.height == 5.3
@@ -88,7 +88,7 @@ def test_init_branch_scalar(index):
 
     leaf_index = tuple([10 for i in range(len(index))])
     leaf = Structure(leaf_index, 20.)
-    leaf_indices = leaf.indices()
+    leaf_indices = leaf.indices(subtree=False)
 
     s = Structure(index, 1.5, children=[leaf])
 
@@ -99,10 +99,10 @@ def test_init_branch_scalar(index):
     indices = tuple(np.atleast_1d(i) for i in index)
     indices_all = tuple(np.hstack(a)
                         for a in zip(indices, leaf_indices))
-    assert_identical_fancyindex(s.indices(), indices)
+    assert_identical_fancyindex(s.indices(subtree=False), indices)
     assert_identical_fancyindex(s.indices(subtree=True), indices_all)
-    assert np.all(s.values() == np.array([1.5]))
-    assert np.all(s.values(subtree=True) == np.hstack(([1.5], leaf.values())))
+    assert np.all(s.values(subtree=False) == np.array([1.5]))
+    assert np.all(s.values(subtree=True) == np.hstack(([1.5], leaf.values(subtree=False))))
     assert s.vmin == 1.5
     assert s.vmax == 1.5
     assert s.height == 20.
@@ -143,7 +143,7 @@ def test_init_branch_list(index):
     leaf_index = tuple([10 for i in range(ndim)])
 
     leaf = Structure(leaf_index, 20.)
-    leaf_indices = leaf.indices()
+    leaf_indices = leaf.indices(subtree=False)
 
     s = Structure(index, [3.1, 4.2, 5.3], children=[leaf])
 
@@ -155,11 +155,11 @@ def test_init_branch_list(index):
     indices_all = tuple(np.hstack(a) for a in
                         zip(indices, leaf_indices))
 
-    assert_identical_fancyindex(s.indices(), indices)
+    assert_identical_fancyindex(s.indices(subtree=False), indices)
     assert_identical_fancyindex(s.indices(subtree=True), indices_all)
 
-    assert np.all(s.values() == np.array([3.1, 4.2, 5.3]))
-    assert np.all(s.values(subtree=True) == np.hstack(([3.1, 4.2, 5.3], leaf.values())))
+    assert np.all(s.values(subtree=False) == np.array([3.1, 4.2, 5.3]))
+    assert np.all(s.values(subtree=True) == np.hstack(([3.1, 4.2, 5.3], leaf.values(subtree=False))))
     assert s.vmin == 3.1
     assert s.vmax == 5.3
     assert s.height == 20.
@@ -196,11 +196,11 @@ def test_init_branch_scalar_3_level(index):
 
     leaf_index = tuple([10 for i in range(len(index))])
     leaf = Structure(leaf_index, 20.)
-    leaf_indices = leaf.indices()
+    leaf_indices = leaf.indices(subtree=False)
 
     branch_index = tuple([9 for i in range(len(index))])
     branch = Structure(branch_index, 15., children=[leaf])
-    branch_indices = branch.indices()
+    branch_indices = branch.indices(subtree=False)
 
     s = Structure(index, 1.5, children=[branch])
 
@@ -212,11 +212,11 @@ def test_init_branch_scalar_3_level(index):
     indices = tuple(np.atleast_1d(i) for i in index)
     indices_all = tuple(np.hstack(a)
                         for a in zip(indices, branch_indices, leaf_indices))
-    assert_identical_fancyindex(s.indices(), indices)
+    assert_identical_fancyindex(s.indices(subtree=False), indices)
     assert_identical_fancyindex(s.indices(subtree=True), indices_all)
 
-    assert np.all(s.values() == np.array([1.5]))
-    assert np.all(s.values(subtree=True) == np.hstack((s.values(), branch.values(), leaf.values())))
+    assert np.all(s.values(subtree=False) == np.array([1.5]))
+    assert np.all(s.values(subtree=True) == np.hstack((s.values(subtree=False), branch.values(subtree=False), leaf.values(subtree=False))))
     assert s.vmin == 1.5
     assert s.vmax == 1.5
     assert s.height == 15.
@@ -264,11 +264,11 @@ def test_init_branch_list_3_level(index):
 
     leaf_index = tuple([10 for i in range(ndim)])
     leaf = Structure(leaf_index, 20.)
-    leaf_indices = leaf.indices()
+    leaf_indices = leaf.indices(subtree=False)
 
     branch_index = tuple([9 for i in range(ndim)])
     branch = Structure(branch_index, 15., children=[leaf])
-    branch_indices = branch.indices()
+    branch_indices = branch.indices(subtree=False)
 
     s = Structure(index, [3.1, 4.2, 5.3], children=[branch])
 
@@ -280,11 +280,11 @@ def test_init_branch_list_3_level(index):
     indices = tuple(np.atleast_1d(i) for i in zip(*index))
     indices_all = tuple(np.hstack(a) for a in
                         zip(indices, branch_indices, leaf_indices))
-    assert_identical_fancyindex(s.indices(), indices)
+    assert_identical_fancyindex(s.indices(subtree=False), indices)
     assert_identical_fancyindex(s.indices(subtree=True), indices_all)
 
-    assert np.all(s.values() == np.array([3.1, 4.2, 5.3]))
-    assert np.all(s.values(subtree=True) == np.hstack((s.values(), branch.values(), leaf.values())))
+    assert np.all(s.values(subtree=False) == np.array([3.1, 4.2, 5.3]))
+    assert np.all(s.values(subtree=True) == np.hstack((s.values(subtree=False), branch.values(subtree=False), leaf.values(subtree=False))))
     assert s.vmin == 3.1
     assert s.vmax == 5.3
     assert s.height == 15.

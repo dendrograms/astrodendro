@@ -237,7 +237,7 @@ class Dendrogram(object):
                 merge = [structure for structure in adjacent
                          if structure.is_leaf and
                          (structure.vmax - data_value < min_delta or
-                          len(structure.values()) < min_npix or structure.vmax == data_value)]
+                          len(structure.values(subtree=False)) < min_npix or structure.vmax == data_value)]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -285,7 +285,7 @@ class Dendrogram(object):
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
         for leaf in leaves_in_trunk:
-            if (len(leaf.values()) < min_npix or leaf.vmax - leaf.vmin < min_delta):
+            if (len(leaf.values(subtree=False)) < min_npix or leaf.vmax - leaf.vmin < min_delta):
                 # This leaf is an orphan, so remove all references to it:
                 structures.pop(leaf.idx)
                 self.trunk.remove(leaf)
@@ -451,7 +451,7 @@ class TreeIndex(object):
         idx_cdf = np.hstack((0, np.cumsum(idx_ct)))
 
         #efficiently build up npix values
-        structures = reversed(sorted(dendrogram.structures_dict.values(),
+        structures = reversed(sorted(dendrogram.structures_dict.values(subtree=False),
                                 key=lambda x: x.level))
         for st in structures:
             idx_sub_ct[st.idx] = idx_ct[packed[st.idx]]
@@ -499,7 +499,7 @@ class TreeIndex(object):
         self._npix_subtree = npix_subtree
         self.packed = packed
 
-    def indices(self, sid, subtree=False):
+    def indices(self, sid, subtree=True):
         """
         Return pixel indices associated with a dendrogram structure
 
@@ -513,7 +513,6 @@ class TreeIndex(object):
         subtree : bool, optional
               If true, return indices for subtrees as well. Default=False
 
-
         Returns
         -------
         A tuple of integer ndarrays, akin to np.where().
@@ -525,5 +524,5 @@ class TreeIndex(object):
         di = self._npix_subtree[sid] if subtree else self._npix[sid]
         return tuple(ind[i0: i0 + di] for ind in self._index)
 
-    def values(self, sid, subtree=False):
+    def values(self, sid, subtree=True):
         return self._data[self.indices(sid, subtree=subtree)]

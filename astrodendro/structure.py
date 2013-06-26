@@ -1,5 +1,3 @@
-# indices_all vs get_peak(subtree=True)
-
 # Computing Astronomical Dendrograms
 # Copyright (c) 2011-2012 Thomas P. Robitaille and Braden MacDonald
 #
@@ -44,10 +42,10 @@ class Structure(object):
     A number of attributes and methods are available to explore the structure
     in more detail, such as the ``indices`` and ``values`` methods, which
     return the indices and values of the pixels that are part of the
-    structure. These and other methods have a ``subtree=`` option that can be
-    set to ``True`` in order to return the quantity for all sub-structures. The
-    default is ``False``, which returns only the quantities related to the
-    actual pixels that are part of the structure but not sub-structures.
+    structure. These and other methods have a ``subtree=`` option, which if
+    ``True`` (the default) returns the quantities related to structure and all
+    sub-structures, and if ``False`` includes only the pixels that are part of
+    the structure, but excluding any sub-structure.
     """
 
     ###########################################################################
@@ -121,7 +119,7 @@ class Structure(object):
         """
         return not self.is_leaf
 
-    def indices(self, subtree=False):
+    def indices(self, subtree=True):
         """
         The indices of the pixels in this branch.
 
@@ -142,7 +140,7 @@ class Structure(object):
         else:
             return tuple(np.atleast_1d(i) for i in zip(*self._indices))
 
-    def values(self, subtree=False):
+    def values(self, subtree=True):
         """
         The values of the pixels in this branch.
 
@@ -334,7 +332,7 @@ class Structure(object):
 
         return self._descendants
 
-    def get_npix(self, subtree=False):
+    def get_npix(self, subtree=True):
         """
         Return the number of pixels in this structure.
 
@@ -357,7 +355,7 @@ class Structure(object):
         else:
             return len(self.values(subtree=False))
 
-    def get_peak(self, subtree=False):
+    def get_peak(self, subtree=True):
         """
         Return (index, value) for the pixel with maximum value.
 
@@ -394,7 +392,7 @@ class Structure(object):
             return "<Structure type=branch idx={0}>".format(self.idx)
 
     def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
-                          reverse=False, subtree=False):
+                          reverse=False, subtree=True):
         """
         Return a list of sorted leaves.
 
@@ -425,7 +423,7 @@ class Structure(object):
                 leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
         return leaves
 
-    def get_mask(self, shape, subtree=False):
+    def get_mask(self, shape, subtree=True):
         """
         Return a boolean mask outlining the structure.
 
