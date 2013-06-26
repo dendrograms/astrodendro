@@ -41,7 +41,7 @@ def test_init_leaf_scalar(index):
 
     # Footprint
     array = np.zeros([20 for i in range(len(index))])
-    s.fill_footprint(array, level=2)
+    s._fill_footprint(array, level=2)
     assert array[index] == 2
     assert np.sum(array) == 2.
 
@@ -78,7 +78,7 @@ def test_init_leaf_list(index):
 
     # Footprint
     array = np.zeros([20 for i in range(len(index[0]))])
-    s.fill_footprint(array, level=2)
+    s._fill_footprint(array, level=2)
     for i in index:
         print(i, array[i])
         assert array[i] == 2
@@ -129,7 +129,7 @@ def test_init_branch_scalar(index):
 
     # Footprint
     array = np.zeros([20 for i in range(len(index))])
-    s.fill_footprint(array, level=2)
+    s._fill_footprint(array, level=2)
     assert array[index] == 2.
     assert array[leaf_index] == 3.
     assert np.sum(array) == 5.
@@ -186,7 +186,7 @@ def test_init_branch_list(index):
 
     # Footprint
     array = np.zeros([20 for i in range(ndim)])
-    s.fill_footprint(array, level=2)
+    s._fill_footprint(array, level=2)
     for i in index:
         assert array[i] == 2.
     assert array[leaf_index] == 3.
@@ -250,7 +250,7 @@ def test_init_branch_scalar_3_level(index):
 
     # Footprint
     array = np.zeros([20 for i in range(len(index))])
-    s.fill_footprint(array, level=2)
+    s._fill_footprint(array, level=2)
     assert array[index] == 2.
     assert array[branch_index] == 3.
     assert array[leaf_index] == 4.
@@ -318,7 +318,7 @@ def test_init_branch_list_3_level(index):
 
     # Footprint
     array = np.zeros([20 for i in range(ndim)])
-    s.fill_footprint(array, level=2)
+    s._fill_footprint(array, level=2)
     for i in index:
         assert array[i] == 2.
     assert array[branch_index] == 3.
