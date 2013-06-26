@@ -32,7 +32,7 @@ class TestIndex(object):
 
         #subtree=False is a permutation of np.where(index_map == x)
         for s in d.all_structures:
-            ind = index.indices(s.idx)
+            ind = index.indices(s.idx, subtree=False)
             expected = np.where(d.index_map == s.idx)
             assert_permuted_fancyindex(ind, expected)
 
