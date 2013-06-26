@@ -1,3 +1,5 @@
+# indices_all vs get_peak(subtree=True)
+
 # Computing Astronomical Dendrograms
 # Copyright (c) 2011-2012 Thomas P. Robitaille and Braden MacDonald
 #
@@ -279,7 +281,7 @@ class Structure(object):
     @property
     def level(self):
         """
-        The level of the structure.
+        The level of the structure, i.e. how many structures need to be traversed to reach the present structure.
 
         This is 0 for nodes in the trunk, with values increasing in steps of 1
         towards the leaves.
