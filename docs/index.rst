@@ -65,11 +65,12 @@ This package was developed by:
 * Thomas Robitaille
 * Erik Rosolowsky
 
-Reference/API
--------------
+Public API
+----------
 
 .. toctree::
    :maxdepth: 1
 
    api/astrodendro.dendrogram.Dendrogram
    api/astrodendro.structure.Structure
+   api/astrodendro.plot.DendrogramPlotter

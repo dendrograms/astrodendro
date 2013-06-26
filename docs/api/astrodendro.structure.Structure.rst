@@ -1,8 +1,8 @@
 =================================
-astrodendro.dendrogram.Structure
+astrodendro.structure.Structure
 =================================
 
-.. currentmodule:: astrodendro.dendrogram
+.. currentmodule:: astrodendro.structure
 
 .. autoclass:: Structure
 
