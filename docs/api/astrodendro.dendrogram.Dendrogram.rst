@@ -10,8 +10,10 @@ astrodendro.dendrogram.Dendrogram
 
    .. autosummary::
 
+      ~Dendrogram.trunk
       ~Dendrogram.leaves
       ~Dendrogram.all_nodes
+      ~Dendrogram.prefix_nodes
 
    .. rubric:: Analysis
 
@@ -19,7 +21,6 @@ astrodendro.dendrogram.Dendrogram
 
       ~Dendrogram.compute
       ~Dendrogram.node_at
-      ~Dendrogram.prefix_nodelist
 
    .. rubric:: Input/Output
 
@@ -39,7 +40,6 @@ astrodendro.dendrogram.Dendrogram
 
    .. automethod:: Dendrogram.compute
    .. automethod:: Dendrogram.node_at
-   .. automethod:: Dendrogram.prefix_nodelist
 
    .. automethod:: Dendrogram.save_to
    .. automethod:: Dendrogram.load_from

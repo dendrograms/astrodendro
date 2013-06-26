@@ -44,6 +44,44 @@ IO_FORMATS = {
 
 
 class Dendrogram(object):
+    """
+    This class is used to compute and represent a dendrogram for a given
+    dataset. To create a dendrogram from an array, use the
+    :meth:`~astrodendro.dendrogram.Dendrogram.compute`` class method::
+
+        >>> from astrodendro import Dendrogram
+        >>> d = Dendrogram.compute(array)
+
+    Once the dendrogram has been computed, you can explore it programmatically
+    using the ``trunk`` attribute, which allows you to access the base-level
+    structures in the dendrogram::
+
+        >>> d.trunk
+        [<Structure type=leaf idx=101>,
+         <Structure type=branch idx=2152>,
+         <Structure type=leaf idx=733>,
+         <Structure type=branch idx=303>]
+
+    Structures can then be recursively explored. For more information on
+    attributes and methods available for structures, see the
+    :class:`~astrodendro.structure.Structure` class.
+
+    The dendrogram can also be explored using an interactive viewer. To use
+    this, use the :meth:`~astrodendro.dendrogram.Dendrogram.viewer` method::
+
+        >>> d.viewer()
+
+    and an interactive Matplotlib window should open.
+
+    Finally, the :meth:`~astrodendro.dendrogram.Dendrogram.plotter` method can
+    be used to facilitate the creation of plots:
+
+        >>> p = d.plotter()
+
+    For more information on using the plotter and other aspects of the
+    :class:`~astrodendro.dendrogram.Dendrogram` class, see the online
+    documentation.
+    """
 
     def __init__(self):
         self.data = None
@@ -274,6 +312,18 @@ class Dendrogram(object):
         # Return the newly-created dendrogram:
         return self
 
+    @property
+    def trunk(self):
+        """
+        A list of all structures that have no parent structure and form the
+        base of the tree.
+        """
+        return self._trunk
+
+    @trunk.setter
+    def trunk(self, value):
+        self._trunk = value
+
     @staticmethod
     def load_from(filename, format="autodetect"):
         """
@@ -317,12 +367,16 @@ class Dendrogram(object):
 
     @property
     def all_nodes(self):
-        " Return a flattened iterable containing all nodes in the dendrogram "
+        """
+        A flattened iterable containing all nodes in the dendrogram.
+        """
         return self.nodes_dict.itervalues()
 
     @property
     def leaves(self):
-        " Return a flattened list of all leaves in the dendrogram "
+        """
+        A flattened list of all leaves in the dendrogram
+        """
         return [i for i in self.nodes_dict.itervalues() if i.is_leaf]
 
     def to_newick(self):
@@ -335,8 +389,11 @@ class Dendrogram(object):
             return self.nodes_dict[idx]
         return None
 
+    @property
     def prefix_nodes(self):
-        """Yield all structures in the dendrogram, in prefix order."""
+        """
+        A flattened list of all structures in the dendrogram, in prefix order.
+        """
 
         todo = list(self.trunk)
         while len(todo) > 0:
@@ -345,13 +402,21 @@ class Dendrogram(object):
             todo = st.children + todo
 
     def __iter__(self):
-        return self.prefix_nodes()
+        return self.prefix_nodes
 
     def plotter(self):
+        """
+        Return a :class:`~astrodendro.plot.DendrogramPlotter` instance that makes it easier to construct plots.
+        """
         from .plot import DendrogramPlotter
         return DendrogramPlotter(self)
 
     def viewer(self):
+        """
+        Launch an interactive viewer to explore the dendrogram.
+
+        This functionality is only available for 2- or 3-d datasets.
+        """
         from .viewer import BasicDendrogramViewer
         return BasicDendrogramViewer(self)
 
@@ -412,7 +477,7 @@ class TreeIndex(object):
         npix_subtree = offset * 0
 
         index = np.zeros(sz, dtype=np.int)
-        order = dendrogram.prefix_nodes()
+        order = dendrogram.prefix_nodes
 
         pos = 0
         for o in order:
