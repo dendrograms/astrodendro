@@ -48,6 +48,7 @@ Documentation
    installing.rst
    using.rst
    plotting.rst
+   catalog.rst
 
 Reporting issues
 ----------------
