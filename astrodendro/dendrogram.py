@@ -476,7 +476,7 @@ class TreeIndex(object):
         npix_subtree = offset * 0
 
         index = np.zeros(sz, dtype=np.int)
-        order = dendrogram.prefix_structures
+        order = dendrogram.prefix_structures()
 
         pos = 0
         for o in order:
