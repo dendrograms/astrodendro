@@ -8,7 +8,7 @@ Interactive Visualization
 -------------------------
 
 One you have computed your dendrogram, the easiest way to view it interactively
-is to use the ``viewer()`` method::
+is to use the :meth:`~astrodendro.dendrogram.Dendrogram.viewer` method::
 
     d = Dendrogram.compute(...)
     d.viewer()
@@ -46,15 +46,17 @@ Making plots for publications
 
 While the viewer is useful for exploring the dendrogram, it does not allow one
 to produce publication-quality plots. For this, you can use the non-interactive
-plotting interface. To do this, you can first use the ``plotter()`` method to
-provide a plotting tool::
+plotting interface. To do this, you can first use the
+:meth:`~astrodendro.dendrogram.Dendrogram.plotter` method to provide a plotting
+tool::
 
     d = Dendrogram.compute(...)
     p = d.plotter()
 
 and then use this to make the plot you need. The following complete example
 shows how to make a plot of the dendrogram of an extinction map of the Perseus
-region, highlighting two of the main branches:
+region using the :meth:`~astrodendro.plot.DendrogramPlotter.plot_tree`,
+highlighting two of the main branches:
 
 .. plot::
    :include-source:
@@ -85,9 +87,11 @@ You can find out the structure ID you need either from the interactive viewer
 presented above, or programmatically by accessing the ``idx`` attribute of a
 Structure.
 
-A ``plot_contour`` method is also provided to outline the contours of
-structures. Calling ``plot_contour`` without any arguments results in a contour
-corresponding to the value of ``min_value`` used being shown.
+A :meth:`~astrodendro.plot.DendrogramPlotter.plot_contour` method is also
+provided to outline the contours of structures. Calling
+:meth:`~astrodendro.plot.DendrogramPlotter.plot_contour` without any arguments
+results in a contour corresponding to the value of ``min_value`` used being
+shown.
 
 .. plot::
    :include-source:

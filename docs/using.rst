@@ -10,7 +10,7 @@ Dendrograms can be computed from an n-dimensional array using:
     >>> d = Dendrogram.compute(array)
 
 where ``array`` is a Numpy array and ``d`` is then an instance of the
-``Dendrogram`` class, which can be used to access the computed dendrogram (see
+:class:`~astrodendro.dendrogram.Dendrogram` class, which can be used to access the computed dendrogram (see
 `Exploring the Dendrogram`_ below). Where the ``array`` comes from is not
 important - for example it can be read in from a FITS file, from an HDF5 file,
 or it can be generated in memory. If you are interested in making a dendrogram
@@ -26,7 +26,7 @@ minutes depending on the size and complexity of the data. By default, the
 above command will compute a dendrogram where there are as many levels in the
 dendrograms as pixels, which is likely not what you are interested in. There
 are several options to control the computation of the dendrogram and can be
-passed to the ``compute`` method:
+passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
 
 * ``min_value``: the minimum value to consider in the dataset - any value
   lower than this will not be considered in the dendrogram. If you are working
@@ -243,7 +243,7 @@ For more information on these quantities, consult the paper on `Bias Free Measur
 Saving the dendrogram
 ---------------------
 
-A ``Dendrogram`` object can be exported to an HDF5 file (requires h5py) and
+A :class:`~astrodendro.dendrogram.Dendrogram` object can be exported to an HDF5 file (requires h5py) and
 loaded at a later time (FITS support is currently planned). To export the
 dendrogram to an HDF5 file, use::
 
