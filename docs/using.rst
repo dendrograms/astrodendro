@@ -10,11 +10,11 @@ Dendrograms can be computed from an n-dimensional array using:
     >>> d = Dendrogram.compute(array)
 
 where ``array`` is a Numpy array and ``d`` is then an instance of the
-:class:`~astrodendro.dendrogram.Dendrogram` class, which can be used to access the computed dendrogram (see
-`Exploring the Dendrogram`_ below). Where the ``array`` comes from is not
-important - for example it can be read in from a FITS file, from an HDF5 file,
-or it can be generated in memory. If you are interested in making a dendrogram
-from data in a FITS file, you can do:
+:class:`~astrodendro.dendrogram.Dendrogram` class, which can be used to access
+the computed dendrogram (see `Exploring the Dendrogram`_ below). Where the
+``array`` comes from is not important - for example it can be read in from a
+FITS file, from an HDF5 file, or it can be generated in memory. If you are
+interested in making a dendrogram from data in a FITS file, you can do:
 
     >>> from astropy.io import fits
     >>> array = fits.getdata('observations.fits')
@@ -50,16 +50,27 @@ passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
   separate entity. By default, this parameter is set to zero, so there is no
   minimum number of pixels required for leaves to remain independent entities.
 
-For example, if you have an observational dataset with values in mJy/beam, and
-a noise level of 0.1 mJy/beam, you could use::
+As an example, we can use a publicly available extinction map of the Perseus
+star-formation region from the The COordinated Molecular Probe Line Extinction
+Thermal Emission (COMPLETE) Survey of Star Forming Regions
+(:download:`PerA_Extn2MASS_F_Gal.fits`, originally obtained from
+`<http://hdl.handle.net/10904/10080>`_). The units of the map are magnitudes of
+extinction, and we want to make a dendrogram of all structures above a minimum
+value of 2 magnitudes, and we only consider leaves with at least 10 pixels and
+which have a peak to base different larger than one magnitude of extinction::
 
-   >>> sigma = 0.1
-   >>> d = Dendrogram.compute(array, min_value=3 * sigma,
-                              min_delta=sigma, min_npix=10)
+    >>> from astrodendro import Dendrogram
+    >>> from astropy.io import fits
+    >>> image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    >>> d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
 
-which will compute a dendrogram using only values above 3-sigma, and in which
-all leaves will have 10 or more pixels and will have a height of at least
-1-sigma.
+By default, the computation will be silent, but for large dendrograms, it can
+be useful to have an idea of how long the computation will take::
+
+    >>> d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10,
+                               verbose=True)
+    Generating dendrogram using 6,386 of 67,921 pixels (9% of data)
+    [=========================>               ] 64%
 
 Exploring the Dendrogram
 ------------------------
@@ -78,81 +89,57 @@ which is a list of all the structures at the lowest level. Unless you left
 ``min_value`` to the default setting which means that all values in the
 dataset are used, it's possible that not all structures are connected. So the
 ``trunk`` is a collection of items at the lowest level, each of which could be
-a leaf or a branch (itself having leaves and branches). This is accessed with::
+a leaf or a branch (itself having leaves and branches). In the case of the
+Perseus extinction map, we get::
 
     >>> d.trunk
-    [<Branch>]
+    [<Structure type=leaf idx=101>,
+     <Structure type=branch idx=2152>,
+     <Structure type=leaf idx=733>,
+     <Structure type=branch idx=303>]
 
-In the above case, the trunk only contains a single branch. Since ``trunk`` is
-just a list, you can access items in it with e.g.::
+In the above case, the trunk contains two leaves and two branches. Since
+``trunk`` is just a list, you can access items in it with e.g.::
 
-    >>> d.trunk[0]
-    [<Structure type=branch>]
+    >>> d.trunk[1]
+    <Structure type=branch idx=2152>
 
 Branches have an ``children`` attribute which returns a list of all
 sub-structures, which can include branches and leaves. Thus, we can return the
 sub-structures of the above branch with::
 
-    >>> d.trunk[0].items
-    [<Structure type=branch>, <Structure type=leaf>]
+    >>> d.trunk[1].children
+    [<Structure type=branch idx=1680>,
+     <Structure type=branch idx=5771>]
 
-which shows that the branch is composed of another branch, and a leaf. We can
-therefore access the sub-structures of this branch with::
+which shows that the branch is composed of two more branches. We can therefore
+access the sub-structures of these branch with e.g.::
 
-    >>> d.trunk[0].items[0].items
-    [<Structure type=leaf>, <Structure type=branch>]
+    >>> d.trunk[1].children[0].children
+    [<Structure type=leaf idx=1748>,
+     <Structure type=leaf idx=1842>]
 
-which again shows the branch splitting into a leaf and a branch.
+which shows this branch splitting into two leaves.
 
 We can access the properties of leaves as follows::
 
-    >>> leaf = d.trunk[0].children[1]
+    >>> leaf = d.trunk[1].children[0].children[0]
     >>> leaf.indices
-    [(230, 50, 75),
-    (230, 50, 74),
-    (229, 50, 74),
-    (229, 51, 74)]
+    (array([143, 142, 142, 142, 139, 141, 141, 141, 143, 140, 140]),
+     array([116, 114, 115, 116, 115, 114, 115, 116, 115, 115, 114]))
     >>> leaf.values
-    [1.4287809,
-    1.4096074,
-    1.4536692,
-    1.4319911]
+    array([ 2.7043395 ,  2.57071948,  3.4551146 ,  3.29953575,  2.53844047,
+            2.59633183,  3.11309052,  2.70936489,  2.81024122,  2.76864815,
+            2.52840114], dtype=float32)
 
-The following attributes are available for leaves and branches:
-
-* ``indices``: a list of tuples giving the n-dimensional indices of the pixels
-  in the structure (excluding sub-structures).
-
-* ``values``: a list of the pixel values in the leaf, in the same order as
-  ``indices`` (excluding sub-structures)
-
-* ``indices_all``: as for ``indices`` but including sub-structures
-
-* ``values_all``: as for ``values`` but including sub-structures
-
-* ``vmin`` and ``vmax``: the minimum and maximum flux of values in the structure
-  (this is equivalent to ``values.max()`` and ``values.min()``)
-
-* ``height``: if the structure is not attached to a tree, then this is simply
-  ``vmax - vmin``. If the leaf is attached to a tree, then it is the difference
-  between the leaf and the value at which the structure was merged into the
-  tree (which will be the next value that would have been included in the leaf
-  had the structure not been merged).
-
-* ``children``: all direct sub-structures to the present structure.
-
-* ``parent``: the structure directly containing the structure.
-
-* ``ancestor``: the largest structure containing the structure.
-
-* ``level``: the level of the structure in the tree, i.e. how many structures
-  and sub-structures need to be traversed to reach the present structure.
-
-* ``descendents``: a flattened list of all sub-structures of the present
-  structure.
+A full list of attributes and methods for leaves and branches (i.e. structures)
+is available from the :class:`~astrodendro.structure.Structure` page, while a
+list of attributes and methods for the dendrogram itself is available from the
+:class:`~astrodendro.dendrogram.Dendrogram` page.
 
 Computing Dendrogram Statistics
 -------------------------------
+
 For 2D (PP) and 3D (PPV) observational data, you can use the ``pp_catalog``
 and ``ppv_catalog`` functions to compute basic properties for each
 Dendrogram structure::

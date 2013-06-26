@@ -54,9 +54,10 @@ tool::
     p = d.plotter()
 
 and then use this to make the plot you need. The following complete example
-shows how to make a plot of the dendrogram of an extinction map of the Perseus
-region using the :meth:`~astrodendro.plot.DendrogramPlotter.plot_tree`,
-highlighting two of the main branches:
+shows how to make a plot of the dendrogram of the extinction map of the Perseus
+region (introduced in :doc:using) using the
+:meth:`~astrodendro.plot.DendrogramPlotter.plot_tree`, highlighting two of the
+main branches:
 
 .. plot::
    :include-source:
