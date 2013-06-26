@@ -34,33 +34,32 @@ class ScalarStatistic(object):
         Parameters
         ----------
         values : 1D ndarray
-                data values to use
+            data values to use
         indices: tuple of 1D arrays
-                 Location of each element of values.
-                 The ith array in the tuple describes the
-                 ith positional dimension
+            Location of each element of values. The i-th array in the tuple
+            describes the ith positional dimension
         """
-        self.values = values.astype(np.float)
-        self.indices = indices
+        self.values = lambda subtree=True: values.astype(np.float)
+        self.indices = lambda subtree=True:indices
 
     def mom0(self):
         """The sum of the values"""
-        return np.nansum(self.values)
+        return np.nansum(self.values())
 
     def mom1(self):
         """The intensity-weighted mean position"""
         m0 = self.mom0()
-        return [np.nansum(i * self.values) / m0
-                for i in self.indices]
+        return [np.nansum(i * self.values()) / m0
+                for i in self.indices()]
 
     def mom2(self):
         """The intensity-weighted covariance matrix"""
         mom1 = self.mom1()
         mom0 = self.mom0()
-        v = self.values / mom0
+        v = self.values() / mom0
 
-        nd = len(self.indices)
-        zyx = tuple(i - m for i, m in zip(self.indices, mom1))
+        nd = len(self.indices())
+        zyx = tuple(i - m for i, m in zip(self.indices(), mom1))
 
         result = np.zeros((nd, nd))
 
@@ -134,7 +133,7 @@ class ScalarStatistic(object):
 
     def count(self):
         """Number of elements in the dataset"""
-        return self.values.size
+        return self.values().size
 
     def surface_area(self):
         raise NotImplementedError
@@ -431,10 +430,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     result = None
 
     for struct in structures:
-        if isinstance(struct, Structure):
-            stat = ScalarStatistic(struct.values(subtree=False), struct.indices(subtree=False))
-        else:
-            stat = ScalarStatistic(struct.values, struct.indices)
+        stat = ScalarStatistic(struct.values(subtree=False), struct.indices(subtree=False))
         stat = statistic(stat, metadata)
         row = dict((lbl, getattr(stat, lbl)())
                    for lbl in fields)

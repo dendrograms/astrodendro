@@ -289,7 +289,8 @@ class TestPPStatistic(object):
         self.stat = benchmark_stat()
         #this trick essentially collapses along the 0th axis
         #should preserve sky_maj, sky_min
-        self.stat.indices = (self.stat.indices[1], self.stat.indices[2])
+        indices = self.stat.indices()
+        self.stat.indices = lambda subtree=True: (indices[1], indices[2])
         self.v = benchmark_values()
 
     def metadata(self, **kwargs):
@@ -387,7 +388,8 @@ class TestPPCataloger(TestCataloger):
 
     def stat(self):
         bs = benchmark_stat()
-        bs.indices = (bs.indices[1], bs.indices[2])
+        indices = bs.indices()
+        bs.indices = lambda subtree=True: (indices[1], indices[2])
         return bs
 
     def metadata(self):

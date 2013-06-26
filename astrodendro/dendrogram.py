@@ -401,7 +401,7 @@ class Dendrogram(object):
             todo = st.children + todo
 
     def __iter__(self):
-        return self.prefix_structures
+        return self.prefix_structures()
 
     def plotter(self):
         """
@@ -451,7 +451,7 @@ class TreeIndex(object):
         idx_cdf = np.hstack((0, np.cumsum(idx_ct)))
 
         #efficiently build up npix values
-        structures = reversed(sorted(dendrogram.structures_dict.values(subtree=False),
+        structures = reversed(sorted(dendrogram.structures_dict.values(),
                                 key=lambda x: x.level))
         for st in structures:
             idx_sub_ct[st.idx] = idx_ct[packed[st.idx]]
