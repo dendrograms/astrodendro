@@ -15,7 +15,7 @@ class DendrogramPlotter(object):
 
     def sort(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
         """
-        Sort the position of the leaves for plotting
+        Sort the position of the leaves for plotting.
 
         Parameters
         ----------
@@ -54,7 +54,7 @@ class DendrogramPlotter(object):
 
     def plot_tree(self, ax, structure=None, subtree=True, autoscale=True, **kwargs):
         """
-        Plot the dendrogram tree or a substructure
+        Plot the dendrogram tree or a substructure.
 
         Parameters
         ----------
@@ -89,7 +89,7 @@ class DendrogramPlotter(object):
 
     def plot_contour(self, ax, structure=None, subtree=True, slice=None, **kwargs):
         """
-        Plot a contour outlining all pixels in the dendrogram, or a specific
+        Plot a contour outlining all pixels in the dendrogram, or a specific.
         structure.
 
         Parameters
@@ -121,7 +121,7 @@ class DendrogramPlotter(object):
             mask = self.dendrogram.data > self.dendrogram.min_value
         else:
             if type(structure) is int:
-                structure = self.dendrogram.nodes_dict[structure]
+                structure = self.dendrogram.structures_dict[structure]
             mask = structure.get_mask(self.dendrogram.data.shape, subtree=subtree)
             if self.dendrogram.data.ndim == 3:
                 if slice is None:
@@ -137,7 +137,7 @@ class DendrogramPlotter(object):
 
     def get_lines(self, structure=None, **kwargs):
         """
-        Get a collection of lines to draw the dendrogram
+        Get a collection of lines to draw the dendrogram.
 
         Parameters
         ----------
@@ -159,10 +159,10 @@ class DendrogramPlotter(object):
             raise Exception("Leaves have not yet been sorted")
 
         if structure is None:
-            structures = self.dendrogram.all_nodes
+            structures = self.dendrogram.all_structures
         else:
             if type(structure) is int:
-                structure = self.dendrogram.nodes_dict[structure]
+                structure = self.dendrogram.structures_dict[structure]
             structures = structure.descendants + [structure]
 
         lines = []

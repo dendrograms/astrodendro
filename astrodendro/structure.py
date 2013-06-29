@@ -25,6 +25,27 @@ import numpy as np
 class Structure(object):
     """
     A structure in the dendrogram, for example a leaf or a branch.
+
+    A structure that is part of a dendrogram knows which other structures it is
+    related to. For example, it is possible to get the parent structure
+    containing the present structure ``s`` by using the ``parent`` attribute::
+
+        >>> s.parent
+        <Structure type=branch idx=2152>
+
+    Likewise, the ``children`` attribute can be used to get a list of all
+    sub-structures::
+
+        >>> s.children
+        [<Structure type=branch idx=1680>, <Structure type=branch idx=5771>]
+
+    A number of attributes and methods are available to explore the structure
+    in more detail, such as the ``indices`` and ``values`` methods, which
+    return the indices and values of the pixels that are part of the
+    structure. These and other methods have a ``subtree=`` option, which if
+    ``True`` (the default) returns the quantities related to structure and all
+    sub-structures, and if ``False`` includes only the pixels that are part of
+    the structure, but excluding any sub-structure.
     """
 
     ###########################################################################
@@ -63,6 +84,28 @@ class Structure(object):
         self._tree_index = None
 
     @property
+    def parent(self):
+        """
+        The parent structure containing the present structure.
+        """
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        self._parent = value
+
+    @property
+    def children(self):
+        """
+        A list of all the sub-structures contained in the present structure.
+        """
+        return self._children
+
+    @children.setter
+    def children(self, value):
+        self._children = value
+
+    @property
     def is_leaf(self):
         """
         Whether the present structure is a leaf
@@ -76,55 +119,47 @@ class Structure(object):
         """
         return not self.is_leaf
 
-    @property
-    def indices_all(self):
+    def indices(self, subtree=True):
         """
-        The indices of the pixels in the branch, and sub-structures
+        The indices of the pixels in this branch.
+
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to recursively include all sub-structures
         """
-        # We only need to look at children, not all children structures,
-        # since child.indices will include all children recursively.
+
         if self._tree_index is not None:
-            return self._tree_index.indices(self.idx, subtree=True)
+            return self._tree_index.indices(self.idx, subtree=subtree)
 
-        sub_indices = [self.indices]
-        for child in self.children:
-            sub_indices.append(child.indices_all)
-        return tuple(np.hstack(arrs) for arrs in zip(*(sub_indices)))
+        if subtree:
+            sub_indices = [self.indices(subtree=False)]
+            for child in self.children:
+                sub_indices.append(child.indices(subtree=True))
+            return tuple(np.hstack(arrs) for arrs in zip(*(sub_indices)))
+        else:
+            return tuple(np.atleast_1d(i) for i in zip(*self._indices))
 
-    @property
-    def indices(self):
+    def values(self, subtree=True):
         """
-        The indices of the pixels in this branch, excluding sub-structures
+        The values of the pixels in this branch.
+
+        Parameters
+        ----------
+        subtree : bool, optional
+            Whether to recursively include all sub-structures
         """
+
         if self._tree_index is not None:
-            return self._tree_index.indices(self.idx, subtree=False)
+            return self._tree_index.values(self.idx, subtree=subtree)
 
-        return tuple(np.atleast_1d(i) for i in zip(*self._indices))
-
-    @property
-    def values_all(self):
-        """
-        The values of the pixels in the branch, and sub-structures
-        """
-        # We only need to look at children, not all children structures,
-        # ``values`` for all children will include all children recursively.
-        if self._tree_index is not None:
-            return self._tree_index.values(self.idx, subtree=True)
-
-        sub_values = [self.values]
-        for child in self.children:
-            sub_values.append(child.values_all)
-        return np.hstack(sub_values)
-
-    @property
-    def values(self):
-        """
-        The values of the pixels in this branch, excluding sub-structures
-        """
-        if self._tree_index is not None:
-            return self._tree_index.values(self.idx, subtree=False)
-
-        return np.atleast_1d(self._values)
+        if subtree:
+            sub_values = [self.values(subtree=False)]
+            for child in self.children:
+                sub_values.append(child.values(subtree=True))
+            return np.hstack(sub_values)
+        else:
+            return np.atleast_1d(self._values)
 
     @property
     def vmin(self):
@@ -218,9 +253,9 @@ class Structure(object):
     #   computed. They should not be used in dendrogram.py                    #
     ###########################################################################
 
-    def fill_footprint(self, array, level, recursive=True):
+    def _fill_footprint(self, array, level, recursive=True):
         """
-        Set all corresponding points in `array` to the level of the structure
+        Set all corresponding points in `array` to the level of the structure.
 
         Parameters
         ----------
@@ -231,15 +266,15 @@ class Structure(object):
         """
         if recursive:
             for child in self.children:
-                child.fill_footprint(array, level + 1)
-        array[self.indices] = level
+                child._fill_footprint(array, level + 1)
+        array[self.indices(subtree=False)] = level
 
     @property
     def level(self):
         """
-        The level of the structure.
+        The level of the structure, i.e. how many structures need to be traversed to reach the present structure.
 
-        This is 0 for nodes in the trunk, with values increasing in steps of 1
+        This is 0 for structures in the trunk, with values increasing in steps of 1
         towards the leaves.
         """
 
@@ -258,7 +293,7 @@ class Structure(object):
                     obj = obj.parent
                     diff += 1
                     # Note: we are counting on the dendrogram computation to
-                    # ensure that ._level=0 for all nodes in the trunk
+                    # ensure that ._level=0 for all structures in the trunk
                 self._level = obj._level + diff
                 self.parent._level = self._level - 1
 
@@ -267,7 +302,7 @@ class Structure(object):
     @property
     def newick(self):
         """
-        Newick representation of this structure
+        Newick representation of this structure.
         """
         if self.idx is None:
             raise ValueError("Cannot return Newick representation if idx is not set")
@@ -297,7 +332,7 @@ class Structure(object):
 
         return self._descendants
 
-    def get_npix(self, subtree=False):
+    def get_npix(self, subtree=True):
         """
         Return the number of pixels in this structure.
 
@@ -313,16 +348,16 @@ class Structure(object):
             The number of pixels in this structure
         """
 
-        if not subtree:
-            return len(self.values)
-        else:
+        if subtree:
             if self._npix_total is None:
-                self._npix_total = self.values_all.size
+                self._npix_total = self.values(subtree=True).size
             return self._npix_total
+        else:
+            return len(self.values(subtree=False))
 
-    def get_peak(self, subtree=False):
+    def get_peak(self, subtree=True):
         """
-        Return (index, value) for the pixel with maximum value
+        Return (index, value) for the pixel with maximum value.
 
         Parameters
         ----------
@@ -345,9 +380,9 @@ class Structure(object):
             return self._peak
         else:
             found = self._peak
-            for node in self.descendants:
-                if found[1] < node.vmax:
-                    found = node.get_peak()
+            for structure in self.descendants:
+                if found[1] < structure.vmax:
+                    found = structure.get_peak()
             return found
 
     def __repr__(self):
@@ -357,9 +392,9 @@ class Structure(object):
             return "<Structure type=branch idx={0}>".format(self.idx)
 
     def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
-                          reverse=False, subtree=False):
+                          reverse=False, subtree=True):
         """
-        Return a list of sorted leaves
+        Return a list of sorted leaves.
 
         Parameters
         ----------
@@ -388,9 +423,9 @@ class Structure(object):
                 leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
         return leaves
 
-    def get_mask(self, shape, subtree=False):
+    def get_mask(self, shape, subtree=True):
         """
-        Return a boolean mask outlining the structure
+        Return a boolean mask outlining the structure.
 
         Parameters
         ----------
@@ -405,7 +440,7 @@ class Structure(object):
             The mask outlining the structure (``False`` values are used outside
             the structure, and ``True`` values inside).
         """
-        indices = self.indices_all if subtree else self.indices
+        indices = self.indices(subtree=True) if subtree else self.indices
         mask = np.zeros(shape, dtype=bool)
         mask[indices] = True
         return mask

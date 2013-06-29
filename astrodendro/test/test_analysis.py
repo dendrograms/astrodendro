@@ -12,6 +12,7 @@ from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
                         _missing_metadata, MetaData, _warn_missing_metadata,
                         PPStatistic, pp_catalog)
 from .. import Dendrogram
+from ..structure import Structure
 
 
 wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=0,
@@ -345,8 +346,9 @@ class TestCataloger(object):
 
     def make_catalog(self, s=None, md=None, fields=None):
         s = s or [self.stat()]
+        structures = [Structure(zip(*x.indices), x.values) for x in s]
         md = md or self.metadata()
-        return self.cataloger(s, md, fields)
+        return self.cataloger(structures, md, fields)
 
     def test_benchmark(self):
         c = self.make_catalog()
@@ -359,12 +361,12 @@ class TestCataloger(object):
     def test_field_selection(self):
         stat = self.stat()
         md = self.metadata()
-        c = ppv_catalog([stat], md, fields=['flux'])
-        assert c.dtype.names == ('flux',)
+        c = ppv_catalog([Structure(zip(*stat.indices), stat.values)], md, fields=['flux'])
+        assert c.dtype.names == ('_idx', 'flux',)
 
 
 class TestPPVCataloger(TestCataloger):
-    fields = ['flux', 'luminosity',
+    fields = ['_idx', 'flux', 'luminosity',
               'sky_maj', 'sky_min', 'sky_radius',
               'vrms', 'sky_deconvolved_rad',
               'sky_pa', 'xcen', 'ycen', 'vcen']
@@ -379,7 +381,7 @@ class TestPPVCataloger(TestCataloger):
 
 
 class TestPPCataloger(TestCataloger):
-    fields = ['flux', 'luminosity',
+    fields = ['_idx', 'flux', 'luminosity',
               'sky_maj', 'sky_min', 'sky_radius',
               'sky_deconvolved_rad',
               'sky_pa', 'xcen', 'ycen']
@@ -453,7 +455,7 @@ def test_dendrogram_ppv_catalog():
     d = Dendrogram.compute(x)
     c = ppv_catalog(d, {})
     for ct, st in zip(c['flux'], d):
-        assert ct == st.values.sum()
+        assert ct == st.values(subtree=True).sum()
 
 
 def test_dendrogram_ppv_catalog():
@@ -461,4 +463,4 @@ def test_dendrogram_ppv_catalog():
     d = Dendrogram.compute(x)
     c = pp_catalog(d, {})
     for ct, st in zip(c['flux'], d):
-        assert ct == st.values.sum()
+        assert ct == st.values(subtree=True).sum()

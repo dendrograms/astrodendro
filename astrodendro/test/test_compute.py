@@ -39,21 +39,21 @@ class Test2DimensionalData(object):
         ########################################
         # Check the trunk elements:
 
-        leaves = [node for node in d.trunk if node.is_leaf]
-        branches = [node for node in d.trunk if node not in leaves]
+        leaves = [structure for structure in d.trunk if structure.is_leaf]
+        branches = [structure for structure in d.trunk if structure not in leaves]
 
         assert len(leaves) == 2, "We expect two leaves among the lowest structures (the trunk)"
         assert len(branches) == 1, "We expect one branch among the lowest structures (the trunk)"
 
         for leaf in leaves:
-            assert len(leaf.values) == 1, "Leaves in the trunk are only expected to contain one point"
+            assert len(leaf.values(subtree=False)) == 1, "Leaves in the trunk are only expected to contain one point"
             assert leaf.parent is None
             assert leaf.ancestor == leaf
             assert leaf.get_npix() == 1
-            if leaf.values[0] == 4:
-                assert list(zip(*leaf.indices))[0] == (1, 1)
-            elif leaf.values[0] == 3:
-                assert list(zip(*leaf.indices))[0] == (3, 0)
+            if leaf.values(subtree=False)[0] == 4:
+                assert list(zip(*leaf.indices(subtree=False)))[0] == (1, 1)
+            elif leaf.values(subtree=False)[0] == 3:
+                assert list(zip(*leaf.indices(subtree=False)))[0] == (3, 0)
             else:
                 self.fail("Invalid value of flux in one of the leaves")
 
@@ -70,10 +70,10 @@ class Test2DimensionalData(object):
             assert leaf.is_leaf
             assert leaf.ancestor == branch
             assert leaf.parent == branch
-            if 5 in leaf.values:
-                assert sum(leaf.values) == 5
-            elif 3 in leaf.values:
-                assert sum(leaf.values) == 1 + 2 + 3 + 2
+            if 5 in leaf.values(subtree=False):
+                assert sum(leaf.values(subtree=False)) == 5
+            elif 3 in leaf.values(subtree=False):
+                assert sum(leaf.values(subtree=False)) == 1 + 2 + 3 + 2
             else:
                 self.fail("Invalid child of the branch")
 
@@ -83,7 +83,7 @@ class Test2DimensionalData(object):
                          [n, 4, 2, 5, n, ],
                          [n, n, n, n, 0, ]])
         d = Dendrogram.compute(data)
-        branch, leaf4, leaf5 = d.trunk[0], d.node_at((1, 1)), d.node_at((1, 3))
+        branch, leaf4, leaf5 = d.trunk[0], d.structure_at((1, 1)), d.structure_at((1, 3))
         assert leaf4.height == 4.
         assert leaf5.height == 5.
         assert branch.height == 4.
@@ -105,11 +105,11 @@ class Test2DimensionalData(object):
                          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], ])
         d = Dendrogram.compute(data)
-        assert len(d.nodes_dict) <= 7
+        assert len(d.structures_dict) <= 7
         # Some of the '1' valued pixels get included with the leaves and branches,
-        # hence number of nodes is currently 7 and not 6 as expected.
+        # hence number of structures is currently 7 and not 6 as expected.
         # Fixing this is probably more trouble than it's worth.
-        leaf_with_twos = d.node_at((10, 9))
+        leaf_with_twos = d.structure_at((10, 9))
         assert leaf_with_twos.height == 2
 
 
@@ -126,32 +126,32 @@ class Test3DimensionalData(object):
 
         # Now check every pixel in the data cube (this takes a while).
         st_map = np.zeros(self.data.shape, dtype=np.int)
-        for st in d.all_nodes:
-            st_map[st.indices] = st.idx
+        for st in d.all_structures:
+            st_map[st.indices(subtree=False)] = st.idx
 
         #check that vmin/vmax/peak are correct
-        for st in d.all_nodes:
-            assert st.vmin == self.data[st.indices].min()
-            assert st.vmax == self.data[st.indices].max()
-            pk_exp = self.data[st.indices_all].max()
+        for st in d.all_structures:
+            assert st.vmin == self.data[st.indices(subtree=False)].min()
+            assert st.vmax == self.data[st.indices(subtree=False)].max()
+            pk_exp = self.data[st.indices(subtree=True)].max()
 
             ind, pk = st.get_peak(subtree=True)
             assert self.data[ind] == pk
             assert pk_exp == pk
 
         # The "right" way to do this is loop through indices,
-        # and repeatedly call node_at(). However, this is quite slow
-        # node_at is a thin wrapper around index_map,
+        # and repeatedly call structure_at(). However, this is quite slow
+        # structure_at is a thin wrapper around index_map,
         # and we compare index_map to st_map instead
         np.testing.assert_array_equal(st_map, d.index_map)
 
-        # here, we test a few values of node_at
+        # here, we test a few values of structure_at
         for coord in np.indices(self.data.shape).reshape(self.data.ndim, np.prod(self.data.shape)).transpose()[::100]:
             coord = tuple(coord)
             f = self.data[coord]
-            node = d.node_at(coord)
-            if node is not None:
-                assert node.idx == st_map[coord], "Pixel at {0} is claimed to be part of {1}, but that node does not contain the coordinate {0}!".format(coord, node)
+            structure = d.structure_at(coord)
+            if structure is not None:
+                assert structure.idx == st_map[coord], "Pixel at {0} is claimed to be part of {1}, but that structure does not contain the coordinate {0}!".format(coord, structure)
             else:
                 assert st_map[coord] == 0
 
@@ -175,7 +175,7 @@ class TestNDimensionalData(object):
         leaves = d.leaves
         assert len(leaves) == 2
         # We expect one branch:
-        branches = [i for i in d.all_nodes if i.is_branch]
+        branches = [i for i in d.all_structures if i.is_branch]
         assert len(branches) == 1
         assert len(d.trunk) == 1
         assert d.trunk[0] == branches[0]
@@ -186,9 +186,9 @@ class TestNDimensionalData(object):
         assert leaves[0].get_peak() != leaves[1].get_peak()
 
         # Check out a few more properties of the leaf around the global maximum:
-        leaf = d.node_at((2, 2, 2, 2))
+        leaf = d.structure_at((2, 2, 2, 2))
         assert leaf.vmax == 5
         assert leaf.vmin == 2
         assert leaf.get_npix() == 1 + 6 + 2  # Contains 1x '5', 6x '3', and 2x '2'. The other '2' should be in the branch
         # Check that the only pixel in the branch is a '2' at [0,0,2,2]
-        assert (zip(*branches[0].indices), branches[0].values) == ([(0, 0, 2, 2), ], [2., ])
+        assert (zip(*branches[0].indices(subtree=False)), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
