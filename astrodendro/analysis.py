@@ -230,8 +230,6 @@ class SpatialBase(object):
     bunit = MetaData('bunit', 'Unit of intensity')
     dist = MetaData('dist', 'Distance')
     wcs = MetaData('wcs', 'WCS object', default=None)
-    wcs_origin = MetaData('wcs_origin', 'origin (1=FITS standard, 0=numpy)',
-                          default=1)
 
     def luminosity(self):
         """Integrated luminosity
@@ -254,7 +252,8 @@ class SpatialBase(object):
     def _world_pos(self):
         xyz = self.stat.mom1()[::-1]
         if self.wcs is not None:
-            return self.wcs.all_pix2world([xyz], self.wcs_origin).ravel()[::-1]
+            # We use origin=0 since the indices come from Numpy indexing
+            return self.wcs.all_pix2world([xyz], origin=0).ravel()[::-1]
         return xyz[::-1]
 
     def sky_maj(self):
