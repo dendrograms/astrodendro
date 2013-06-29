@@ -20,7 +20,9 @@ def _qsplit(q):
 
 def _unit(q):
     """Return the units associated with a number, array, unit, or Quantity"""
-    if isinstance(1 * q, Quantity):
+    if q is None:
+        return None
+    elif isinstance(1 * q, Quantity):
         return (1 * q).unit
 
 
@@ -443,7 +445,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
         if result is None:
             result = Table(names=sorted(row.keys()))
             for k, v in row.items():
-                result[k].units = _unit(v) if v is not None else None
+                result[k].units = _unit(v)
 
         result.add_row(row)
 
