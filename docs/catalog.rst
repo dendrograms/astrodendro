@@ -2,8 +2,8 @@ Computing Dendrogram Statistics
 ===============================
 
 For 2D position-position (PP) and 3D position-position-velocity (PPV)
-observational data, you can use the :func:`astrodendro.analysis.pp_catalog` and
-:func:`astrodendro.analysis.ppv_catalog` functions to compute basic properties
+observational data, you can use the :func:`~astrodendro.analysis.pp_catalog` and
+:func:`~astrodendro.analysis.ppv_catalog` functions to compute basic properties
 for each Dendrogram structure::
 
    >>> import numpy as np
