@@ -12,6 +12,7 @@ from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
                         _missing_metadata, MetaData, _warn_missing_metadata,
                         PPStatistic, pp_catalog)
 from .. import Dendrogram
+from ..structure import Structure
 
 
 wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=0,
@@ -289,8 +290,7 @@ class TestPPStatistic(object):
         self.stat = benchmark_stat()
         #this trick essentially collapses along the 0th axis
         #should preserve sky_maj, sky_min
-        indices = self.stat.indices()
-        self.stat.indices = lambda subtree=True: (indices[1], indices[2])
+        self.stat.indices = (self.stat.indices[1], self.stat.indices[2])
         self.v = benchmark_values()
 
     def metadata(self, **kwargs):
@@ -346,8 +346,9 @@ class TestCataloger(object):
 
     def make_catalog(self, s=None, md=None, fields=None):
         s = s or [self.stat()]
+        structures = [Structure(zip(*x.indices), x.values) for x in s]
         md = md or self.metadata()
-        return self.cataloger(s, md, fields)
+        return self.cataloger(structures, md, fields)
 
     def test_benchmark(self):
         c = self.make_catalog()
@@ -360,12 +361,12 @@ class TestCataloger(object):
     def test_field_selection(self):
         stat = self.stat()
         md = self.metadata()
-        c = ppv_catalog([stat], md, fields=['flux'])
-        assert c.dtype.names == ('flux',)
+        c = ppv_catalog([Structure(zip(*stat.indices), stat.values)], md, fields=['flux'])
+        assert c.dtype.names == ('_idx', 'flux',)
 
 
 class TestPPVCataloger(TestCataloger):
-    fields = ['flux', 'luminosity',
+    fields = ['_idx', 'flux', 'luminosity',
               'sky_maj', 'sky_min', 'sky_radius',
               'vrms', 'sky_deconvolved_rad',
               'sky_pa', 'xcen', 'ycen', 'vcen']
@@ -380,7 +381,7 @@ class TestPPVCataloger(TestCataloger):
 
 
 class TestPPCataloger(TestCataloger):
-    fields = ['flux', 'luminosity',
+    fields = ['_idx', 'flux', 'luminosity',
               'sky_maj', 'sky_min', 'sky_radius',
               'sky_deconvolved_rad',
               'sky_pa', 'xcen', 'ycen']
@@ -388,8 +389,7 @@ class TestPPCataloger(TestCataloger):
 
     def stat(self):
         bs = benchmark_stat()
-        indices = bs.indices()
-        bs.indices = lambda subtree=True: (indices[1], indices[2])
+        bs.indices = (bs.indices[1], bs.indices[2])
         return bs
 
     def metadata(self):
