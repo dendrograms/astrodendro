@@ -61,10 +61,18 @@ Developers
 
 This package was developed by:
 
-* Braden MacDonald
-* Chris Beaumont
 * Thomas Robitaille
+* Chris Beaumont
+* Braden MacDonald
 * Erik Rosolowsky
+
+Acknowledgments
+---------------
+
+Thanks to the following users for using early versions of this package and
+providing valuable feedback:
+
+* Katharine Johnston
 
 Public API
 ----------

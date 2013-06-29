@@ -80,7 +80,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'AstroDendro'
-copyright = u'2013, Thomas Robitaille, Braden McDonald, Chris Beaumont, Erik Rosolowsky'
+copyright = u'2013, Thomas Robitaille, Chris Beaumont, Braden McDonald, and Erik Rosolowsky'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
