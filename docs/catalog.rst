@@ -98,3 +98,44 @@ dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the
 terminology of the dendrogram paper, the quantities in
 :func:`astrodendro.analysis.pp_catalog` and
 :func:`astrodendro.analysis.ppv_catalog` adopt the "bijection" paradigm.
+
+Example
+-------
+
+The following example shows how to combine the plotting functionality in
+:doc:`plotting` and the analysis tools shown above, to overlay ellipses
+approximating the structures on top of the structures themselves:
+
+.. plot::
+   :include-source:
+
+    from astropy.io import fits
+
+    from astrodendro import Dendrogram
+    from astrodendro.analysis import PPStatistic
+
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Ellipse
+
+    hdu = fits.open('PerA_Extn2MASS_F_Gal.fits')[0]
+
+    d = Dendrogram.compute(hdu.data, min_value=2.0, min_delta=1., min_npix=10)
+    p = d.plotter()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.imshow(hdu.data, origin='lower', interpolation='nearest',
+              cmap=plt.cm.Blues, vmax=6.0)
+
+    for leaf in d.leaves:
+
+        p.plot_contour(ax, structure=leaf, lw=3, colors='red')
+
+        s = PPStatistic(leaf)
+        ax.add_patch(Ellipse((s.xcen(), s.ycen()),
+                              s.sky_maj(), s.sky_min(), angle=s.sky_pa(),
+                              edgecolor='orange', facecolor='none'))
+
+    ax.set_xlim(75., 170.)
+    ax.set_ylim(120., 260.)
