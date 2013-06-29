@@ -296,20 +296,27 @@ class SpatialBase(object):
 
 
 class PPVStatistic(SpatialBase):
+    """
+    Compute properties of structures in a position-position-velocity (PPV)
+    cube.
+
+    Parameters
+    ----------
+    structure : `~astrodendro.structure.Structure` instance
+        The structure to compute the statistics for
+    metadata : dict
+         Key-value paris of metadata
+    """
+
     dv = MetaData('dv', 'Velocity channel width')
     vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
 
-    def __init__(self, stat, metadata):
-        """
-        Compute properties of structures in a PPV cube
-
-        Parameters
-        ----------
-        stat :   ScalarStatistic instance
-        metadata : dict
-                 Key-value paris of metadata
-        """
-        self.stat = stat
+    def __init__(self, stat, metadata={}):
+        if isinstance(stat, Structure):
+            self.stat = ScalarStatistic(stat.values(subtree=True),
+                                        stat.indices(subtree=True))
+        else:
+            self.stat = stat
         self.metadata = metadata
 
     def _sky_paxes(self):
@@ -360,9 +367,23 @@ class PPVStatistic(SpatialBase):
 
 
 class PPStatistic(SpatialBase):
+    """
+    Compute properties of structures in a position-position (PP) cube.
 
-    def __init__(self, stat, metadata):
-        self.stat = stat
+    Parameters
+    ----------
+    structure : `~astrodendro.structure.Structure` instance
+        The structure to compute the statistics for
+    metadata : dict
+         Key-value paris of metadata
+    """
+
+    def __init__(self, stat, metadata={}):
+        if isinstance(stat, Structure):
+            self.stat = ScalarStatistic(stat.values(subtree=True),
+                                        stat.indices(subtree=True))
+        else:
+            self.stat = stat
         self.metadata = metadata
 
     def _sky_paxes(self):
@@ -391,7 +412,7 @@ class PPStatistic(SpatialBase):
 
 class PPPStatistic(object):
 
-    def __init__(self, rhostat, vstat, metadata):
+    def __init__(self, rhostat, vstat, metadata={}):
         """
         Derive properties from PPP density and velocity fields
 
