@@ -2,9 +2,52 @@ Computing Dendrogram Statistics
 ===============================
 
 For 2D position-position (PP) and 3D position-position-velocity (PPV)
-observational data, you can use the :func:`~astrodendro.analysis.pp_catalog` and
-:func:`~astrodendro.analysis.ppv_catalog` functions to compute basic properties
-for each Dendrogram structure::
+observational data, the :doc:`api/astrodendro.analysis` module can be used to
+compute basic properties for each Dendrogram structure. There are two ways to
+compute statistics - on a structure-by-structure basis, and as a catalog, both
+of which are described below.
+
+Deriving statistics for individual structures
+---------------------------------------------
+
+In order to derive statistics for a given structure, you will need to use the
+:class:`~astrodendro.analysis.PPStatistic` or the
+:class:`~astrodendro.analysis.PPVStatistic` classes from the
+:doc:`api/astrodendro.analysis` module, e.g.::
+
+   >>> from astrodendro.analysis import PPStatistic
+   >>> stat = PPStatistic(structure)
+
+where ``structure`` is a :class:`~astrodendro.structure.Structure` instance
+from a dendrogram. The resulting object then has methods to compute various
+statistics. Using the example data from :doc:`using`::
+
+    >>> from astrodendro import Dendrogram
+    >>> from astropy.io import fits
+    >>> image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    >>> d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
+
+we can get statistics for the first structure in the trunk, which is a leaf::
+
+    >>> from astrodendro.analysis import PPStatistic
+    >>> d.trunk[0]
+    <Structure type=leaf idx=101>
+    >>> stat = PPStatistic(d.trunk[0])
+    >>> stat.sky_maj()  # length of major axis on the sky
+    3.7659611491290619
+    >>> stat.sky_min()  # length of minor axis on the sky
+    2.9278600766040364
+    >>> stat.sky_pa()  # position angle on the sky
+    134.61988014787443
+    >>> stat.flux()  # total flux contained in structure
+    88.605692148208618
+
+Making a catalog
+----------------
+
+In order to produce a catalog of properties for all structures, it is also
+possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
+:func:`~astrodendro.analysis.ppv_catalog` functions::
 
    >>> import numpy as np
    >>> from astrodendro import Dendrogram, ppv_catalog
@@ -46,9 +89,9 @@ The catalog functions return an Astropy :class:`~astropy.table.table.Table` obje
 
 The ``metadata`` dictionary provides information about how to convert
 pixel-level quantities to meaningful units. By default,
-:func:`astrodendro.analysis.ppv_catalog` generates warnings about missing
+:func:`~astrodendro.analysis.ppv_catalog` generates warnings about missing
 metadata items (these can be suppressed by setting ``verbose=False`` in the
-call to :func:`astrodendro.analysis.ppv_catalog`).
+call to :func:`~astrodendro.analysis.ppv_catalog`).
 
 Here's a sensible looking metadata dictionary::
 
@@ -76,7 +119,14 @@ Here's a sensible looking metadata dictionary::
    xcen None
    ycen None
 
-Here's a brief description of each quantity computed in the catalog functions:
+Available statistics
+--------------------
+
+For a full list of available statistics for each type of statistic class, see
+:class:`~astrodendro.analysis.PPStatistic` and
+:class:`~astrodendro.analysis.PPVStatistic`.
+
+Here's a more detailed description of the available quantities:
 
 * ``_idx`` : The structure ``.idx`` that this row describes
 * ``flux`` : The integrated intensity of each structure
