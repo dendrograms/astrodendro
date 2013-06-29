@@ -455,7 +455,7 @@ def test_dendrogram_ppv_catalog():
     d = Dendrogram.compute(x)
     c = ppv_catalog(d, {})
     for ct, st in zip(c['flux'], d):
-        assert ct == st.values(subtree=False).sum()
+        assert ct == st.values(subtree=True).sum()
 
 
 def test_dendrogram_ppv_catalog():
@@ -463,4 +463,4 @@ def test_dendrogram_ppv_catalog():
     d = Dendrogram.compute(x)
     c = pp_catalog(d, {})
     for ct, st in zip(c['flux'], d):
-        assert ct == st.values(subtree=False).sum()
+        assert ct == st.values(subtree=True).sum()
