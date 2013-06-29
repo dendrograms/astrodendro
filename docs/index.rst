@@ -48,6 +48,7 @@ Documentation
    installing.rst
    using.rst
    plotting.rst
+   catalog.rst
 
 Reporting issues
 ----------------
@@ -65,10 +66,13 @@ This package was developed by:
 * Thomas Robitaille
 * Erik Rosolowsky
 
-Indices and tables
-==================
+Public API
+----------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :maxdepth: 1
 
+   api/astrodendro.dendrogram.Dendrogram
+   api/astrodendro.structure.Structure
+   api/astrodendro.plot.DendrogramPlotter
+   api/astrodendro.analysis

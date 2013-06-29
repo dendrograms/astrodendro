@@ -27,7 +27,14 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest']
+              'sphinx.ext.intersphinx',
+              'astropy.sphinx.ext.numpydoc',
+              'astropy.sphinx.ext.astropyautosummary'
+             ]
+
+autosummary_generate = True
+numpydoc_show_class_members = False
+autoclass_content = 'class'
 
 plot_template = """
 {{ source_code }}
@@ -96,7 +103,7 @@ release = '0.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_templates']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -275,4 +282,9 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+    'astropy': ('http://www.astropy.org/', None),
+    }
