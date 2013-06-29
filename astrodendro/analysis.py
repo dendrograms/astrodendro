@@ -433,7 +433,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     result = None
 
     for struct in structures:
-        stat = ScalarStatistic(struct.values(subtree=False), struct.indices(subtree=False))
+        stat = ScalarStatistic(struct.values(subtree=True), struct.indices(subtree=True))
         stat = statistic(stat, metadata)
         row = dict((lbl, getattr(stat, lbl)())
                    for lbl in fields)
