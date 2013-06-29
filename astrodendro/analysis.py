@@ -265,7 +265,9 @@ class SpatialBase(object):
         """
         dx = self.dx
         a, b = self._sky_paxes()
-        return dx * np.sqrt(self.stat.mom2_along(a))
+        # We need to multiply the second moment by two to get the major axis
+        # rather than the half-major axis.
+        return dx * np.sqrt(self.stat.mom2_along(a)) * 2.
 
     def sky_min(self):
         """Minor axis of the projection onto the PP plane
@@ -275,7 +277,9 @@ class SpatialBase(object):
         """
         dx = self.dx
         a, b = self._sky_paxes()
-        return dx * np.sqrt(self.stat.mom2_along(b))
+        # We need to multiply the second moment by two to get the minor axis
+        # rather than the half-minor axis.
+        return dx * np.sqrt(self.stat.mom2_along(b)) * 2.
 
     def sky_radius(self):
         """ Geometric mean of sky_maj and sky_min """
