@@ -330,19 +330,29 @@ class PPVStatistic(SpatialBase):
         return a, b
 
     def xcen(self):
+        """
+        The mean position of the structure in the x direction.
+        """
         p = self._world_pos()
         return p[2] if self.vaxis != 2 else p[1]
 
     def ycen(self):
+        """
+        The mean position of the structure in the y direction.
+        """
         p = self._world_pos()
         return p[1] if self.vaxis == 0 else p[0]
 
     def vcen(self):
+        """
+        The mean velocity of the structure.
+        """
         p = self._world_pos()
         return p[self.vaxis]
 
     def flux(self):
-        """Integrated flux
+        """
+        Integrated flux.
 
         sum(v_i * dx^2 * dv)
         """
@@ -350,15 +360,17 @@ class PPVStatistic(SpatialBase):
         return fac * self.stat.mom0()
 
     def vrms(self):
-        """Intensity-weighted second moment of velocity"""
+        """
+        Intensity-weighted second moment of velocity
+        """
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
         return self.dv * np.sqrt(self.stat.mom2_along(ax))
 
     def sky_pa(self):
-        """The position angle of sky_maj, sky_min
-
-        Returns the angle in degrees counter-clockwise from the +x axis
+        """
+        The position angle of sky_maj, sky_min in degrees counter-clockwise
+        from the +x axis.
         """
         a, b = self._sky_paxes()
         a.pop(self.vaxis)
@@ -394,17 +406,23 @@ class PPStatistic(SpatialBase):
         return fac * self.stat.mom0()
 
     def sky_pa(self):
-        """The position angle of sky_maj, sky_min
-
-        Returns the angle in degrees counter-clockwise from the +x axis
+        """
+        The position angle of sky_maj, sky_min in degrees counter-clockwise
+        from the +x axis.
         """
         a, b = self._sky_paxes()
         return np.degrees(np.arctan2(a[0], a[1]))
 
     def xcen(self):
+        """
+        The mean position of the structure in the x direction.
+        """
         return self._world_pos()[1]
 
     def ycen(self):
+        """
+        The mean position of the structure in the y direction.
+        """
         return self._world_pos()[0]
 
 
