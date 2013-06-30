@@ -33,13 +33,13 @@ we can get statistics for the first structure in the trunk, which is a leaf::
     >>> d.trunk[0]
     <Structure type=leaf idx=101>
     >>> stat = PPStatistic(d.trunk[0])
-    >>> stat.sky_major_sigma()  # length of major axis on the sky
+    >>> stat.sky_major_sigma  # length of major axis on the sky
     3.7659611491290619
-    >>> stat.sky_minor_sigma()  # length of minor axis on the sky
+    >>> stat.sky_minor_sigma  # length of minor axis on the sky
     2.9278600766040364
-    >>> stat.sky_pa()  # position angle on the sky
+    >>> stat.sky_pa  # position angle on the sky
     134.61988014787443
-    >>> stat.flux()  # total flux contained in structure
+    >>> stat.flux  # total flux contained in structure
     88.605692148208618
 
 Making a catalog
@@ -183,8 +183,8 @@ approximating the structures on top of the structures themselves:
         p.plot_contour(ax, structure=leaf, lw=3, colors='red')
 
         s = PPStatistic(leaf)
-        ax.add_patch(Ellipse((s.xcen(), s.ycen()),
-                              s.sky_major_sigma(), s.sky_minor_sigma(), angle=s.sky_pa(),
+        ax.add_patch(Ellipse((s.xcen, s.ycen),
+                              s.sky_major_sigma, s.sky_minor_sigma, angle=s.sky_pa,
                               edgecolor='orange', facecolor='none'))
 
     ax.set_xlim(75., 170.)

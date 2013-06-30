@@ -231,6 +231,7 @@ class SpatialBase(object):
     dist = MetaData('dist', 'Distance')
     wcs = MetaData('wcs', 'WCS object', default=None)
 
+    @property
     def luminosity(self):
         """Integrated luminosity
 
@@ -244,7 +245,7 @@ class SpatialBase(object):
         except AttributeError:
             # metadata not a quantity. Assuming dx=degrees
             fac = np.radians(1)
-        return self.dist ** 2 * self.flux() * fac ** 2
+        return self.dist ** 2 * self.flux * fac ** 2
 
     def _sky_paxes(self):
         raise NotImplementedError()
@@ -256,6 +257,7 @@ class SpatialBase(object):
             return self.wcs.all_pix2world([xyz], 0).ravel()[::-1]
         return xyz[::-1]
 
+    @property
     def sky_major_sigma(self):
         """Major axis of the projection onto the PP plane
 
@@ -268,6 +270,7 @@ class SpatialBase(object):
         # rather than the half-major axis.
         return dx * np.sqrt(self.stat.mom2_along(a))
 
+    @property
     def sky_minor_sigma(self):
         """Minor axis of the projection onto the PP plane
 
@@ -280,17 +283,19 @@ class SpatialBase(object):
         # rather than the half-minor axis.
         return dx * np.sqrt(self.stat.mom2_along(b))
 
+    @property
     def sky_radius(self):
         """ Geometric mean of sky_maj and sky_min """
-        u, a = _qsplit(self.sky_major_sigma())
-        u, b = _qsplit(self.sky_minor_sigma())
+        u, a = _qsplit(self.sky_major_sigma)
+        u, b = _qsplit(self.sky_minor_sigma)
         return u * np.sqrt(a * b)
 
+    @property
     def sky_deconvolved_rad(self):
         """sky_radius corrected for beam-smearing"""
         beam = self.bmaj * self.bmin
-        u, a = _qsplit(self.sky_major_sigma())
-        u, b = _qsplit(self.sky_minor_sigma())
+        u, a = _qsplit(self.sky_major_sigma)
+        u, b = _qsplit(self.sky_minor_sigma)
         return u * np.sqrt(np.sqrt(a ** 2 - beam) * np.sqrt(b ** 2 - beam))
 
 
@@ -329,6 +334,7 @@ class PPVStatistic(SpatialBase):
         b.insert(0, vaxis)
         return a, b
 
+    @property
     def xcen(self):
         """
         The mean position of the structure in the x direction.
@@ -336,6 +342,7 @@ class PPVStatistic(SpatialBase):
         p = self._world_pos()
         return p[2] if self.vaxis != 2 else p[1]
 
+    @property
     def ycen(self):
         """
         The mean position of the structure in the y direction.
@@ -343,6 +350,7 @@ class PPVStatistic(SpatialBase):
         p = self._world_pos()
         return p[1] if self.vaxis == 0 else p[0]
 
+    @property
     def vcen(self):
         """
         The mean velocity of the structure.
@@ -350,6 +358,7 @@ class PPVStatistic(SpatialBase):
         p = self._world_pos()
         return p[self.vaxis]
 
+    @property
     def flux(self):
         """
         Integrated flux.
@@ -359,6 +368,7 @@ class PPVStatistic(SpatialBase):
         fac = self.bunit * self.dx ** 2 * self.dv
         return fac * self.stat.mom0()
 
+    @property
     def vrms(self):
         """
         Intensity-weighted second moment of velocity
@@ -367,6 +377,7 @@ class PPVStatistic(SpatialBase):
         ax[self.vaxis] = 1
         return self.dv * np.sqrt(self.stat.mom2_along(ax))
 
+    @property
     def sky_pa(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
@@ -400,11 +411,13 @@ class PPStatistic(SpatialBase):
     def _sky_paxes(self):
         return self.stat.paxes()
 
+    @property
     def flux(self):
         """ Integrated flux """
         fac = self.bunit * self.dx ** 2
         return fac * self.stat.mom0()
 
+    @property
     def sky_pa(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
@@ -413,12 +426,14 @@ class PPStatistic(SpatialBase):
         a, b = self._sky_paxes()
         return np.degrees(np.arctan2(a[0], a[1]))
 
+    @property
     def xcen(self):
         """
         The mean position of the structure in the x direction.
         """
         return self._world_pos()[1]
 
+    @property
     def ycen(self):
         """
         The mean position of the structure in the y direction.
@@ -442,27 +457,35 @@ class PPPStatistic(object):
         """
         raise NotImplementedError()
 
+    @property
     def mass(self):
         pass
 
+    @property
     def volume(self):
         pass
 
+    @property
     def surface_area(self):
         pass
 
+    @property
     def virial(self):
         pass
 
+    @property
     def vrms(self):
         pass
 
+    @property
     def vz_rms(self):
         pass
 
+    @property
     def pressure_vz(self):
         pass
 
+    @property
     def pressure(self):
         pass
 
@@ -479,7 +502,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     for struct in structures:
         stat = ScalarStatistic(struct.values(subtree=True), struct.indices(subtree=True))
         stat = statistic(stat, metadata)
-        row = dict((lbl, getattr(stat, lbl)())
+        row = dict((lbl, getattr(stat, lbl))
                    for lbl in fields)
         row.update(_idx=struct.idx)
 
