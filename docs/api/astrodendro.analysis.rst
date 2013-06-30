@@ -11,8 +11,8 @@ astrodendro.analysis
 
       ~PPStatistic.flux
       ~PPStatistic.luminosity
-      ~PPStatistic.sky_maj
-      ~PPStatistic.sky_min
+      ~PPStatistic.sky_major_sigma
+      ~PPStatistic.sky_minor_sigma
       ~PPStatistic.sky_pa
       ~PPStatistic.sky_radius
       ~PPStatistic.sky_deconvolved_rad
@@ -27,8 +27,8 @@ astrodendro.analysis
 
       ~PPVStatistic.flux
       ~PPVStatistic.luminosity
-      ~PPVStatistic.sky_maj
-      ~PPVStatistic.sky_min
+      ~PPVStatistic.sky_major_sigma
+      ~PPVStatistic.sky_minor_sigma
       ~PPVStatistic.sky_pa
       ~PPVStatistic.sky_radius
       ~PPVStatistic.sky_deconvolved_rad

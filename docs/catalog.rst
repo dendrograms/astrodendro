@@ -33,9 +33,9 @@ we can get statistics for the first structure in the trunk, which is a leaf::
     >>> d.trunk[0]
     <Structure type=leaf idx=101>
     >>> stat = PPStatistic(d.trunk[0])
-    >>> stat.sky_maj()  # length of major axis on the sky
+    >>> stat.sky_major_sigma()  # length of major axis on the sky
     3.7659611491290619
-    >>> stat.sky_min()  # length of minor axis on the sky
+    >>> stat.sky_minor_sigma()  # length of minor axis on the sky
     2.9278600766040364
     >>> stat.sky_pa()  # position angle on the sky
     134.61988014787443
@@ -83,7 +83,7 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
     191 64.1306480569   0.0195353125403 ... 2.85334306153 2.96246166695
      12 4.63582743919   0.0014121537931 ...  3.2987034401  3.5720567466
     >>> print cat.columns
-       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_rad','sky_maj','sky_min','sky_pa','sky_radius','vrms')>
+       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_rad','sky_major_sigma','sky_minor_sigma','sky_pa','sky_radius','vrms')>
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
@@ -110,8 +110,8 @@ Here's a sensible looking metadata dictionary::
    flux deg2 K km / (s)
    luminosity K km pc2 / (s)
    sky_deconvolved_rad deg
-   sky_maj deg
-   sky_min deg
+   sky_major_sigma deg
+   sky_minor_sigma deg
    sky_pa None
    sky_radius deg
    vcen None
@@ -132,9 +132,9 @@ Here's a more detailed description of the available quantities:
 * ``flux`` : The integrated intensity of each structure
 * ``luminosity`` : ``flux * d^2``
 * ``sky_mag`` : The intensity-weighted second moment of emission, along the major axis of the structure projected onto the sky
-* ``sky_min`` : The intensity-weighted second moment of emission, perpendicular to the major axis of the structure projected onto the sky
+* ``sky_minor_sigma`` : The intensity-weighted second moment of emission, perpendicular to the major axis of the structure projected onto the sky
 * ``sky_pa`` : The position angle of the structure projected onto the sky. Given in radians CCW from the +x axis (note that this is the +x axis in pixel coordinates, which is the ``-x`` axis for conventional astronomy images)
-* ``sky_radius`` : The geometric mean of ``sky_maj`` and ``sky_min``
+* ``sky_radius`` : The geometric mean of ``sky_major_sigma`` and ``sky_minor_sigma``
 * ``vrms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
 * ``sky_deconvolved_rad``: The size of the structure, corrected for the effects of beam-smearing.
 * ``xcen`` : X-position of intensity-weighted centroid (in world units if a ``WCS`` object is stored in ``metadta['wcs']``
@@ -184,7 +184,7 @@ approximating the structures on top of the structures themselves:
 
         s = PPStatistic(leaf)
         ax.add_patch(Ellipse((s.xcen(), s.ycen()),
-                              s.sky_maj(), s.sky_min(), angle=s.sky_pa(),
+                              s.sky_major_sigma(), s.sky_minor_sigma(), angle=s.sky_pa(),
                               edgecolor='orange', facecolor='none'))
 
     ax.set_xlim(75., 170.)

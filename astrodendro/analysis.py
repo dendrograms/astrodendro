@@ -253,10 +253,10 @@ class SpatialBase(object):
         xyz = self.stat.mom1()[::-1]
         if self.wcs is not None:
             # We use origin=0 since the indices come from Numpy indexing
-            return self.wcs.all_pix2world([xyz], origin=0).ravel()[::-1]
+            return self.wcs.all_pix2world([xyz], 0).ravel()[::-1]
         return xyz[::-1]
 
-    def sky_maj(self):
+    def sky_major_sigma(self):
         """Major axis of the projection onto the PP plane
 
         Intensity weighted second moment in direction
@@ -266,9 +266,9 @@ class SpatialBase(object):
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
-        return dx * np.sqrt(self.stat.mom2_along(a)) * 2.
+        return dx * np.sqrt(self.stat.mom2_along(a))
 
-    def sky_min(self):
+    def sky_minor_sigma(self):
         """Minor axis of the projection onto the PP plane
 
         Intensity-weighted second moment perpendicular
@@ -278,19 +278,19 @@ class SpatialBase(object):
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
-        return dx * np.sqrt(self.stat.mom2_along(b)) * 2.
+        return dx * np.sqrt(self.stat.mom2_along(b))
 
     def sky_radius(self):
         """ Geometric mean of sky_maj and sky_min """
-        u, a = _qsplit(self.sky_maj())
-        u, b = _qsplit(self.sky_min())
+        u, a = _qsplit(self.sky_major_sigma())
+        u, b = _qsplit(self.sky_minor_sigma())
         return u * np.sqrt(a * b)
 
     def sky_deconvolved_rad(self):
         """sky_radius corrected for beam-smearing"""
         beam = self.bmaj * self.bmin
-        u, a = _qsplit(self.sky_maj())
-        u, b = _qsplit(self.sky_min())
+        u, a = _qsplit(self.sky_major_sigma())
+        u, b = _qsplit(self.sky_minor_sigma())
         return u * np.sqrt(np.sqrt(a ** 2 - beam) * np.sqrt(b ** 2 - beam))
 
 
@@ -517,8 +517,8 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['flux', 'luminosity', 'sky_maj',
-                        'sky_min', 'sky_radius', 'sky_deconvolved_rad',
+    fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
+                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_rad',
                         'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
@@ -546,7 +546,7 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['flux', 'luminosity', 'sky_maj',
-                        'sky_min', 'sky_radius', 'sky_deconvolved_rad',
+    fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
+                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_rad',
                         'sky_pa', 'xcen', 'ycen']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)

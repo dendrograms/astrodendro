@@ -15,11 +15,11 @@ from .. import Dendrogram
 from ..structure import Structure
 
 
-wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=0,
-                         cdelt2=2, crval2=0, crpix2=0))
-wcs_3d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=0,
-                         cdelt2=2, crval2=0, crpix2=0,
-                         cdelt3=3, crval3=0, crpix3=0))
+wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
+                         cdelt2=2, crval2=0, crpix2=1))
+wcs_3d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
+                         cdelt2=2, crval2=0, crpix2=1,
+                         cdelt3=3, crval3=0, crpix3=1))
 
 def benchmark_stat():
     x = np.array([216, 216, 216, 216, 216, 217, 216,
@@ -183,7 +183,6 @@ class TestPPVStatistic(object):
                       vaxis=0,
                       bunit=1,
                       wcs=wcs_3d,
-                      wcs_origin=1,
                       )
         result.update(**kwargs)
         return result
@@ -199,6 +198,7 @@ class TestPPVStatistic(object):
         assert_allclose(p.flux(), self.v['mom0'] * 3)
 
     def test_xcen(self):
+
         p = PPVStatistic(self.stat, self.metadata())
         assert_allclose(p.xcen(), self.v['mom1'][2])
 
@@ -219,14 +219,14 @@ class TestPPVStatistic(object):
         p = PPVStatistic(self.stat, self.metadata(vaxis=2))
         assert_allclose(p.vcen(), self.v['mom1'][2])
 
-    def test_sky_maj(self):
+    def test_sky_major_sigma(self):
         p = PPVStatistic(self.stat, self.metadata(dx=2))
 
-        assert_allclose(p.sky_maj(), self.v['sig_maj'] * 2)
+        assert_allclose(p.sky_major_sigma(), self.v['sig_maj'] * 2)
 
-    def test_sky_min(self):
+    def test_sky_minor_sigma(self):
         p = PPVStatistic(self.stat, self.metadata(dx=4))
-        assert_allclose(p.sky_min(), self.v['sig_min'] * 4)
+        assert_allclose(p.sky_minor_sigma(), self.v['sig_min'] * 4)
 
     def test_sky_radius(self):
         p = PPVStatistic(self.stat, self.metadata(dx=4))
@@ -279,8 +279,8 @@ class TestPPVStatistic(object):
 
         assert p.vrms().unit == u.km / u.s
         assert p.flux().unit == u.deg ** 2 * u.km / u.s * u.K
-        assert p.sky_maj().unit == u.deg
-        assert p.sky_min().unit == u.deg
+        assert p.sky_major_sigma().unit == u.deg
+        assert p.sky_minor_sigma().unit == u.deg
         assert p.sky_radius().unit == u.deg
         assert p.luminosity().unit == u.km / u.s * u.K * u.pc ** 2
 
@@ -304,14 +304,14 @@ class TestPPStatistic(object):
         p = PPStatistic(self.stat, self.metadata(dx=5))
         assert_allclose(p.flux(), self.v['mom0'] * 25)
 
-    def test_sky_maj(self):
+    def test_sky_major_sigma(self):
         p = PPStatistic(self.stat, self.metadata(dx=2))
 
-        assert_allclose(p.sky_maj(), self.v['sig_maj'] * 2)
+        assert_allclose(p.sky_major_sigma(), self.v['sig_maj'] * 2)
 
-    def test_sky_min(self):
+    def test_sky_minor_sigma(self):
         p = PPStatistic(self.stat, self.metadata(dx=4))
-        assert_allclose(p.sky_min(), self.v['sig_min'] * 4)
+        assert_allclose(p.sky_minor_sigma(), self.v['sig_min'] * 4)
 
     def test_sky_radius(self):
         p = PPStatistic(self.stat, self.metadata(dx=4))
@@ -367,7 +367,7 @@ class TestCataloger(object):
 
 class TestPPVCataloger(TestCataloger):
     fields = ['_idx', 'flux', 'luminosity',
-              'sky_maj', 'sky_min', 'sky_radius',
+              'sky_major_sigma', 'sky_minor_sigma', 'sky_radius',
               'vrms', 'sky_deconvolved_rad',
               'sky_pa', 'xcen', 'ycen', 'vcen']
     cataloger = staticmethod(ppv_catalog)
@@ -382,7 +382,7 @@ class TestPPVCataloger(TestCataloger):
 
 class TestPPCataloger(TestCataloger):
     fields = ['_idx', 'flux', 'luminosity',
-              'sky_maj', 'sky_min', 'sky_radius',
+              'sky_major_sigma', 'sky_minor_sigma', 'sky_radius',
               'sky_deconvolved_rad',
               'sky_pa', 'xcen', 'ycen']
     cataloger = staticmethod(pp_catalog)
@@ -403,12 +403,12 @@ del TestCataloger
 
 def test_find_missing_ppv_metadata():
     md = dict(dx=1, dv=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1,
-              wcs=wcs_3d, wcs_origin=0)
+              wcs=wcs_3d)
     assert len(_missing_metadata(PPVStatistic, md)) == 0
 
     md.pop('dx')
     assert _missing_metadata(PPVStatistic, md)[0].key == 'dx'
-    assert len(_missing_metadata(PPVStatistic, {})) == 9
+    assert len(_missing_metadata(PPVStatistic, {})) == 8
 
 
 def test_metadata_protocol():
