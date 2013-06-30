@@ -291,7 +291,7 @@ class SpatialBase(object):
         return u * np.sqrt(a * b)
 
     @property
-    def sky_deconvolved_rad(self):
+    def sky_deconvolved_radius(self):
         """sky_radius corrected for beam-smearing"""
         beam = self.bmaj * self.bmin
         u, a = _qsplit(self.sky_major_sigma)
@@ -541,7 +541,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
         The resulting catalog
     """
     fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_rad',
+                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_radius',
                         'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
@@ -570,6 +570,6 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
         The resulting catalog
     """
     fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_rad',
+                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_radius',
                         'sky_pa', 'xcen', 'ycen']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)

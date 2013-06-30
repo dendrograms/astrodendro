@@ -83,7 +83,7 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
     191 64.1306480569   0.0195353125403 ... 2.85334306153 2.96246166695
      12 4.63582743919   0.0014121537931 ...  3.2987034401  3.5720567466
     >>> print cat.columns
-       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_rad','sky_major_sigma','sky_minor_sigma','sky_pa','sky_radius','vrms')>
+       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_radius','sky_major_sigma','sky_minor_sigma','sky_pa','sky_radius','vrms')>
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
@@ -109,7 +109,7 @@ Here's a sensible looking metadata dictionary::
    _idx None
    flux deg2 K km / (s)
    luminosity K km pc2 / (s)
-   sky_deconvolved_rad deg
+   sky_deconvolved_radius deg
    sky_major_sigma deg
    sky_minor_sigma deg
    sky_pa None
@@ -136,7 +136,7 @@ Here's a more detailed description of the available quantities:
 * ``sky_pa`` : The position angle of the structure projected onto the sky. Given in radians CCW from the +x axis (note that this is the +x axis in pixel coordinates, which is the ``-x`` axis for conventional astronomy images)
 * ``sky_radius`` : The geometric mean of ``sky_major_sigma`` and ``sky_minor_sigma``
 * ``vrms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
-* ``sky_deconvolved_rad``: The size of the structure, corrected for the effects of beam-smearing.
+* ``sky_deconvolved_radius``: The size of the structure, corrected for the effects of beam-smearing.
 * ``xcen`` : X-position of intensity-weighted centroid (in world units if a ``WCS`` object is stored in ``metadta['wcs']``
 * ``ycen`` : Y-position of intensity-weighted centroid (see above)
 * ``vcen`` : V-position of intensity-weighted centroid (see above)

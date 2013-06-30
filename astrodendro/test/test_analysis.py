@@ -256,13 +256,13 @@ class TestPPVStatistic(object):
         p = PPVStatistic(stat, self.metadata())
         assert_allclose(p.sky_pa, 90)
 
-    def test_deconvolved_rad(self):
+    def test_deconvolved_radius(self):
         p = PPVStatistic(self.stat, self.metadata(bmaj=.4, bmin=.1))
 
         a = self.v['sig_maj']
         b = self.v['sig_min']
         dcr = np.sqrt(np.sqrt(a ** 2 - .04) * np.sqrt(b ** 2 - .04))
-        assert_allclose(p.sky_deconvolved_rad, dcr)
+        assert_allclose(p.sky_deconvolved_radius, dcr)
 
     def test_luminosity(self):
         p = PPVStatistic(self.stat, self.metadata(dist=10))
@@ -368,7 +368,7 @@ class TestCataloger(object):
 class TestPPVCataloger(TestCataloger):
     fields = ['_idx', 'flux', 'luminosity',
               'sky_major_sigma', 'sky_minor_sigma', 'sky_radius',
-              'vrms', 'sky_deconvolved_rad',
+              'vrms', 'sky_deconvolved_radius',
               'sky_pa', 'xcen', 'ycen', 'vcen']
     cataloger = staticmethod(ppv_catalog)
 
@@ -383,7 +383,7 @@ class TestPPVCataloger(TestCataloger):
 class TestPPCataloger(TestCataloger):
     fields = ['_idx', 'flux', 'luminosity',
               'sky_major_sigma', 'sky_minor_sigma', 'sky_radius',
-              'sky_deconvolved_rad',
+              'sky_deconvolved_radius',
               'sky_pa', 'xcen', 'ycen']
     cataloger = staticmethod(pp_catalog)
 
