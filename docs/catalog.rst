@@ -146,8 +146,8 @@ Measurements of Molecular Cloud Properties
 <http://adsabs.harvard.edu/abs/2006PASP..118..590R>`_ or `the original
 dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the
 terminology of the dendrogram paper, the quantities in
-:func:`astrodendro.analysis.pp_catalog` and
-:func:`astrodendro.analysis.ppv_catalog` adopt the "bijection" paradigm.
+:func:`~astrodendro.analysis.pp_catalog` and
+:func:`~astrodendro.analysis.ppv_catalog` adopt the "bijection" paradigm.
 
 Example
 -------
