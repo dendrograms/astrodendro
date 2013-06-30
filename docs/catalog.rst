@@ -184,7 +184,9 @@ approximating the structures on top of the structures themselves:
 
         s = PPStatistic(leaf)
         ax.add_patch(Ellipse((s.xcen, s.ycen),
-                              s.sky_major_sigma, s.sky_minor_sigma, angle=s.sky_pa,
+                              s.sky_major_sigma * 2.3548,
+                              s.sky_minor_sigma * 2.3548,
+                              angle=s.sky_pa,
                               edgecolor='orange', facecolor='none'))
 
     ax.set_xlim(75., 170.)
