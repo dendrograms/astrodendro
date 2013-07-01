@@ -85,6 +85,14 @@ class Dendrogram(object):
         min_npix : int, optional
             The minimum number of pixels/values needed for a leaf to be considered
             an independent entity.
+        is_independent : function, optional
+            A custom function that can be specified that will determine if a
+            leaf can be treated as an independent entity. The signature of the
+            function should be ``func(structure, index=None, value=None)``
+            where ``structure`` is the structure under consideration, and
+            ``index`` and ``value`` are optionally the pixel that is causing
+            the structure to be considered for merging into/attaching to the
+            tree.
 
         Examples
         --------
@@ -104,7 +112,7 @@ class Dendrogram(object):
         """
 
         if is_independent is None:
-            is_independent = lambda n, **k: True
+            is_independent = lambda *args, **kwargs: True
 
         self = Dendrogram()
         self.data = data
@@ -215,7 +223,7 @@ class Dendrogram(object):
                          (structure.vmax - data_value < min_delta or
                           len(structure.values(subtree=False)) < min_npix or
                           structure.vmax == data_value or
-                          not is_independent(node, coords=coords, intensity=intensity))]
+                          not is_independent(structure, index=coord, value=data_value))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
