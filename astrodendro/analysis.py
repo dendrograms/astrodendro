@@ -219,8 +219,9 @@ def _warn_missing_metadata(cl, md, verbose=True):
         return
 
     for m in missing:
-        warnings.warn("Missing Metadata:\n\t %s\n\t Defaulting to %s=%s" %
-                      (m, m.key, m.default))
+        warnings.warn("%s missing, defaulting to %s" %
+                      (m, m.default))
+
 
 
 class SpatialBase(object):
