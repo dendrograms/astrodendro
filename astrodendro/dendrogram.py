@@ -68,7 +68,7 @@ class Dendrogram(object):
 
     @staticmethod
     def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
-                merge_test_function=None, verbose=False):
+                is_independent=None, verbose=False):
         """
         Compute a dendrogram from a Numpy array.
 
@@ -103,8 +103,8 @@ class Dendrogram(object):
         online documentation at [www.dendrograms.org](www.dendrograms.org).
         """
 
-        if merge_test_function is None:
-            merge_test_function = lambda n, **k: False
+        if is_independent is None:
+            is_independent = lambda n, **k: True
 
         self = Dendrogram()
         self.data = data
@@ -215,7 +215,7 @@ class Dendrogram(object):
                          (structure.vmax - data_value < min_delta or
                           len(structure.values(subtree=False)) < min_npix or
                           structure.vmax == data_value or
-                          merge_test_function(node, coords=coords, intensity=intensity))]
+                          not is_independent(node, coords=coords, intensity=intensity))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -263,7 +263,9 @@ class Dendrogram(object):
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
         for leaf in leaves_in_trunk:
-            if (len(leaf.values(subtree=False)) < min_npix or leaf.vmax - leaf.vmin < min_delta or merge_test_function(leaf)):
+            if (len(leaf.values(subtree=False)) < min_npix or
+                leaf.vmax - leaf.vmin < min_delta or
+                not is_independent(leaf)):
                 # This leaf is an orphan, so remove all references to it:
                 structures.pop(leaf.idx)
                 self.trunk.remove(leaf)
