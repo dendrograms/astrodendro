@@ -310,19 +310,19 @@ class PPVStatistic(SpatialBase):
     structure : `~astrodendro.structure.Structure` instance
         The structure to compute the statistics for
     metadata : dict
-         Key-value paris of metadata
+         Key-value pairs of metadata
     """
 
     dv = MetaData('dv', 'Velocity channel width')
     vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
 
-    def __init__(self, stat, metadata={}):
+    def __init__(self, stat, metadata=None):
         if isinstance(stat, Structure):
             self.stat = ScalarStatistic(stat.values(subtree=True),
                                         stat.indices(subtree=True))
         else:
             self.stat = stat
-        self.metadata = metadata
+        self.metadata = metadata or {}
 
     def _sky_paxes(self):
         vaxis = self.vaxis
@@ -398,16 +398,16 @@ class PPStatistic(SpatialBase):
     structure : `~astrodendro.structure.Structure` instance
         The structure to compute the statistics for
     metadata : dict
-         Key-value paris of metadata
+         Key-value pairs of metadata
     """
 
-    def __init__(self, stat, metadata={}):
+    def __init__(self, stat, metadata=None):
         if isinstance(stat, Structure):
             self.stat = ScalarStatistic(stat.values(subtree=True),
                                         stat.indices(subtree=True))
         else:
             self.stat = stat
-        self.metadata = metadata
+        self.metadata = metadata or {}
 
     def _sky_paxes(self):
         return self.stat.paxes()
@@ -445,7 +445,7 @@ class PPStatistic(SpatialBase):
 
 class PPPStatistic(object):
 
-    def __init__(self, rhostat, vstat, metadata={}):
+    def __init__(self, rhostat, vstat, metadata=None):
         """
         Derive properties from PPP density and velocity fields
 
