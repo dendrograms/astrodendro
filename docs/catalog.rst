@@ -55,27 +55,14 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
    >>> metadata = {}
    >>> cat = ppv_catalog(d, metadata)
 
-   WARNING: Missing Metadata:
-    bmaj (Beam major axis, sigma)
-     Defaulting to bmaj=0 [astrodendro.analysis]
-   WARNING: Missing Metadata:
-    bmin (Beam minor axis, sigma)
-     Defaulting to bmin=0 [astrodendro.analysis]
-   WARNING: Missing Metadata:
-    bunit (Unit of intensity)
-     Defaulting to bunit=1 [astrodendro.analysis]
-   WARNING: Missing Metadata:
-    dist (Distance)
-     Defaulting to dist=1 [astrodendro.analysis]
-   WARNING: Missing Metadata:
-    dv (Velocity channel width)
-     Defaulting to dv=1 [astrodendro.analysis]
-   WARNING: Missing Metadata:
-    dx (Angular length of a pixel)
-     Defaulting to dx=1 [astrodendro.analysis]
-   WARNING: Missing Metadata:
-    vaxis (Index of velocity axis (numpy convention))
-     Defaulting to vaxis=1 [astrodendro.analysis]
+    WARNING: bmaj (Beam major axis, sigma) missing, defaulting to 0 [astrodendro.analysis]
+    WARNING: bmin (Beam minor axis, sigma) missing, defaulting to 0 [astrodendro.analysis]
+    WARNING: bunit (Unit of intensity) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: dist (Distance) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: dv (Velocity channel width) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: dx (Angular length of a pixel) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: wcs (WCS object) missing, defaulting to None [astrodendro.analysis]
 
    >>> print cat[:3]
    _idx      flux         luminosity    ...  sky_radius        vrms
