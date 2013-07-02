@@ -55,10 +55,8 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
    >>> metadata = {}
    >>> cat = ppv_catalog(d, metadata)
 
-    WARNING: bmaj (Beam major axis, sigma) missing, defaulting to 0 [astrodendro.analysis]
-    WARNING: bmin (Beam minor axis, sigma) missing, defaulting to 0 [astrodendro.analysis]
-    WARNING: bunit (Unit of intensity) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: dist (Distance) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: data_unit (Unit of the pixel values) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: distance (Distance) missing, defaulting to 1 [astrodendro.analysis]
     WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1 [astrodendro.analysis]
     WARNING: spatial_scale (Angular length of a pixel) missing, defaulting to 1 [astrodendro.analysis]
     WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 1 [astrodendro.analysis]
@@ -86,17 +84,14 @@ Here's a sensible looking metadata dictionary::
     >>> md = dict(velocity_scale=0.5 * u.km / u.s,
     >>>           vaxis=0,
     >>>           spatial_scale=.002 * u.deg,
-    >>>           dist=100 * u.pc,
-    >>>           bunit=u.K,
-    >>>           bmaj=.004 * u.deg,
-    >>>           bmin=.004 * u.deg)
+    >>>           distance=100 * u.pc,
+    >>>           data_unit=u.K)
     >>> cat = ppv_catalog(d, md)
     >>> for c in cat.columns:
     >>>     print c, cat[c].units
    _idx None
    flux deg2 K km / (s)
    luminosity K km pc2 / (s)
-   sky_deconvolved_radius deg
    sky_major_sigma deg
    sky_minor_sigma deg
    sky_pa None
@@ -119,11 +114,11 @@ Here's a more detailed description of the available quantities:
 * ``flux`` : The integrated intensity of each structure
 * ``luminosity`` : ``flux * d^2``
 * ``sky_mag`` : The intensity-weighted second moment of emission, along the major axis of the structure projected onto the sky
+* ``sky_major_sigma`` : The intensity-weighted second moment of emission along the major axis of the structure projected onto the sky
 * ``sky_minor_sigma`` : The intensity-weighted second moment of emission, perpendicular to the major axis of the structure projected onto the sky
 * ``sky_pa`` : The position angle of the structure projected onto the sky. Given in radians CCW from the +x axis (note that this is the +x axis in pixel coordinates, which is the ``-x`` axis for conventional astronomy images)
 * ``sky_radius`` : The geometric mean of ``sky_major_sigma`` and ``sky_minor_sigma``
 * ``vrms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
-* ``sky_deconvolved_radius``: The size of the structure, corrected for the effects of beam-smearing.
 * ``xcen`` : X-position of intensity-weighted centroid (in world units if a ``WCS`` object is stored in ``metadta['wcs']``
 * ``ycen`` : Y-position of intensity-weighted centroid (see above)
 * ``vcen`` : V-position of intensity-weighted centroid (see above)

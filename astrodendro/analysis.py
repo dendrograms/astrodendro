@@ -221,11 +221,10 @@ def _warn_missing_metadata(cl, md, verbose=True):
 
 
 class SpatialBase(object):
+
     spatial_scale = MetaData('spatial_scale', 'Angular length of a pixel')
-    bmaj = MetaData('bmaj', 'Beam major axis, sigma', default=0)
-    bmin = MetaData('bmin', 'Beam minor axis, sigma', default=0)
-    bunit = MetaData('bunit', 'Unit of intensity')
-    dist = MetaData('dist', 'Distance')
+    data_unit = MetaData('data_unit', 'Units of the pixel values')
+    distance = MetaData('distance', 'Distance')
     wcs = MetaData('wcs', 'WCS object', default=None)
 
     @property
@@ -242,7 +241,7 @@ class SpatialBase(object):
         except AttributeError:
             # metadata not a quantity. Assuming dx=degrees
             fac = np.radians(1)
-        return self.dist ** 2 * self.flux * fac ** 2
+        return self.distance ** 2 * self.flux * fac ** 2
 
     def _sky_paxes(self):
         raise NotImplementedError()
@@ -260,10 +259,10 @@ class SpatialBase(object):
 
     @property
     def sky_major_sigma(self):
-        """Major axis of the projection onto the PP plane
-
-        Intensity weighted second moment in direction
-        of greatest elongation in the PP plane
+        """
+        Major axis of the projection onto the position-position (PP) plane,
+        computed from the intensity weighted second moment in direction of
+        greatest elongation in the PP plane.
         """
         dx = self.spatial_scale
         a, b = self._sky_paxes()
@@ -273,10 +272,10 @@ class SpatialBase(object):
 
     @property
     def sky_minor_sigma(self):
-        """Minor axis of the projection onto the PP plane
-
-        Intensity-weighted second moment perpendicular
-        to major axis, in PP plane
+        """
+        Minor axis of the projection onto the position-position (PP) plane,
+        computed from the intensity weighted second moment perpendicular to
+        the major axis in the PP plane.
         """
         dx = self.spatial_scale
         a, b = self._sky_paxes()
@@ -286,18 +285,12 @@ class SpatialBase(object):
 
     @property
     def sky_radius(self):
-        """ Geometric mean of sky_maj and sky_min """
+        """
+        Geometric mean of sky_major_sigma and sky_minor_sigma.
+        """
         u, a = _qsplit(self.sky_major_sigma)
         u, b = _qsplit(self.sky_minor_sigma)
         return u * np.sqrt(a * b)
-
-    @property
-    def sky_deconvolved_radius(self):
-        """sky_radius corrected for beam-smearing"""
-        beam = self.bmaj * self.bmin
-        u, a = _qsplit(self.sky_major_sigma)
-        u, b = _qsplit(self.sky_minor_sigma)
-        return u * np.sqrt(np.sqrt(a ** 2 - beam) * np.sqrt(b ** 2 - beam))
 
 
 class PPVStatistic(SpatialBase):
@@ -366,7 +359,7 @@ class PPVStatistic(SpatialBase):
 
         sum(v_i * dx^2 * dv)
         """
-        fac = self.bunit * self.spatial_scale ** 2 * self.velocity_scale
+        fac = self.data_unit * self.spatial_scale ** 2 * self.velocity_scale
         return fac * self.stat.mom0()
 
     @property
@@ -415,7 +408,7 @@ class PPStatistic(SpatialBase):
     @property
     def flux(self):
         """ Integrated flux """
-        fac = self.bunit * self.spatial_scale ** 2
+        fac = self.data_unit * self.spatial_scale ** 2
         return fac * self.stat.mom0()
 
     @property
@@ -543,7 +536,6 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     """
     fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
                         'sky_minor_sigma', 'sky_radius',
-                        'sky_deconvolved_radius',
                         'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
@@ -573,6 +565,5 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     """
     fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
                         'sky_minor_sigma', 'sky_radius',
-                        'sky_deconvolved_radius',
                         'sky_pa', 'xcen', 'ycen']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)
