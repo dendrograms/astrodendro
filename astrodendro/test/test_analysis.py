@@ -181,7 +181,7 @@ class TestPPVStatistic(object):
                       spatial_scale=1,
                       velocity_scale=1,
                       vaxis=0,
-                      bunit=1,
+                      data_unit=1,
                       wcs=wcs_3d,
                       )
         result.update(**kwargs)
@@ -256,25 +256,17 @@ class TestPPVStatistic(object):
         p = PPVStatistic(stat, self.metadata())
         assert_allclose(p.sky_pa, 90)
 
-    def test_deconvolved_radius(self):
-        p = PPVStatistic(self.stat, self.metadata(bmaj=.4, bmin=.1))
-
-        a = self.v['sig_maj']
-        b = self.v['sig_min']
-        dcr = np.sqrt(np.sqrt(a ** 2 - .04) * np.sqrt(b ** 2 - .04))
-        assert_allclose(p.sky_deconvolved_radius, dcr)
-
     def test_luminosity(self):
-        p = PPVStatistic(self.stat, self.metadata(dist=10))
+        p = PPVStatistic(self.stat, self.metadata(distance=10))
         v = benchmark_values()
         assert_allclose(p.luminosity, v['mom0'] * 100 * np.radians(1) ** 2)
 
-        p = PPVStatistic(self.stat, self.metadata(dist=10, spatial_scale=1 * u.rad))
+        p = PPVStatistic(self.stat, self.metadata(distance=10, spatial_scale=1 * u.rad))
         assert_allclose(p.luminosity, v['mom0'] * 100)
 
     def test_units(self):
         m = self.metadata(spatial_scale=1 * u.deg, velocity_scale=1 * u.km / u.s,
-                          bunit=1 * u.K, dist=1 * u.pc)
+                          data_unit=1 * u.K, distance=1 * u.pc)
         p = PPVStatistic(self.stat, m)
 
         assert p.vrms.unit == u.km / u.s
@@ -368,22 +360,20 @@ class TestCataloger(object):
 class TestPPVCataloger(TestCataloger):
     fields = ['_idx', 'flux', 'luminosity',
               'sky_major_sigma', 'sky_minor_sigma', 'sky_radius',
-              'vrms', 'sky_deconvolved_radius',
-              'sky_pa', 'xcen', 'ycen', 'vcen']
+              'vrms', 'sky_pa', 'xcen', 'ycen', 'vcen']
     cataloger = staticmethod(ppv_catalog)
 
     def stat(self):
         return benchmark_stat()
 
     def metadata(self):
-        return dict(vaxis=1, spatial_scale=1, velocity_scale=1, dist=1, lum2mass=1,
-                    bmaj=1, bmin=1, bunit=1, wcs=wcs_3d)
+        return dict(vaxis=1, spatial_scale=1, velocity_scale=1, distance=1, lum2mass=1,
+                    data_unit=1, wcs=wcs_3d)
 
 
 class TestPPCataloger(TestCataloger):
     fields = ['_idx', 'flux', 'luminosity',
               'sky_major_sigma', 'sky_minor_sigma', 'sky_radius',
-              'sky_deconvolved_radius',
               'sky_pa', 'xcen', 'ycen']
     cataloger = staticmethod(pp_catalog)
 
@@ -393,8 +383,8 @@ class TestPPCataloger(TestCataloger):
         return bs
 
     def metadata(self):
-        return dict(spatial_scale=1, dist=1, lum2mass=1,
-                    bmaj=1, bmin=1, bunit=1, wcs=wcs_2d)
+        return dict(spatial_scale=1, distance=1, lum2mass=1,
+                    data_unit=1, wcs=wcs_2d)
 
 
 #don't let pytest test abstract class
@@ -402,13 +392,13 @@ del TestCataloger
 
 
 def test_find_missing_ppv_metadata():
-    md = dict(spatial_scale=1, velocity_scale=1, vaxis=1, bmaj=1, bmin=1, bunit=1, dist=1,
+    md = dict(spatial_scale=1, velocity_scale=1, vaxis=1, data_unit=1, distance=1,
               wcs=wcs_3d)
     assert len(_missing_metadata(PPVStatistic, md)) == 0
 
     md.pop('spatial_scale')
     assert _missing_metadata(PPVStatistic, md)[0].key == 'spatial_scale'
-    assert len(_missing_metadata(PPVStatistic, {})) == 8
+    assert len(_missing_metadata(PPVStatistic, {})) == 6
 
 
 def test_metadata_protocol():
