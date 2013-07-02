@@ -260,10 +260,9 @@ class SpatialBase(object):
     @property
     def sky_major_sigma(self):
         """
-        Major axis of the projection onto the PP plane
-
-        Intensity weighted second moment in direction
-        of greatest elongation in the PP plane
+        Major axis of the projection onto the position-position (PP) plane,
+        computed from the intensity weighted second moment in direction of
+        greatest elongation in the PP plane.
         """
         dx = self.spatial_scale
         a, b = self._sky_paxes()
@@ -274,10 +273,9 @@ class SpatialBase(object):
     @property
     def sky_minor_sigma(self):
         """
-        Minor axis of the projection onto the position-position (PP) plane
-
-        Intensity-weighted second moment perpendicular
-        to major axis, in PP plane
+        Minor axis of the projection onto the position-position (PP) plane,
+        computed from the intensity weighted second moment perpendicular to
+        the major axis in the PP plane.
         """
         dx = self.spatial_scale
         a, b = self._sky_paxes()
@@ -288,7 +286,7 @@ class SpatialBase(object):
     @property
     def sky_radius(self):
         """
-        Geometric mean of sky_major_sigma and sky_minor_sigma
+        Geometric mean of sky_major_sigma and sky_minor_sigma.
         """
         u, a = _qsplit(self.sky_major_sigma)
         u, b = _qsplit(self.sky_minor_sigma)
