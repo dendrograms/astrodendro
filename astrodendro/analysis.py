@@ -1,6 +1,4 @@
-from types import FunctionType
 import warnings
-
 import numpy as np
 from astropy.units import Quantity, rad
 from astropy.table import Table
@@ -198,7 +196,6 @@ def _missing_metadata(cl, md):
     cls : Class with MetaData descriptors
     md : metadata dictionary
     """
-    result = []
     attrs = [getattr(cl, t) for t in dir(cl)]
     return [m for m in attrs if isinstance(m, MetaData)
             and m.key not in md]
@@ -223,9 +220,8 @@ def _warn_missing_metadata(cl, md, verbose=True):
                       (m, m.default))
 
 
-
 class SpatialBase(object):
-    dx = MetaData('dx', 'Angular length of a pixel')
+    spatial_scale = MetaData('spatial_scale', 'Angular length of a pixel')
     bmaj = MetaData('bmaj', 'Beam major axis, sigma', default=0)
     bmin = MetaData('bmin', 'Beam minor axis, sigma', default=0)
     bunit = MetaData('bunit', 'Unit of intensity')
@@ -241,8 +237,8 @@ class SpatialBase(object):
         #disambiguate between degree/radian dx
         #if astropy unit is used
         try:
-            fac = (1 * self.dx).unit.to(rad)
-            fac /= (1 * self.dx).unit
+            fac = (1 * self.spatial_scale).unit.to(rad)
+            fac /= (1 * self.spatial_scale).unit
         except AttributeError:
             # metadata not a quantity. Assuming dx=degrees
             fac = np.radians(1)
@@ -259,13 +255,17 @@ class SpatialBase(object):
         return xyz[::-1]
 
     @property
+    def flux(self):
+        raise NotImplementedError
+
+    @property
     def sky_major_sigma(self):
         """Major axis of the projection onto the PP plane
 
         Intensity weighted second moment in direction
         of greatest elongation in the PP plane
         """
-        dx = self.dx
+        dx = self.spatial_scale
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
@@ -278,7 +278,7 @@ class SpatialBase(object):
         Intensity-weighted second moment perpendicular
         to major axis, in PP plane
         """
-        dx = self.dx
+        dx = self.spatial_scale
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
@@ -313,7 +313,7 @@ class PPVStatistic(SpatialBase):
          Key-value pairs of metadata
     """
 
-    dv = MetaData('dv', 'Velocity channel width')
+    velocity_scale = MetaData('velocity_scale', 'Velocity channel width')
     vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
 
     def __init__(self, stat, metadata=None):
@@ -366,7 +366,7 @@ class PPVStatistic(SpatialBase):
 
         sum(v_i * dx^2 * dv)
         """
-        fac = self.bunit * self.dx ** 2 * self.dv
+        fac = self.bunit * self.spatial_scale ** 2 * self.velocity_scale
         return fac * self.stat.mom0()
 
     @property
@@ -376,7 +376,7 @@ class PPVStatistic(SpatialBase):
         """
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
-        return self.dv * np.sqrt(self.stat.mom2_along(ax))
+        return self.velocity_scale * np.sqrt(self.stat.mom2_along(ax))
 
     @property
     def sky_pa(self):
@@ -415,7 +415,7 @@ class PPStatistic(SpatialBase):
     @property
     def flux(self):
         """ Integrated flux """
-        fac = self.bunit * self.dx ** 2
+        fac = self.bunit * self.spatial_scale ** 2
         return fac * self.stat.mom0()
 
     @property
@@ -440,7 +440,6 @@ class PPStatistic(SpatialBase):
         The mean position of the structure in the y direction.
         """
         return self._world_pos()[0]
-
 
 
 class PPPStatistic(object):
@@ -501,7 +500,8 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     result = None
 
     for struct in structures:
-        stat = ScalarStatistic(struct.values(subtree=True), struct.indices(subtree=True))
+        stat = ScalarStatistic(struct.values(subtree=True),
+                               struct.indices(subtree=True))
         stat = statistic(stat, metadata)
         row = dict((lbl, getattr(stat, lbl))
                    for lbl in fields)
@@ -542,7 +542,8 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
         The resulting catalog
     """
     fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_radius',
+                        'sky_minor_sigma', 'sky_radius',
+                        'sky_deconvolved_radius',
                         'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
@@ -571,6 +572,7 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
         The resulting catalog
     """
     fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius', 'sky_deconvolved_radius',
+                        'sky_minor_sigma', 'sky_radius',
+                        'sky_deconvolved_radius',
                         'sky_pa', 'xcen', 'ycen']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)

@@ -59,8 +59,8 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
     WARNING: bmin (Beam minor axis, sigma) missing, defaulting to 0 [astrodendro.analysis]
     WARNING: bunit (Unit of intensity) missing, defaulting to 1 [astrodendro.analysis]
     WARNING: dist (Distance) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: dv (Velocity channel width) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: dx (Angular length of a pixel) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1 [astrodendro.analysis]
+    WARNING: spatial_scale (Angular length of a pixel) missing, defaulting to 1 [astrodendro.analysis]
     WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 1 [astrodendro.analysis]
     WARNING: wcs (WCS object) missing, defaulting to None [astrodendro.analysis]
 
@@ -83,9 +83,9 @@ call to :func:`~astrodendro.analysis.ppv_catalog`).
 Here's a sensible looking metadata dictionary::
 
     >>> import astropy.units as u
-    >>> md = dict(dv=0.5 * u.km / u.s,
+    >>> md = dict(velocity_scale=0.5 * u.km / u.s,
     >>>           vaxis=0,
-    >>>           dx=.002 * u.deg,
+    >>>           spatial_scale=.002 * u.deg,
     >>>           dist=100 * u.pc,
     >>>           bunit=u.K,
     >>>           bmaj=.004 * u.deg,

@@ -135,7 +135,8 @@ class Dendrogram(object):
         self.data = data
         self.n_dim = len(data.shape)
         # For reference, store the parameters used:
-        self.min_value, self.min_npix, self.min_delta = min_value, min_npix, min_delta
+        self.params = dict(min_npix=min_npix, min_value=min_value,
+                           min_delta=min_delta)
 
         # Create a list of all points in the cube above min_value
         keep = self.data > min_value
@@ -400,6 +401,10 @@ class Dendrogram(object):
             yield st
             todo = st.children + todo
 
+    def __getitem__(self, key):
+        """Fetch structures by index value"""
+        return self.structures_dict[key]
+
     def __iter__(self):
         return self.prefix_structures()
 
@@ -484,9 +489,9 @@ class TreeIndex(object):
             offset[sid] = pos
             npix[sid] = idx_ct[sid]
             npix_subtree[sid] = idx_sub_ct[o.idx]
-            idx = ri[idx_cdf[sid] : idx_cdf[sid] + npix[sid]]
+            idx = ri[idx_cdf[sid]: idx_cdf[sid] + npix[sid]]
             assert (flat_idx[idx] == o.idx).all()
-            index[pos : pos + npix[sid]] = idx
+            index[pos: pos + npix[sid]] = idx
             pos += npix[sid]
 
         #turn inds back into an ndim index
