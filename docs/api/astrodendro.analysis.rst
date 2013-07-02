@@ -15,7 +15,6 @@ astrodendro.analysis
       ~PPStatistic.sky_minor_sigma
       ~PPStatistic.sky_pa
       ~PPStatistic.sky_radius
-      ~PPStatistic.sky_deconvolved_radius
       ~PPStatistic.xcen
       ~PPStatistic.ycen
 
@@ -31,7 +30,6 @@ astrodendro.analysis
       ~PPVStatistic.sky_minor_sigma
       ~PPVStatistic.sky_pa
       ~PPVStatistic.sky_radius
-      ~PPVStatistic.sky_deconvolved_radius
       ~PPVStatistic.xcen
       ~PPVStatistic.ycen
       ~PPVStatistic.vcen
