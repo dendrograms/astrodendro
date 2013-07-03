@@ -81,6 +81,7 @@ def parse_dendrogram(newick, data, index_map):
     def _construct_tree(repr):
         structures = []
         for idx in repr:
+            idx = int(idx)
             structure_indices = indices_by_structure[idx]
             f = flux_by_structure[idx]
             if type(repr[idx]) == tuple:
