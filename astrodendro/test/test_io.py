@@ -74,3 +74,10 @@ class TestIO(object):
         d1.save_to(self.test_filename)
         d2 = Dendrogram.load_from(self.test_filename)
         self.compare_dendrograms(d1, d2)
+
+    def test_fits(self):
+        self.test_filename = 'astrodendro-test.fits'
+        d1 = Dendrogram.compute(self.data, verbose=False)
+        d1.save_to(self.test_filename)
+        d2 = Dendrogram.load_from(self.test_filename)
+        self.compare_dendrograms(d1, d2)
