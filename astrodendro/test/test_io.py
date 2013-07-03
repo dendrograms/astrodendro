@@ -59,12 +59,17 @@ class TestIO(object):
         np.testing.assert_array_equal(d1.data, d2.data)
         # Now check that the structures are the same:
         for idx in d2.structures_dict:
-            structure1, structure2 = d1.structures_dict[idx], d2.structures_dict[idx]
-            assert_permuted_fancyindex(structure1.indices(subtree=False), structure2.indices(subtree=False))
-            assert np.all(np.sort(structure1.values(subtree=False)) == np.sort(structure2.values(subtree=False)))
+            structure1, structure2 = d1[idx], d2[idx]
+            assert_permuted_fancyindex(structure1.indices(subtree=False),
+                                       structure2.indices(subtree=False))
+            assert np.all(np.sort(structure1.values(subtree=False)) ==
+                          np.sort(structure2.values(subtree=False)))
             assert type(structure1) == type(structure2)
             # Compare the coordinates and data values of all peak pixels:
-            assert structure1.get_peak(subtree=True) == structure2.get_peak(subtree=True)
+            assert structure1.get_peak(subtree=True) == \
+              structure2.get_peak(subtree=True)
+
+            assert structure2._tree_index is not None
 
     # Below are the actual tests for each import/export format:
 

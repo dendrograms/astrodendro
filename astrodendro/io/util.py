@@ -129,4 +129,5 @@ def parse_dendrogram(newick, data, index_map):
     for structure in d.trunk:
         structure._level = 0  # See the @property level() definition in structure.py
 
+    d._index()
     return d
