@@ -1,3 +1,5 @@
+# Licensed under an MIT open source license - see LICENSE
+
 # The tests here ensure that the Structure class behaves as expected and has
 # the correct interface. This is done by setting up a few simple examples and
 # ensuring that all the properties and methods are behaving as expected.
