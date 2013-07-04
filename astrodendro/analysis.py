@@ -1,3 +1,5 @@
+# Licensed under an MIT open source license - see LICENSE
+
 import warnings
 import numpy as np
 from astropy.units import Quantity, rad

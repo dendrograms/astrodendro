@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# Licensed under an MIT open source license - see LICENSE
 """
 progressbar.py
 
