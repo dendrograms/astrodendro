@@ -398,6 +398,20 @@ class Dendrogram(object):
     def __iter__(self):
         return self.prefix_structures()
 
+    def __eq__(self, other):
+        if not isinstance(other, Dendrogram):
+            return False
+
+        if not (self.data == other.data).all():
+            return False
+
+        # structures should have the same extent,
+        # but idx values need not be identical. This
+        # tests the index map for that
+        u, ind = np.unique(self.index_map, return_index=True)
+        u, ind2 = np.unique(self.index_map, return_index=True)
+        return (np.sort(ind) == np.sort(ind2)).all()
+
     def plotter(self):
         """
         Return a :class:`~astrodendro.plot.DendrogramPlotter` instance that makes it easier to construct plots.
