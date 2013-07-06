@@ -367,7 +367,11 @@ class Dendrogram(object):
         return [i for i in self.structures_dict.itervalues() if i.is_leaf]
 
     def to_newick(self):
-        return "(%s);" % ','.join([structure.newick for structure in self.trunk])
+        #this caches newicks, and prevents too much recursion
+        [s.newick for s in reversed(list(self.prefix_structures()))]
+
+        return "(%s);" % ','.join([structure.newick for structure
+                                   in self.trunk])
 
     def structure_at(self, indices):
         " Get the structure at the given pixel coordinate, or None "
