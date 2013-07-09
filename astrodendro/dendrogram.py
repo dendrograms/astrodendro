@@ -285,14 +285,19 @@ class Dendrogram(object):
         s = tuple(slice(0, s, 1) for s in data.shape)
         self.index_map = self.index_map[s]
 
+        self._index()
+
+        # Return the newly-created dendrogram:
+        return self
+
+
+    def _index(self):
         # add dendrogram index
         ti = TreeIndex(self)
 
         for s in self.structures_dict.itervalues():
             s._tree_index = ti
 
-        # Return the newly-created dendrogram:
-        return self
 
     @property
     def trunk(self):

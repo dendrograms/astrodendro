@@ -140,11 +140,14 @@ list of attributes and methods for the dendrogram itself is available from the
 Saving the dendrogram
 ---------------------
 
-A :class:`~astrodendro.dendrogram.Dendrogram` object can be exported to an HDF5 file (requires h5py) and
-loaded at a later time (FITS support is currently planned). To export the
-dendrogram to an HDF5 file, use::
+A :class:`~astrodendro.dendrogram.Dendrogram` object can be exported to an HDF5 file (requires h5py) or FITS file (requires astropy). To export the
+dendrogram to a file, use::
 
     >>> d.save_to('my_dendrogram.hdf5')
+
+or::
+
+    >>> d.save_to('my_dendrogram.fits')
 
 and to load and existing dendrogram::
 
