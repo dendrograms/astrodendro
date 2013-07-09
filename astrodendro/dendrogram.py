@@ -367,7 +367,11 @@ class Dendrogram(object):
         return [i for i in self.structures_dict.itervalues() if i.is_leaf]
 
     def to_newick(self):
-        return "(%s);" % ','.join([structure.newick for structure in self.trunk])
+        #this caches newicks, and prevents too much recursion
+        [s.newick for s in reversed(list(self.prefix_structures()))]
+
+        return "(%s);" % ','.join([structure.newick for structure
+                                   in self.trunk])
 
     def structure_at(self, indices):
         " Get the structure at the given pixel coordinate, or None "
@@ -393,6 +397,20 @@ class Dendrogram(object):
 
     def __iter__(self):
         return self.prefix_structures()
+
+    def __eq__(self, other):
+        if not isinstance(other, Dendrogram):
+            return False
+
+        if not (self.data == other.data).all():
+            return False
+
+        # structures should have the same extent,
+        # but idx values need not be identical. This
+        # tests the index map for that
+        u, ind = np.unique(self.index_map, return_index=True)
+        u, ind2 = np.unique(self.index_map, return_index=True)
+        return (np.sort(ind) == np.sort(ind2)).all()
 
     def plotter(self):
         """

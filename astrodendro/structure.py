@@ -3,6 +3,16 @@
 import numpy as np
 
 
+def cached_property(func):
+    memo = {}
+    def result(self):
+        if self not in memo:
+            memo[self] = func(self)
+        return memo[self]
+
+    return property(result)
+
+
 class Structure(object):
     """
     A structure in the dendrogram, for example a leaf or a branch.
@@ -280,7 +290,7 @@ class Structure(object):
 
         return self._level
 
-    @property
+    @cached_property
     def newick(self):
         """
         Newick representation of this structure.
