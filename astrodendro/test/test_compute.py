@@ -176,7 +176,7 @@ class TestNDimensionalData(object):
         assert (zip(*branches[0].indices(subtree=False)), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
 
 
-from build_benchmark import params
+from .build_benchmark import params
 
 @pytest.mark.parametrize(('filename'), params.keys())
 def test_benchmark(filename):
