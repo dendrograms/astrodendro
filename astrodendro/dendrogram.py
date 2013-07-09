@@ -279,7 +279,7 @@ class Dendrogram(object):
             structure._level = 0  # See the definition of level() in structure.py
 
         # Save a list of all structures accessible by ID
-        self.structures_dict = structures
+        self._structures_dict = structures
 
         #remove border from index map
         s = tuple(slice(0, s, 1) for s in data.shape)
@@ -295,7 +295,7 @@ class Dendrogram(object):
         # add dendrogram index
         ti = TreeIndex(self)
 
-        for s in self.structures_dict.itervalues():
+        for s in self._structures_dict.itervalues():
             s._tree_index = ti
 
 
@@ -357,14 +357,14 @@ class Dendrogram(object):
         """
         A flattened iterable containing all structures in the dendrogram.
         """
-        return self.structures_dict.itervalues()
+        return self._structures_dict.itervalues()
 
     @property
     def leaves(self):
         """
         A flattened list of all leaves in the dendrogram
         """
-        return [i for i in self.structures_dict.itervalues() if i.is_leaf]
+        return [i for i in self._structures_dict.itervalues() if i.is_leaf]
 
     def to_newick(self):
         #this caches newicks, and prevents too much recursion
@@ -377,7 +377,7 @@ class Dendrogram(object):
         " Get the structure at the given pixel coordinate, or None "
         idx = self.index_map[indices]
         if idx:
-            return self.structures_dict[idx]
+            return self._structures_dict[idx]
         return None
 
     def prefix_structures(self):
@@ -393,7 +393,11 @@ class Dendrogram(object):
 
     def __getitem__(self, key):
         """Fetch structures by index value"""
-        return self.structures_dict[key]
+        return self._structures_dict[key]
+
+    def __len__(self):
+        """Return number of structures in dendrogram"""
+        return len(self._structures_dict)
 
     def __iter__(self):
         return self.prefix_structures()
@@ -460,7 +464,7 @@ class TreeIndex(object):
         idx_cdf = np.hstack((0, np.cumsum(idx_ct)))
 
         #efficiently build up npix values
-        structures = reversed(sorted(dendrogram.structures_dict.values(),
+        structures = reversed(sorted(dendrogram._structures_dict.values(),
                                 key=lambda x: x.level))
         for st in structures:
             idx_sub_ct[st.idx] = idx_ct[packed[st.idx]]

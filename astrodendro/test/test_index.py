@@ -52,7 +52,7 @@ class TestIndex(object):
                          [1, 4, 3, 5],
                          [1, 1, 1, 4]])
         d = Dendrogram.compute(data)
-        assert len(d.structures_dict) == 3
+        assert len(d) == 3
         self.assert_valid_index(d, TreeIndex(d))
 
     def test_two_trunk(self):
@@ -70,7 +70,7 @@ class TestIndex(object):
                          [1, 4, 1, 1],
                          [1, 1, 1, 1]])
         d = Dendrogram.compute(data)
-        assert len(d.structures_dict) == 1
+        assert len(d) == 1
         self.assert_valid_index(d, TreeIndex(d))
 
     def test_cube(self):
@@ -85,7 +85,7 @@ class TestIndex(object):
         data = np.random.random(5)
 
         d = Dendrogram.compute(data)
-        assert len(d.structures_dict) > 0
+        assert len(d) > 0
         self.assert_valid_index(d, TreeIndex(d))
 
     def test_4d(self):
@@ -93,5 +93,5 @@ class TestIndex(object):
         data = np.random.random((3, 3, 3, 3))
 
         d = Dendrogram.compute(data)
-        assert len(d.structures_dict) > 0
+        assert len(d) > 0
         self.assert_valid_index(d, TreeIndex(d))
