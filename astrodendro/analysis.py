@@ -309,7 +309,8 @@ class PPVStatistic(SpatialBase):
     """
 
     velocity_scale = MetaData('velocity_scale', 'Velocity channel width')
-    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)')
+    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)',
+                     default=0)
 
     def __init__(self, stat, metadata=None):
         if isinstance(stat, Structure):
