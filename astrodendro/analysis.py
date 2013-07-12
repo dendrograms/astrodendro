@@ -229,22 +229,6 @@ class SpatialBase(object):
     distance = MetaData('distance', 'Distance')
     wcs = MetaData('wcs', 'WCS object', default=None)
 
-    @property
-    def luminosity(self):
-        """Integrated luminosity
-
-        sum(v_i * dx_linear^2 * dv)
-        """
-        #disambiguate between degree/radian dx
-        #if astropy unit is used
-        try:
-            fac = (1 * self.spatial_scale).unit.to(rad)
-            fac /= (1 * self.spatial_scale).unit
-        except AttributeError:
-            # metadata not a quantity. Assuming dx=degrees
-            fac = np.radians(1)
-        return self.distance ** 2 * self.flux * fac ** 2
-
     def _sky_paxes(self):
         raise NotImplementedError()
 
@@ -256,11 +240,7 @@ class SpatialBase(object):
         return xyz[::-1]
 
     @property
-    def flux(self):
-        raise NotImplementedError
-
-    @property
-    def sky_major_sigma(self):
+    def major_sigma(self):
         """
         Major axis of the projection onto the position-position (PP) plane,
         computed from the intensity weighted second moment in direction of
@@ -273,7 +253,7 @@ class SpatialBase(object):
         return dx * np.sqrt(self.stat.mom2_along(a))
 
     @property
-    def sky_minor_sigma(self):
+    def minor_sigma(self):
         """
         Minor axis of the projection onto the position-position (PP) plane,
         computed from the intensity weighted second moment perpendicular to
@@ -286,12 +266,12 @@ class SpatialBase(object):
         return dx * np.sqrt(self.stat.mom2_along(b))
 
     @property
-    def sky_radius(self):
+    def radius(self):
         """
-        Geometric mean of sky_major_sigma and sky_minor_sigma.
+        Geometric mean of major_sigma and minor_sigma.
         """
-        u, a = _qsplit(self.sky_major_sigma)
-        u, b = _qsplit(self.sky_minor_sigma)
+        u, a = _qsplit(self.major_sigma)
+        u, b = _qsplit(self.minor_sigma)
         return u * np.sqrt(a * b)
 
 
@@ -332,7 +312,7 @@ class PPVStatistic(SpatialBase):
         return a, b
 
     @property
-    def xcen(self):
+    def x_cen(self):
         """
         The mean position of the structure in the x direction.
         """
@@ -340,7 +320,7 @@ class PPVStatistic(SpatialBase):
         return p[2] if self.vaxis != 2 else p[1]
 
     @property
-    def ycen(self):
+    def y_cen(self):
         """
         The mean position of the structure in the y direction.
         """
@@ -348,7 +328,7 @@ class PPVStatistic(SpatialBase):
         return p[1] if self.vaxis == 0 else p[0]
 
     @property
-    def vcen(self):
+    def v_cen(self):
         """
         The mean velocity of the structure.
         """
@@ -356,17 +336,7 @@ class PPVStatistic(SpatialBase):
         return p[self.vaxis]
 
     @property
-    def flux(self):
-        """
-        Integrated flux.
-
-        sum(v_i * dx^2 * dv)
-        """
-        fac = self.data_unit * self.spatial_scale ** 2 * self.velocity_scale
-        return fac * self.stat.mom0()
-
-    @property
-    def vrms(self):
+    def v_rms(self):
         """
         Intensity-weighted second moment of velocity
         """
@@ -375,7 +345,7 @@ class PPVStatistic(SpatialBase):
         return self.velocity_scale * np.sqrt(self.stat.mom2_along(ax))
 
     @property
-    def sky_pa(self):
+    def position_angle(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
         from the +x axis.
@@ -409,13 +379,7 @@ class PPStatistic(SpatialBase):
         return self.stat.paxes()
 
     @property
-    def flux(self):
-        """ Integrated flux """
-        fac = self.data_unit * self.spatial_scale ** 2
-        return fac * self.stat.mom0()
-
-    @property
-    def sky_pa(self):
+    def position_angle(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
         from the +x axis.
@@ -424,14 +388,14 @@ class PPStatistic(SpatialBase):
         return np.degrees(np.arctan2(a[0], a[1]))
 
     @property
-    def xcen(self):
+    def x_cen(self):
         """
         The mean position of the structure in the x direction.
         """
         return self._world_pos()[1]
 
     @property
-    def ycen(self):
+    def y_cen(self):
         """
         The mean position of the structure in the y direction.
         """
@@ -470,7 +434,7 @@ class PPPStatistic(object):
         pass
 
     @property
-    def vrms(self):
+    def v_rms(self):
         pass
 
     @property
@@ -537,9 +501,8 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius',
-                        'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+                        'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
 
@@ -566,7 +529,6 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius',
-                        'sky_pa', 'xcen', 'ycen']
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+                        'position_angle', 'x_cen', 'y_cen']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)
