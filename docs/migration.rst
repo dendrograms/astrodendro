@@ -11,10 +11,11 @@ repositories.
 
 This page summarizes the main changes in the new code, and how to adapt your
 code to ensure that it will work correctly. This only covers changes that will
-*break* your code, but you are encouraged to look through the documentation to
-read about new features! Also, only the main backward-incompatible changes are
-mentioned, but for any questions on changes not mentioned here, please open an
-issue on `GitHub <https://github.com/dendrograms/dendro-core/issues>`_.
+*break* your code, but you are encouraged to look through the rest of the
+documentation to read about new features! Also, only the main
+backward-incompatible changes are mentioned, but for any questions on changes
+not mentioned here, please open an issue on `GitHub
+<https://github.com/dendrograms/dendro-core/issues>`_.
 
 Computing a dendrogram
 ----------------------
@@ -24,7 +25,7 @@ Rather than computing a dendrogram using::
     d = Dendrogram(data)
     d.compute(...)
 
-you should now use:
+you should now use::
 
     d = Dendrogram.compute(data)
 
@@ -42,7 +43,7 @@ In addition, the following options for ``compute`` have been renamed:
 
 The ``Leaf`` and ``Branch`` classes no longer exist, and have been replaced by
 a single ``Structure`` class that instead has ``is_leaf`` and ``is_branch``
-attributes. Thus, if you were checking if something was a leaf by doing e.g.:
+attributes. Thus, if you were checking if something was a leaf by doing e.g.::
 
     if type(s) == Leaf:
         # code here
