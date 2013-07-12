@@ -353,13 +353,6 @@ class Dendrogram(object):
         return IO_FORMATS[format][0](self, filename)
 
     @property
-    def all_structures(self):
-        """
-        A flattened iterable containing all structures in the dendrogram.
-        """
-        return self._structures_dict.itervalues()
-
-    @property
     def leaves(self):
         """
         A flattened list of all leaves in the dendrogram
@@ -368,7 +361,7 @@ class Dendrogram(object):
 
     def to_newick(self):
         #this caches newicks, and prevents too much recursion
-        [s.newick for s in reversed(list(self.prefix_structures()))]
+        [s.newick for s in reversed(list(self.all_structures))]
 
         return "(%s);" % ','.join([structure.newick for structure
                                    in self.trunk])
@@ -380,9 +373,10 @@ class Dendrogram(object):
             return self._structures_dict[idx]
         return None
 
-    def prefix_structures(self):
+    @property
+    def all_structures(self):
         """
-        Yields a flattened list of all structures in the dendrogram, in prefix order.
+        Yields an iterator over all structures in the dendrogram, in prefix order.
         """
 
         todo = list(self.trunk)
@@ -400,7 +394,7 @@ class Dendrogram(object):
         return len(self._structures_dict)
 
     def __iter__(self):
-        return self.prefix_structures()
+        return self.all_structures
 
     def __eq__(self, other):
         if not isinstance(other, Dendrogram):
@@ -489,7 +483,7 @@ class TreeIndex(object):
         npix_subtree = offset * 0
 
         index = np.zeros(sz, dtype=np.int)
-        order = dendrogram.prefix_structures()
+        order = dendrogram.all_structures
 
         pos = 0
         for o in order:

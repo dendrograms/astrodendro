@@ -161,7 +161,7 @@ class DendrogramPlotter(object):
             raise Exception("Leaves have not yet been sorted")
 
         if structure is None:
-            structures = self.dendrogram.all_structures
+            structures = list(self.dendrogram.all_structures)
         else:
             if type(structure) is int:
                 structure = self.dendrogram[structure]

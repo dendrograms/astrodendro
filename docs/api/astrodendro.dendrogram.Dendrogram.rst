@@ -20,7 +20,6 @@ astrodendro.dendrogram.Dendrogram
 
       ~Dendrogram.compute
       ~Dendrogram.structure_at
-      ~Dendrogram.prefix_structures
 
    .. rubric:: Input/Output
 
@@ -40,7 +39,7 @@ astrodendro.dendrogram.Dendrogram
 
    .. automethod:: Dendrogram.compute
    .. automethod:: Dendrogram.structure_at
-   .. automethod:: Dendrogram.prefix_structures
+   .. automethod:: Dendrogram.all_structures
 
    .. automethod:: Dendrogram.save_to
    .. automethod:: Dendrogram.load_from
