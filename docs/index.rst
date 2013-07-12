@@ -49,6 +49,7 @@ Documentation
    using.rst
    plotting.rst
    catalog.rst
+   migration.rst
 
 Reporting issues
 ----------------
