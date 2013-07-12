@@ -12,6 +12,7 @@ COMBINATIONS = \
 (np.array([1, 2, 3]) * u.erg / u.cm ** 2 / u.s / u.Hz, u.Jy, {}, 6e23 * u.Jy),
 (np.array([1, 2, 3]) * u.erg / u.cm ** 2 / u.s / u.micron, u.Jy, {'wavelength': 2 * u.micron}, 8005538284.75565 * u.Jy),
 (np.array([1, 2, 3]) * u.Jy / u.arcsec ** 2, u.Jy, {'pixel_scale': 2 * u.arcsec}, 24. * u.Jy),
+(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, {'pixel_scale': 2 * u.arcsec, 'beam_major': 1 * u.arcsec, 'beam_minor': 0.5 * u.arcsec}, 0.849825 * u.Jy),
     ]
 
 
@@ -40,7 +41,33 @@ def test_surface_brightness_scale_missing():
     assert exc.value.args[0] == 'Pixel scale is needed to convert from Jy / arcsec2 to Jy'
 
 
-def test_surface_brightness_scale_missing():
+def test_surface_brightness_invalid_units():
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.arcsec ** 2, u.Jy, pixel_scale=3 * u.m)
     assert exc.value.args[0] == 'Pixel scale should be an angle'
+
+
+def test_per_beam_scale_missing():
+
+    with pytest.raises(ValueError) as exc:
+        compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, beam_major=3 * u.arcsec, beam_minor=2. * u.arcsec)
+    assert exc.value.args[0] == 'Pixel scale is needed to convert from Jy / beam to Jy'
+
+    with pytest.raises(ValueError) as exc:
+        compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_minor=2. * u.arcsec)
+    assert exc.value.args[0] == 'Beam major FWHM is needed to convert from Jy / beam to Jy'
+
+    with pytest.raises(ValueError) as exc:
+        compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_major=2. * u.arcsec)
+    assert exc.value.args[0] == 'Beam minor FWHM is needed to convert from Jy / beam to Jy'
+
+
+def test_per_beam_invalid_units():
+
+    with pytest.raises(ValueError) as exc:
+        compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_major=3 * u.m, beam_minor=2. * u.arcsec)
+    assert exc.value.args[0] == 'Beam major FWHM should be an angle'
+
+    with pytest.raises(ValueError) as exc:
+        compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_major=3 * u.arcsec, beam_minor=2. * u.m)
+    assert exc.value.args[0] == 'Beam minor FWHM should be an angle'
