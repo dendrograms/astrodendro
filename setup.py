@@ -47,7 +47,7 @@ class DendroTest(Command):
 setup(name='dendro-core',
       version='0.0.1',
       description='Python package for computation of astronomical dendrograms',
-      author='Braden MacDonald and Thomas Robitaille',
+      author='Thomas Robitaille, Chris Beaumont, Braden MacDonald, and Erik Rosolowsky',
       author_email='braden@bradenmacdonald.com',
       packages=['astrodendro', 'astrodendro.io', 'astrodendro.test'],
       package_data={'astrodendro.test':['*.npz', 'benchmark_data/*fits']},
