@@ -11,8 +11,7 @@ from astropy.wcs import WCS
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
-                        _missing_metadata, MetaData, _warn_missing_metadata,
-                        PPStatistic, pp_catalog)
+                        MetaData, PPStatistic, pp_catalog)
 from .. import Dendrogram
 from ..structure import Structure
 
@@ -369,16 +368,6 @@ class TestPPCataloger(TestCataloger):
 del TestCataloger
 
 
-def test_find_missing_ppv_metadata():
-    md = dict(spatial_scale=1, velocity_scale=1, vaxis=1, data_unit=1, distance=1,
-              wcs=wcs_3d)
-    assert len(_missing_metadata(PPVStatistic, md)) == 0
-
-    md.pop('spatial_scale')
-    assert _missing_metadata(PPVStatistic, md)[0].key == 'spatial_scale'
-    assert len(_missing_metadata(PPVStatistic, {})) == 6
-
-
 def test_metadata_protocol():
     class Foo(object):
         x = MetaData('x', 'test')
@@ -393,26 +382,3 @@ def test_metadata_protocol():
     assert f.y == 5
     with pytest.raises(KeyError):
         f.z
-
-
-def test_warn_missing_metadata():
-    class Foo(object):
-        x = MetaData('x', 'test description')
-
-    class Bar(object):
-        y = MetaData('y', 'test', strict=True)
-
-    with patch('warnings.warn') as mock:
-        _warn_missing_metadata(Foo, {'x': 3})
-    assert mock.call_count == 0
-
-    with patch('warnings.warn') as mock:
-        _warn_missing_metadata(Foo, {})
-    assert mock.call_count == 1
-
-    with patch('warnings.warn') as mock:
-        _warn_missing_metadata(Foo, {}, verbose=False)
-    assert mock.call_count == 0
-
-    with pytest.raises(RuntimeError):
-        _warn_missing_metadata(Bar, {})

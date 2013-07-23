@@ -2,7 +2,7 @@
 
 import warnings
 import numpy as np
-from astropy.units import Quantity, rad
+from astropy.units import Quantity
 from astropy.table import Table
 
 from .structure import Structure
@@ -159,7 +159,7 @@ class MetaData(object):
 
     Let's classes reference self.x instead of self.metadata['x'],
     """
-    def __init__(self, key, description, default=1, strict=False):
+    def __init__(self, key, description, default=None, strict=False):
         """
         Parameters
         ----------
@@ -179,55 +179,31 @@ class MetaData(object):
         self.strict = strict
 
     def __get__(self, instance, type=None):
+
         if instance is None:
             return self
 
         if self.strict and self.key not in instance.metadata:
             raise KeyError("Required metadata item not found: %s" % self)
-        return instance.metadata.get(self.key, self.default)
+
+        try:
+            return instance.metadata[self.key]
+        except KeyError:
+            warnings.warn("{0} missing, defaulting to {1}".format(self.key, self.default))
+            return self.default
 
     def __str__(self):
         return "%s (%s)" % (self.key, self.description)
 
 
-def _missing_metadata(cl, md):
-    """Find missing metadata entries in a metadata dict
-
-    Paramters
-    ---------
-    cls : Class with MetaData descriptors
-    md : metadata dictionary
-    """
-    attrs = [getattr(cl, t) for t in dir(cl)]
-    return [m for m in attrs if isinstance(m, MetaData)
-            and m.key not in md]
-
-
-def _warn_missing_metadata(cl, md, verbose=True):
-    missing = _missing_metadata(cl, md)
-    if len(missing) == 0:
-        return
-
-    required = [m for m in missing if m.strict]
-    if len(required):
-        raise RuntimeError(
-            "The following missing metadata items are required:\n\t" +
-            "\n\t".join(str(m) for m in required))
-
-    if not verbose:
-        return
-
-    for m in missing:
-        warnings.warn("%s missing, defaulting to %s" %
-                      (m, m.default))
-
-
 class SpatialBase(object):
 
-    spatial_scale = MetaData('spatial_scale', 'Angular length of a pixel')
+    wavelength = MetaData('wavelength', 'Wavelength')
+    spatial_scale = MetaData('spatial_scale', 'Angular length of a pixel', default=1)
+    beam_major = MetaData('beam_major', 'Major FWHM of beam')
+    beam_minor = MetaData('beam_minor', 'Minor FWHM of beam')
     data_unit = MetaData('data_unit', 'Units of the pixel values')
-    distance = MetaData('distance', 'Distance')
-    wcs = MetaData('wcs', 'WCS object', default=None)
+    wcs = MetaData('wcs', 'WCS object')
 
     def _sky_paxes(self):
         raise NotImplementedError()
@@ -238,6 +214,10 @@ class SpatialBase(object):
             # We use origin=0 since the indices come from Numpy indexing
             return self.wcs.all_pix2world([xyz], 0).ravel()[::-1]
         return xyz[::-1]
+
+    @property
+    def flux(self):
+        raise NotImplementedError
 
     @property
     def major_sigma(self):
@@ -288,9 +268,8 @@ class PPVStatistic(SpatialBase):
          Key-value pairs of metadata
     """
 
-    velocity_scale = MetaData('velocity_scale', 'Velocity channel width')
-    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)',
-                     default=0)
+    velocity_scale = MetaData('velocity_scale', 'Velocity channel width', default=1)
+    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)', default=0)
 
     def __init__(self, stat, metadata=None):
         if isinstance(stat, Structure):
@@ -336,6 +315,19 @@ class PPVStatistic(SpatialBase):
         return p[self.vaxis]
 
     @property
+    def flux(self):
+        """
+        Integrated flux
+        """
+        from .flux import compute_flux
+        return compute_flux(self.stat.mom0() * self.data_unit,
+                            wavelength=self.wavelength,
+                            pixel_scale=self.spatial_scale,
+                            velocity_scale=self.velocity_scale,
+                            beam_major=self.beam_major,
+                            beam_minor=self.beam_minor)
+
+    @property
     def v_rms(self):
         """
         Intensity-weighted second moment of velocity
@@ -377,6 +369,18 @@ class PPStatistic(SpatialBase):
 
     def _sky_paxes(self):
         return self.stat.paxes()
+
+    @property
+    def flux(self):
+        """
+        Integrated flux
+        """
+        from .flux import compute_flux
+        return compute_flux(self.stat.mom0() * self.data_unit,
+                            wavelength=self.wavelength,
+                            pixel_scale=self.spatial_scale,
+                            beam_major=self.beam_major,
+                            beam_minor=self.beam_minor)
 
     @property
     def position_angle(self):
@@ -455,14 +459,16 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     Make a catalog from a list of structures
     """
 
-    _warn_missing_metadata(statistic, metadata, verbose=verbose)
-
     result = None
 
     for struct in structures:
         stat = ScalarStatistic(struct.values(subtree=True),
                                struct.indices(subtree=True))
         stat = statistic(stat, metadata)
+        row = {}
+        for lbl in fields:
+            row[lbl] = getattr(stat, lbl)
+
         row = dict((lbl, getattr(stat, lbl))
                    for lbl in fields)
         row.update(_idx=struct.idx)
