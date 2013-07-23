@@ -41,7 +41,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
         raise ValueError("Pixel scale should be an angle")
 
     if velocity_scale is not None and not velocity_scale.unit.is_equivalent(u.m / u.s):
-        raise ValueError("Pixel scale should be an angle")
+        raise ValueError("Velocity scale should be a velocity")
 
     if wavelength is not None and not wavelength.unit.is_equivalent(u.m):
         raise ValueError("Wavelength should be a physical length")

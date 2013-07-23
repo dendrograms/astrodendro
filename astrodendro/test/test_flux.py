@@ -5,6 +5,10 @@ from astropy import units as u
 
 from ..flux import compute_flux
 
+
+def strip_parentheses(string):
+    return string.replace('(', '').replace(')', '')
+
 COMBINATIONS = \
     [
         (np.array([1, 2, 3]) * u.Jy, u.Jy, {}, 6 * u.Jy),
@@ -38,7 +42,7 @@ def test_monochromatic_wav_invalid_units():
 def test_surface_brightness_scale_missing():
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.arcsec ** 2, u.Jy)
-    assert exc.value.args[0] == 'Pixel scale is needed to convert from Jy / arcsec2 to Jy'
+    assert strip_parentheses(exc.value.args[0]) == 'Pixel scale is needed to convert from Jy / arcsec2 to Jy'
 
 
 def test_surface_brightness_invalid_units():
@@ -51,15 +55,15 @@ def test_per_beam_scale_missing():
 
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, beam_major=3 * u.arcsec, beam_minor=2. * u.arcsec)
-    assert exc.value.args[0] == 'Pixel scale is needed to convert from Jy / beam to Jy'
+    assert strip_parentheses(exc.value.args[0]) == 'Pixel scale is needed to convert from Jy / beam to Jy'
 
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_minor=2. * u.arcsec)
-    assert exc.value.args[0] == 'Beam major FWHM is needed to convert from Jy / beam to Jy'
+    assert strip_parentheses(exc.value.args[0]) == 'Beam major FWHM is needed to convert from Jy / beam to Jy'
 
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_major=2. * u.arcsec)
-    assert exc.value.args[0] == 'Beam minor FWHM is needed to convert from Jy / beam to Jy'
+    assert strip_parentheses(exc.value.args[0]) == 'Beam minor FWHM is needed to convert from Jy / beam to Jy'
 
 
 def test_per_beam_invalid_units():
@@ -71,3 +75,10 @@ def test_per_beam_invalid_units():
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_major=3 * u.arcsec, beam_minor=2. * u.m)
     assert exc.value.args[0] == 'Beam minor FWHM should be an angle'
+
+
+def test_per_velocity_invalid_units():
+
+    with pytest.raises(ValueError) as exc:
+        compute_flux(np.array([1, 2, 3]) * u.Jy / u.km / u.s, u.Jy, pixel_scale=3 * u.arcsec, velocity_scale=3. * u.s)
+    assert exc.value.args[0] == 'Velocity scale should be a velocity'
