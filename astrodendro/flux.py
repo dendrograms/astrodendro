@@ -11,7 +11,7 @@ def quantity_sum(quantities):
     return np.sum(quantities.value) * quantities.unit
 
 
-def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=None,
+def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=None,
                  velocity_scale=None, beam_major=None, beam_minor=None):
     """
     Given a set of flux values in arbitrary units, find the total flux in a
@@ -27,7 +27,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
     wavelength : `~astropy.units.quantity.Quantity` instance
         The wavelength of the data (required if converting e.g.
         ergs/cm^2/s/micron to Jy)
-    pixel_scale : `~astropy.units.quantity.Quantity` instance
+    spatial_scale : `~astropy.units.quantity.Quantity` instance
         The pixel scale of the data (should be an angle)
     velocity_scale : `~astropy.units.quantity.Quantity` instance
         The pixel scale of the data (should be a velocity)
@@ -47,11 +47,11 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
     elif input_quantities.unit.is_equivalent(u.erg / u.cm ** 2 / u.s / u.m):  # Flambda
 
         if wavelength is not None and not wavelength.unit.is_equivalent(u.m):
-            raise ValueError("Wavelength should be a physical length")
+            raise ValueError("wavelength should be a physical length")
 
         # Find the frequency
         if wavelength is None:
-            raise ValueError("Wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
+            raise ValueError("wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
 
         # Find frequency
         nu = si.c / wavelength
@@ -64,14 +64,14 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
 
     elif input_quantities.unit.is_equivalent(u.MJy / u.sr):  # surface brightness (Fnu)
 
-        if pixel_scale is not None and not pixel_scale.unit.is_equivalent(u.degree):
-            raise ValueError("Pixel scale should be an angle")
+        if spatial_scale is not None and not spatial_scale.unit.is_equivalent(u.degree):
+            raise ValueError("spatial_scale should be an angle")
 
-        if pixel_scale is None:
-            raise ValueError("Pixel scale is needed to convert from {0} to Jy".format(input_quantities.unit))
+        if spatial_scale is None:
+            raise ValueError("spatial_scale is needed to convert from {0} to Jy".format(input_quantities.unit))
 
         # Find the area of a pixel as a solid angle
-        pixel_area = (pixel_scale ** 2)
+        pixel_area = (spatial_scale ** 2)
 
         # Convert input quantity to Fnu in Jy
         q = (input_quantities * pixel_area).to(u.Jy)
@@ -81,26 +81,26 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
 
     elif input_quantities.unit.is_equivalent(u.Jy / u.beam):
 
-        if pixel_scale is not None and not pixel_scale.unit.is_equivalent(u.degree):
-            raise ValueError("Pixel scale should be an angle")
+        if spatial_scale is not None and not spatial_scale.unit.is_equivalent(u.degree):
+            raise ValueError("spatial_scale should be an angle")
 
-        if pixel_scale is None:
-            raise ValueError("Pixel scale is needed to convert from {0} to Jy".format(input_quantities.unit))
+        if spatial_scale is None:
+            raise ValueError("spatial_scale is needed to convert from {0} to Jy".format(input_quantities.unit))
 
         if beam_major is not None and not beam_major.unit.is_equivalent(u.degree):
-            raise ValueError("Beam major FWHM should be an angle")
+            raise ValueError("beam_major should be an angle")
 
         if beam_major is None:
-            raise ValueError("Beam major FWHM is needed to convert from {0} to Jy".format(input_quantities.unit))
+            raise ValueError("beam_major is needed to convert from {0} to Jy".format(input_quantities.unit))
 
         if beam_minor is not None and not beam_minor.unit.is_equivalent(u.degree):
-            raise ValueError("Beam minor FWHM should be an angle")
+            raise ValueError("beam_minor should be an angle")
 
         if beam_minor is None:
-            raise ValueError("Beam minor FWHM is needed to convert from {0} to Jy".format(input_quantities.unit))
+            raise ValueError("beam_minor is needed to convert from {0} to Jy".format(input_quantities.unit))
 
         # Find the beam area
-        beams_per_pixel = (beam_minor * beam_major * 1.1331 / pixel_scale ** 2) * u.beam
+        beams_per_pixel = (beam_minor * beam_major * 1.1331 / spatial_scale ** 2) * u.beam
 
         # Convert input quantity to Fnu in Jy
         q = (input_quantities * beams_per_pixel).to(u.Jy)
@@ -113,6 +113,6 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
         raise ValueError("Flux units {0} not yet supported".format(input_quantities.unit))
 
     if not output_unit.is_equivalent(u.Jy):
-        raise ValueError("Output unit has to be equivalent to Jy")
+        raise ValueError("output_unit has to be equivalent to Jy")
     else:
         return total_flux.to(output_unit)

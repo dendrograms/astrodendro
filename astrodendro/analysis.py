@@ -224,7 +224,7 @@ class MetadataWCS(Metadata):
 class SpatialBase(object):
 
     wavelength = MetadataQuantity('wavelength', 'Wavelength')
-    spatial_scale = MetadataQuantity('spatial_scale', 'Pixel width/height', default=1. * u.pixel)
+    spatial_scale = MetadataQuantity('spatial_scale', 'Pixel width/height')
     beam_major = MetadataQuantity('beam_major', 'Major FWHM of beam')
     beam_minor = MetadataQuantity('beam_minor', 'Minor FWHM of beam')
     data_unit = MetadataQuantity('data_unit', 'Units of the pixel values', strict=True)
@@ -253,7 +253,7 @@ class SpatialBase(object):
         computed from the intensity weighted second moment in direction of
         greatest elongation in the PP plane.
         """
-        dx = self.spatial_scale
+        dx = self.spatial_scale or u.pixel
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
@@ -266,7 +266,7 @@ class SpatialBase(object):
         computed from the intensity weighted second moment perpendicular to
         the major axis in the PP plane.
         """
-        dx = self.spatial_scale
+        dx = self.spatial_scale or u.pixel
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
@@ -295,7 +295,7 @@ class PPVStatistic(SpatialBase):
          Key-value pairs of metadata
     """
 
-    velocity_scale = MetadataQuantity('velocity_scale', 'Velocity channel width', default=1. * u.pixel)
+    velocity_scale = MetadataQuantity('velocity_scale', 'Velocity channel width')
     vaxis = Metadata('vaxis', 'Index of velocity axis (numpy convention)', default=0)
 
     def __init__(self, stat, metadata=None):
@@ -350,7 +350,7 @@ class PPVStatistic(SpatialBase):
         return compute_flux(self.stat.mom0() * self.data_unit,
                             u.Jy,
                             wavelength=self.wavelength,
-                            pixel_scale=self.spatial_scale,
+                            spatial_scale=self.spatial_scale,
                             velocity_scale=self.velocity_scale,
                             beam_major=self.beam_major,
                             beam_minor=self.beam_minor)
@@ -360,9 +360,10 @@ class PPVStatistic(SpatialBase):
         """
         Intensity-weighted second moment of velocity
         """
+        dv = self.velocity_scale or u.pixel
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
-        return self.velocity_scale * np.sqrt(self.stat.mom2_along(ax))
+        return dv * np.sqrt(self.stat.mom2_along(ax))
 
     @property
     def position_angle(self):
@@ -407,7 +408,7 @@ class PPStatistic(SpatialBase):
         return compute_flux(self.stat.mom0() * self.data_unit,
                             u.Jy,
                             wavelength=self.wavelength,
-                            pixel_scale=self.spatial_scale,
+                            spatial_scale=self.spatial_scale,
                             beam_major=self.beam_major,
                             beam_minor=self.beam_minor)
 

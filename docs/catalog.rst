@@ -55,9 +55,7 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
     >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
     >>> metadata = {'data_unit': u.Jy}
     >>> cat = ppv_catalog(d, metadata)
-    WARNING: spatial_scale (Pixel width/height) missing, defaulting to 1.0 pix [astrodendro.analysis]
     WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
-    WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1.0 pix [astrodendro.analysis]
 
     >>> cat.pprint(show_unit=True, max_lines=10)
      _idx      flux        major_sigma   ...      v_rms           x_cen         y_cen
