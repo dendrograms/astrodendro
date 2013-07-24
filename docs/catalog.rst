@@ -49,30 +49,30 @@ In order to produce a catalog of properties for all structures, it is also
 possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
 :func:`~astrodendro.analysis.ppv_catalog` functions::
 
-   >>> import numpy as np
-   >>> from astropy import units as u
-   >>> from astrodendro import Dendrogram, ppv_catalog
-   >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
-   >>> metadata = {'data_unit': u.Jy}
-   >>> cat = ppv_catalog(d, metadata)
-   WARNING: spatial_scale (Angular length of a pixel) missing, defaulting to 1.0 pix [astrodendro.analysis]
-   WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
-   WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1.0 pix [astrodendro.analysis]
+    >>> import numpy as np
+    >>> from astropy import units as u
+    >>> from astrodendro import Dendrogram, ppv_catalog
+    >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
+    >>> metadata = {'data_unit': u.Jy}
+    >>> cat = ppv_catalog(d, metadata)
+    WARNING: spatial_scale (Pixel width/height) missing, defaulting to 1.0 pix [astrodendro.analysis]
+    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
+    WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1.0 pix [astrodendro.analysis]
 
-   >>> cat.pprint(show_unit=True, max_lines=10)
-    _idx      flux       major_sigma  ...     v_rms         x_cen         y_cen
-               Jy            pix      ...      pix
-   ----- -------------- ------------- ... ------------- ------------- -------------
-    99.0  511.881648903 2.90488769177 ... 2.89663230682 4.42521106938 4.49669736562
-    37.0  481.621369023 2.90957721035 ... 2.89755014314 4.40463515931 4.48118493456
-    36.0 0.588796190336           0.0 ...           0.0           5.0           3.0
-     ...            ...           ... ...           ...           ...           ...
-   506.0 0.673069161786           0.0 ...           0.0           5.0           0.0
-   661.0 0.585694302134           0.0 ...           0.0           0.0           6.0
-   100.0 0.694965275827           0.0 ...           0.0           9.0           9.0
+    >>> cat.pprint(show_unit=True, max_lines=10)
+     _idx      flux        major_sigma   ...      v_rms           x_cen         y_cen
+                Jy             pix       ...       pix             pix           pix
+    ----- -------------- --------------- ... ---------------- ------------- -------------
+    370.0  496.226094348   2.91713474893 ...    2.87362235491 4.50889400945 4.50806934301
+    656.0   445.77156819   2.93782845864 ...    2.87924481465  4.5157356994 4.48471005097
+    646.0 0.524101200595             0.0 ...              0.0           5.0           4.0
+      ...            ...             ... ...              ...           ...           ...
+      3.0 0.427355839614             0.0 ...              0.0           2.0           0.0
+    998.0  1.00725874437  0.497077200574 ... 1.7763568394e-15           7.0 8.55398385564
+    270.0 0.482695966707 8.881784197e-16 ...              0.0           9.0           6.0
 
-   >>> print cat.columns
-   <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
+    >>> print cat.columns
+    <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 

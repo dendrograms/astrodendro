@@ -224,7 +224,7 @@ class MetadataWCS(Metadata):
 class SpatialBase(object):
 
     wavelength = MetadataQuantity('wavelength', 'Wavelength')
-    spatial_scale = MetadataQuantity('spatial_scale', 'Angular length of a pixel', default=1. * u.pixel)
+    spatial_scale = MetadataQuantity('spatial_scale', 'Pixel width/height', default=1. * u.pixel)
     beam_major = MetadataQuantity('beam_major', 'Major FWHM of beam')
     beam_minor = MetadataQuantity('beam_minor', 'Minor FWHM of beam')
     data_unit = MetadataQuantity('data_unit', 'Units of the pixel values', strict=True)
@@ -235,10 +235,12 @@ class SpatialBase(object):
 
     def _world_pos(self):
         xyz = self.stat.mom1()[::-1]
-        if self.wcs is not None:
+        if self.wcs is None:
+            return xyz[::-1] * u.pixel
+        else:
+            # TODO: set units correctly following WCS
             # We use origin=0 since the indices come from Numpy indexing
             return self.wcs.all_pix2world([xyz], 0).ravel()[::-1]
-        return xyz[::-1]
 
     @property
     def flux(self):
