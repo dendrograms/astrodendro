@@ -59,15 +59,20 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
    WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1.0 pix [astrodendro.analysis]
 
-   >>> print cat[:3]
-    _idx      flux      ...     v_rms         x_cen         y_cen
-   ----- -------------- ... ------------- ------------- -------------
-   109.0  498.391551302 ... 2.85512068275 4.41927130401 4.53391289881
-     5.0  478.593214691 ... 2.85449359129 4.42342665053 4.54364976633
-   105.0 0.413804706068 ...           0.0           4.0           0.0
+   >>> cat.pprint(show_unit=True, max_lines=10)
+    _idx      flux       major_sigma  ...     v_rms         x_cen         y_cen
+               Jy            pix      ...      pix
+   ----- -------------- ------------- ... ------------- ------------- -------------
+    99.0  511.881648903 2.90488769177 ... 2.89663230682 4.42521106938 4.49669736562
+    37.0  481.621369023 2.90957721035 ... 2.89755014314 4.40463515931 4.48118493456
+    36.0 0.588796190336           0.0 ...           0.0           5.0           3.0
+     ...            ...           ... ...           ...           ...           ...
+   506.0 0.673069161786           0.0 ...           0.0           5.0           0.0
+   661.0 0.585694302134           0.0 ...           0.0           0.0           6.0
+   100.0 0.694965275827           0.0 ...           0.0           9.0           9.0
 
-    >>> print cat.columns
-    <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
+   >>> print cat.columns
+   <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
