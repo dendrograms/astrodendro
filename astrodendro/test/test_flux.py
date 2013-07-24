@@ -75,10 +75,3 @@ def test_per_beam_invalid_units():
     with pytest.raises(ValueError) as exc:
         compute_flux(np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, pixel_scale=3 * u.arcsec, beam_major=3 * u.arcsec, beam_minor=2. * u.m)
     assert exc.value.args[0] == 'Beam minor FWHM should be an angle'
-
-
-def test_per_velocity_invalid_units():
-
-    with pytest.raises(ValueError) as exc:
-        compute_flux(np.array([1, 2, 3]) * u.Jy / u.km / u.s, u.Jy, pixel_scale=3 * u.arcsec, velocity_scale=3. * u.s)
-    assert exc.value.args[0] == 'Velocity scale should be a velocity'

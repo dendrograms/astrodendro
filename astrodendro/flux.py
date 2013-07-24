@@ -37,21 +37,6 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
         The beam minor full width at half_maximum (FWHM)
     """
 
-    if pixel_scale is not None and not pixel_scale.unit.is_equivalent(u.degree):
-        raise ValueError("Pixel scale should be an angle")
-
-    if velocity_scale is not None and not velocity_scale.unit.is_equivalent(u.m / u.s):
-        raise ValueError("Velocity scale should be a velocity")
-
-    if wavelength is not None and not wavelength.unit.is_equivalent(u.m):
-        raise ValueError("Wavelength should be a physical length")
-
-    if beam_major is not None and not beam_major.unit.is_equivalent(u.degree):
-        raise ValueError("Beam major FWHM should be an angle")
-
-    if beam_minor is not None and not beam_minor.unit.is_equivalent(u.degree):
-        raise ValueError("Beam minor FWHM should be an angle")
-
     # Start off by finding the total flux in Jy
 
     if input_quantities.unit.is_equivalent(u.Jy):  # Fnu
@@ -60,6 +45,9 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
         total_flux = quantity_sum(input_quantities).to(u.Jy)
 
     elif input_quantities.unit.is_equivalent(u.erg / u.cm ** 2 / u.s / u.m):  # Flambda
+
+        if wavelength is not None and not wavelength.unit.is_equivalent(u.m):
+            raise ValueError("Wavelength should be a physical length")
 
         # Find the frequency
         if wavelength is None:
@@ -76,6 +64,9 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
 
     elif input_quantities.unit.is_equivalent(u.MJy / u.sr):  # surface brightness (Fnu)
 
+        if pixel_scale is not None and not pixel_scale.unit.is_equivalent(u.degree):
+            raise ValueError("Pixel scale should be an angle")
+
         if pixel_scale is None:
             raise ValueError("Pixel scale is needed to convert from {0} to Jy".format(input_quantities.unit))
 
@@ -90,11 +81,20 @@ def compute_flux(input_quantities, output_unit, wavelength=None, pixel_scale=Non
 
     elif input_quantities.unit.is_equivalent(u.Jy / u.beam):
 
+        if pixel_scale is not None and not pixel_scale.unit.is_equivalent(u.degree):
+            raise ValueError("Pixel scale should be an angle")
+
         if pixel_scale is None:
             raise ValueError("Pixel scale is needed to convert from {0} to Jy".format(input_quantities.unit))
 
+        if beam_major is not None and not beam_major.unit.is_equivalent(u.degree):
+            raise ValueError("Beam major FWHM should be an angle")
+
         if beam_major is None:
             raise ValueError("Beam major FWHM is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        if beam_minor is not None and not beam_minor.unit.is_equivalent(u.degree):
+            raise ValueError("Beam minor FWHM should be an angle")
 
         if beam_minor is None:
             raise ValueError("Beam minor FWHM is needed to convert from {0} to Jy".format(input_quantities.unit))

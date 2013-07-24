@@ -50,25 +50,24 @@ possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
 :func:`~astrodendro.analysis.ppv_catalog` functions::
 
    >>> import numpy as np
+   >>> from astropy import units as u
    >>> from astrodendro import Dendrogram, ppv_catalog
    >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
-   >>> metadata = {}
+   >>> metadata = {'data_unit': u.Jy}
    >>> cat = ppv_catalog(d, metadata)
-
-    WARNING: data_unit (Unit of the pixel values) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: distance (Distance) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: spatial_scale (Angular length of a pixel) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: wcs (WCS object) missing, defaulting to None [astrodendro.analysis]
+   WARNING: spatial_scale (Angular length of a pixel) missing, defaulting to 1.0 pix [astrodendro.analysis]
+   WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
+   WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1.0 pix [astrodendro.analysis]
 
    >>> print cat[:3]
-   _idx      flux         luminosity    ...  sky_radius        vrms
-   ---- ------------- ----------------- ... ------------- -------------
-    191 64.1306480569   0.0195353125403 ... 2.85334306153 2.96246166695
-     12 4.63582743919   0.0014121537931 ...  3.2987034401  3.5720567466
+    _idx      flux      ...     v_rms         x_cen         y_cen
+   ----- -------------- ... ------------- ------------- -------------
+   109.0  498.391551302 ... 2.85512068275 4.41927130401 4.53391289881
+     5.0  478.593214691 ... 2.85449359129 4.42342665053 4.54364976633
+   105.0 0.413804706068 ...           0.0           4.0           0.0
+
     >>> print cat.columns
-       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_radius','sky_major_sigma','sky_minor_sigma','sky_pa','sky_radius','vrms')>
+    <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
@@ -84,22 +83,20 @@ Here's a sensible looking metadata dictionary::
     >>> md = dict(velocity_scale=0.5 * u.km / u.s,
     >>>           vaxis=0,
     >>>           spatial_scale=.002 * u.deg,
-    >>>           distance=100 * u.pc,
     >>>           data_unit=u.K)
     >>> cat = ppv_catalog(d, md)
     >>> for c in cat.columns:
     >>>     print c, cat[c].units
-   _idx None
-   flux deg2 K km / (s)
-   luminosity K km pc2 / (s)
-   sky_major_sigma deg
-   sky_minor_sigma deg
-   sky_pa None
-   sky_radius deg
-   vcen None
-   vrms km / (s)
-   xcen None
-   ycen None
+    _idx None
+    flux Jy
+    major_sigma deg
+    minor_sigma deg
+    position_angle deg
+    radius deg
+    v_cen None
+    v_rms km / s
+    x_cen None
+    y_cen None
 
 Available statistics
 --------------------

@@ -11,10 +11,18 @@ from astropy.wcs import WCS
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
-                        MetaData, PPStatistic, pp_catalog)
+                        Metadata, PPStatistic, pp_catalog)
 from .. import Dendrogram
 from ..structure import Structure
 
+
+def assert_allclose_quantity(a, b):
+    if not isinstance(a, u.Quantity):
+        raise TypeError("a is not a quantity")
+    if not isinstance(b, u.Quantity):
+        raise TypeError("b is not a quantity")
+    assert_allclose(a.value, b.value)
+    assert a.unit == b.unit
 
 wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                          cdelt2=2, crval2=0, crpix2=1))
@@ -178,13 +186,7 @@ class TestPPVStatistic(object):
         self.v = benchmark_values()
 
     def metadata(self, **kwargs):
-        result = dict(distance=1,
-                      spatial_scale=1,
-                      velocity_scale=1,
-                      vaxis=0,
-                      data_unit=1,
-                      wcs=wcs_3d,
-                      )
+        result = dict(data_unit=u.Jy, wcs=wcs_3d)
         result.update(**kwargs)
         return result
 
@@ -211,25 +213,23 @@ class TestPPVStatistic(object):
         assert_allclose(p.v_cen, self.v['mom1'][2])
 
     def test_major_sigma(self):
-        p = PPVStatistic(self.stat, self.metadata(spatial_scale=2))
-
-        assert_allclose(p.major_sigma, self.v['sig_maj'] * 2)
+        p = PPVStatistic(self.stat, self.metadata(spatial_scale=2 * u.arcsec))
+        assert_allclose_quantity(p.major_sigma, self.v['sig_maj'] * 2 * u.arcsec)
 
     def test_minor_sigma(self):
-        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4))
-        assert_allclose(p.minor_sigma, self.v['sig_min'] * 4)
+        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.minor_sigma, self.v['sig_min'] * 4 * u.arcsec)
 
     def test_radius(self):
-        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4))
-        assert_allclose(p.radius, np.sqrt(self.v['sig_min'] *
-                                                self.v['sig_maj']) * 4)
+        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.radius, np.sqrt(self.v['sig_min'] * self.v['sig_maj']) * 4 * u.arcsec)
 
     def test_v_rms(self):
         p = PPVStatistic(self.stat, self.metadata())
-        assert_allclose(p.v_rms, np.sqrt(self.v['mom2_100']))
+        assert_allclose_quantity(p.v_rms, np.sqrt(self.v['mom2_100']) * u.pixel)
 
-        p = PPVStatistic(self.stat, self.metadata(vaxis=1, velocity_scale=10))
-        assert_allclose(p.v_rms, np.sqrt(self.v['mom2_010']) * 10)
+        p = PPVStatistic(self.stat, self.metadata(vaxis=1, velocity_scale=10 * u.km / u.s))
+        assert_allclose_quantity(p.v_rms, np.sqrt(self.v['mom2_010']) * 10 * u.km / u.s)
 
     def test_position_angle(self):
         x = np.array([0, 1, 2])
@@ -240,12 +240,12 @@ class TestPPVStatistic(object):
         ind = (z, y, x)
         stat = ScalarStatistic(v, ind)
         p = PPVStatistic(stat, self.metadata())
-        assert_allclose(p.position_angle, 0)
+        assert_allclose_quantity(p.position_angle, 0 * u.degree)
 
         ind = (z, x, y)
         stat = ScalarStatistic(v, ind)
         p = PPVStatistic(stat, self.metadata())
-        assert_allclose(p.position_angle, 90)
+        assert_allclose_quantity(p.position_angle, 90 * u.degree)
 
     def test_units(self):
         m = self.metadata(spatial_scale=1 * u.deg, velocity_scale=1 * u.km / u.s,
@@ -267,25 +267,22 @@ class TestPPStatistic(object):
         self.v = benchmark_values()
 
     def metadata(self, **kwargs):
-        result = dict(distance=1,
-                      spatial_scale=1,
-                      )
+        result = dict()
         result.update(**kwargs)
         return result
 
     def test_major_sigma(self):
-        p = PPStatistic(self.stat, self.metadata(spatial_scale=2))
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=2 * u.arcsec))
 
-        assert_allclose(p.major_sigma, self.v['sig_maj'] * 2)
+        assert_allclose_quantity(p.major_sigma, self.v['sig_maj'] * 2 * u.arcsec)
 
     def test_minor_sigma(self):
-        p = PPStatistic(self.stat, self.metadata(spatial_scale=4))
-        assert_allclose(p.minor_sigma, self.v['sig_min'] * 4)
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.minor_sigma, self.v['sig_min'] * 4 * u.arcsec)
 
     def test_radius(self):
-        p = PPStatistic(self.stat, self.metadata(spatial_scale=4))
-        assert_allclose(p.radius, np.sqrt(self.v['sig_min'] *
-                                                self.v['sig_maj']) * 4)
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.radius, np.sqrt(self.v['sig_min'] * self.v['sig_maj']) * 4 * u.arcsec)
 
     def test_position_angle(self):
         x = np.array([0, 1, 2])
@@ -295,12 +292,12 @@ class TestPPStatistic(object):
         ind = (y, x)
         stat = ScalarStatistic(v, ind)
         p = PPStatistic(stat, self.metadata())
-        assert_allclose(p.position_angle, 0)
+        assert_allclose_quantity(p.position_angle, 0 * u.degree)
 
         ind = (x, y)
         stat = ScalarStatistic(v, ind)
         p = PPStatistic(stat, self.metadata())
-        assert_allclose(p.position_angle, 90)
+        assert_allclose_quantity(p.position_angle, 90 * u.degree)
 
 
 class TestCataloger(object):
@@ -335,7 +332,7 @@ class TestCataloger(object):
 
 
 class TestPPVCataloger(TestCataloger):
-    fields = ['_idx',
+    fields = ['_idx', 'flux',
               'major_sigma', 'minor_sigma', 'radius',
               'v_rms', 'position_angle', 'x_cen', 'y_cen', 'v_cen']
     cataloger = staticmethod(ppv_catalog)
@@ -344,12 +341,11 @@ class TestPPVCataloger(TestCataloger):
         return benchmark_stat()
 
     def metadata(self):
-        return dict(vaxis=1, spatial_scale=1, velocity_scale=1, distance=1, lum2mass=1,
-                    data_unit=1, wcs=wcs_3d)
+        return dict(vaxis=1, data_unit=u.Jy, wcs=wcs_3d)
 
 
 class TestPPCataloger(TestCataloger):
-    fields = ['_idx',
+    fields = ['_idx', 'flux',
               'major_sigma', 'minor_sigma', 'radius',
               'position_angle', 'x_cen', 'y_cen']
     cataloger = staticmethod(pp_catalog)
@@ -360,8 +356,7 @@ class TestPPCataloger(TestCataloger):
         return bs
 
     def metadata(self):
-        return dict(spatial_scale=1, distance=1, lum2mass=1,
-                    data_unit=1, wcs=wcs_2d)
+        return dict(data_unit=u.Jy, wcs=wcs_2d)
 
 
 #don't let pytest test abstract class
@@ -370,9 +365,9 @@ del TestCataloger
 
 def test_metadata_protocol():
     class Foo(object):
-        x = MetaData('x', 'test')
-        y = MetaData('y', 'test', default=5)
-        z = MetaData('z', 'test', strict=True)
+        x = Metadata('x', 'test')
+        y = Metadata('y', 'test', default=5)
+        z = Metadata('z', 'test', strict=True)
 
         def __init__(self, md):
             self.metadata = md
