@@ -100,7 +100,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
             raise ValueError("beam_minor is needed to convert from {0} to Jy".format(input_quantities.unit))
 
         # Find the beam area
-        beams_per_pixel = (beam_minor * beam_major * 1.1331 / spatial_scale ** 2) * u.beam
+        beams_per_pixel = spatial_scale ** 2 / (beam_minor * beam_major * 1.1331) * u.beam
 
         # Convert input quantity to Fnu in Jy
         q = (input_quantities * beams_per_pixel).to(u.Jy)
