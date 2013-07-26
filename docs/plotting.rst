@@ -63,10 +63,9 @@ main branches:
    :include-source:
 
     import matplotlib.pyplot as plt
-    from astropy.io import fits
-    from astrodendro import Dendrogram
+    from astrodendro import Dendrogram, load_perseus
 
-    image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    image = load_perseus().data
     d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
     p = d.plotter()
 
@@ -98,10 +97,9 @@ shown.
    :include-source:
 
     import matplotlib.pyplot as plt
-    from astropy.io import fits
-    from astrodendro import Dendrogram
+    from astrodendro import Dendrogram, load_perseus
 
-    image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    image = load_perseus().data
     d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
     p = d.plotter()
 

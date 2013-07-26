@@ -22,9 +22,8 @@ where ``structure`` is a :class:`~astrodendro.structure.Structure` instance
 from a dendrogram. The resulting object then has methods to compute various
 statistics. Using the example data from :doc:`using`::
 
-    >>> from astrodendro import Dendrogram
-    >>> from astropy.io import fits
-    >>> image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    >>> from astrodendro import Dendrogram, load_perseus
+    >>> image = load_perseus().data
     >>> d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
 
 we can get statistics for the first structure in the trunk, which is a leaf::
@@ -200,13 +199,13 @@ approximating the structures on top of the structures themselves:
 
     from astropy.io import fits
 
-    from astrodendro import Dendrogram
+    from astrodendro import Dendrogram, load_perseus
     from astrodendro.analysis import PPStatistic
 
     import matplotlib.pyplot as plt
     from matplotlib.patches import Ellipse
 
-    hdu = fits.open('PerA_Extn2MASS_F_Gal.fits')[0]
+    hdu = load_perseus()
 
     d = Dendrogram.compute(hdu.data, min_value=2.0, min_delta=1., min_npix=10)
     p = d.plotter()
