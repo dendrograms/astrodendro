@@ -392,7 +392,7 @@ class Structure(object):
         sort_key : function, optional
             A function which given a structure will return a scalar that is
             then used for sorting. By default, this is set to a function that
-            returns the peak flux of a structure (including descendants).
+            returns the peak value of a structure (including descendants).
         reverse : bool, optional
             Whether to reverse the sorting.
         subtree : bool, optional

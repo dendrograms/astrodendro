@@ -2,8 +2,11 @@
 
 import warnings
 import numpy as np
-from astropy.units import Quantity, rad
+
+from astropy.units import Quantity
 from astropy.table import Table
+from astropy import units as u
+from astropy.wcs import WCS
 
 from .structure import Structure
 
@@ -12,7 +15,7 @@ __all__ = ['ppv_catalog', 'pp_catalog']
 
 def _qsplit(q):
     """Split a potential astropy Quantity into unit/quantity"""
-    if isinstance(1 * q, Quantity):
+    if isinstance(1. * q, Quantity):
         return q.unit, q.value
 
     return 1, q
@@ -154,12 +157,15 @@ class VectorStatistic(object):
         raise NotImplementedError
 
 
-class MetaData(object):
+class Metadata(object):
     """A descriptor to wrap around metadata dictionaries
 
-    Let's classes reference self.x instead of self.metadata['x'],
+    Lets classes reference self.x instead of self.metadata['x'],
     """
-    def __init__(self, key, description, default=1, strict=False):
+
+    _restrict_types = None
+
+    def __init__(self, key, description, default=None, strict=False):
         """
         Parameters
         ----------
@@ -173,125 +179,106 @@ class MetaData(object):
                If True, raise KeyError if metadata not provided.
                This overrides default
         """
+        if not isinstance(key, basestring):
+            raise TypeError("Key is", key, type(key))
         self.key = key
         self.description = description or 'no description'
         self.default = default
         self.strict = strict
 
     def __get__(self, instance, type=None):
+
         if instance is None:
             return self
 
-        if self.strict and self.key not in instance.metadata:
-            raise KeyError("Required metadata item not found: %s" % self)
-        return instance.metadata.get(self.key, self.default)
+        try:
+            value = instance.metadata[self.key]
+        except KeyError:
+            if self.strict:
+                raise KeyError("Required metadata item not found: %s" % self)
+            else:
+                if self.default is not None:
+                    warnings.warn("{0} ({1}) missing, defaulting to {2}".format(self.key, self.description, self.default))
+                value = self.default
+
+        if value is not None and self._restrict_types is not None:
+            if isinstance(value, self._restrict_types):
+                return value
+            else:
+                raise TypeError("{0} should be an instance of {1}".format(self.key, ' or '.join([x.__name__ for x in self._restrict_types])))
+        else:
+            return value
 
     def __str__(self):
         return "%s (%s)" % (self.key, self.description)
 
 
-def _missing_metadata(cl, md):
-    """Find missing metadata entries in a metadata dict
-
-    Paramters
-    ---------
-    cls : Class with MetaData descriptors
-    md : metadata dictionary
-    """
-    attrs = [getattr(cl, t) for t in dir(cl)]
-    return [m for m in attrs if isinstance(m, MetaData)
-            and m.key not in md]
+class MetadataQuantity(Metadata):
+    _restrict_types = (u.UnitBase, u.Quantity)
 
 
-def _warn_missing_metadata(cl, md, verbose=True):
-    missing = _missing_metadata(cl, md)
-    if len(missing) == 0:
-        return
-
-    required = [m for m in missing if m.strict]
-    if len(required):
-        raise RuntimeError(
-            "The following missing metadata items are required:\n\t" +
-            "\n\t".join(str(m) for m in required))
-
-    if not verbose:
-        return
-
-    for m in missing:
-        warnings.warn("%s missing, defaulting to %s" %
-                      (m, m.default))
+class MetadataWCS(Metadata):
+    _restrict_types = (WCS,)
 
 
 class SpatialBase(object):
 
-    spatial_scale = MetaData('spatial_scale', 'Angular length of a pixel')
-    data_unit = MetaData('data_unit', 'Units of the pixel values')
-    distance = MetaData('distance', 'Distance')
-    wcs = MetaData('wcs', 'WCS object', default=None)
-
-    @property
-    def luminosity(self):
-        """Integrated luminosity
-
-        sum(v_i * dx_linear^2 * dv)
-        """
-        #disambiguate between degree/radian dx
-        #if astropy unit is used
-        try:
-            fac = (1 * self.spatial_scale).unit.to(rad)
-            fac /= (1 * self.spatial_scale).unit
-        except AttributeError:
-            # metadata not a quantity. Assuming dx=degrees
-            fac = np.radians(1)
-        return self.distance ** 2 * self.flux * fac ** 2
+    wavelength = MetadataQuantity('wavelength', 'Wavelength')
+    spatial_scale = MetadataQuantity('spatial_scale', 'Pixel width/height')
+    beam_major = MetadataQuantity('beam_major', 'Major FWHM of beam')
+    beam_minor = MetadataQuantity('beam_minor', 'Minor FWHM of beam')
+    data_unit = MetadataQuantity('data_unit', 'Units of the pixel values', strict=True)
+    wcs = MetadataWCS('wcs', 'WCS object')
 
     def _sky_paxes(self):
         raise NotImplementedError()
 
     def _world_pos(self):
         xyz = self.stat.mom1()[::-1]
-        if self.wcs is not None:
+        if self.wcs is None:
+            return xyz[::-1] * u.pixel
+        else:
+            # TODO: set units correctly following WCS
             # We use origin=0 since the indices come from Numpy indexing
             return self.wcs.all_pix2world([xyz], 0).ravel()[::-1]
-        return xyz[::-1]
 
     @property
     def flux(self):
         raise NotImplementedError
 
     @property
-    def sky_major_sigma(self):
+    def major_sigma(self):
         """
         Major axis of the projection onto the position-position (PP) plane,
         computed from the intensity weighted second moment in direction of
         greatest elongation in the PP plane.
         """
-        dx = self.spatial_scale
+        dx = self.spatial_scale or u.pixel
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
         return dx * np.sqrt(self.stat.mom2_along(a))
 
     @property
-    def sky_minor_sigma(self):
+    def minor_sigma(self):
         """
         Minor axis of the projection onto the position-position (PP) plane,
         computed from the intensity weighted second moment perpendicular to
         the major axis in the PP plane.
         """
-        dx = self.spatial_scale
+        dx = self.spatial_scale or u.pixel
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
         return dx * np.sqrt(self.stat.mom2_along(b))
 
     @property
-    def sky_radius(self):
+    def radius(self):
         """
-        Geometric mean of sky_major_sigma and sky_minor_sigma.
+        Geometric mean of major_sigma and minor_sigma.
         """
-        u, a = _qsplit(self.sky_major_sigma)
-        u, b = _qsplit(self.sky_minor_sigma)
+        u, a = _qsplit(self.major_sigma)
+        u, b = _qsplit(self.minor_sigma)
         return u * np.sqrt(a * b)
 
 
@@ -308,9 +295,8 @@ class PPVStatistic(SpatialBase):
          Key-value pairs of metadata
     """
 
-    velocity_scale = MetaData('velocity_scale', 'Velocity channel width')
-    vaxis = MetaData('vaxis', 'Index of velocity axis (numpy convention)',
-                     default=0)
+    velocity_scale = MetadataQuantity('velocity_scale', 'Velocity channel width')
+    vaxis = Metadata('vaxis', 'Index of velocity axis (numpy convention)', default=0)
 
     def __init__(self, stat, metadata=None):
         if isinstance(stat, Structure):
@@ -332,7 +318,7 @@ class PPVStatistic(SpatialBase):
         return a, b
 
     @property
-    def xcen(self):
+    def x_cen(self):
         """
         The mean position of the structure in the x direction.
         """
@@ -340,7 +326,7 @@ class PPVStatistic(SpatialBase):
         return p[2] if self.vaxis != 2 else p[1]
 
     @property
-    def ycen(self):
+    def y_cen(self):
         """
         The mean position of the structure in the y direction.
         """
@@ -348,7 +334,7 @@ class PPVStatistic(SpatialBase):
         return p[1] if self.vaxis == 0 else p[0]
 
     @property
-    def vcen(self):
+    def v_cen(self):
         """
         The mean velocity of the structure.
         """
@@ -358,31 +344,36 @@ class PPVStatistic(SpatialBase):
     @property
     def flux(self):
         """
-        Integrated flux.
-
-        sum(v_i * dx^2 * dv)
+        Integrated flux
         """
-        fac = self.data_unit * self.spatial_scale ** 2 * self.velocity_scale
-        return fac * self.stat.mom0()
+        from .flux import compute_flux
+        return compute_flux(self.stat.mom0() * self.data_unit,
+                            u.Jy,
+                            wavelength=self.wavelength,
+                            spatial_scale=self.spatial_scale,
+                            velocity_scale=self.velocity_scale,
+                            beam_major=self.beam_major,
+                            beam_minor=self.beam_minor)
 
     @property
-    def vrms(self):
+    def v_rms(self):
         """
         Intensity-weighted second moment of velocity
         """
+        dv = self.velocity_scale or u.pixel
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
-        return self.velocity_scale * np.sqrt(self.stat.mom2_along(ax))
+        return dv * np.sqrt(self.stat.mom2_along(ax))
 
     @property
-    def sky_pa(self):
+    def position_angle(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
         from the +x axis.
         """
         a, b = self._sky_paxes()
         a.pop(self.vaxis)
-        return np.degrees(np.arctan2(a[0], a[1]))
+        return np.degrees(np.arctan2(a[0], a[1])) * u.degree
 
 
 class PPStatistic(SpatialBase):
@@ -410,28 +401,35 @@ class PPStatistic(SpatialBase):
 
     @property
     def flux(self):
-        """ Integrated flux """
-        fac = self.data_unit * self.spatial_scale ** 2
-        return fac * self.stat.mom0()
+        """
+        Integrated flux
+        """
+        from .flux import compute_flux
+        return compute_flux(self.stat.mom0() * self.data_unit,
+                            u.Jy,
+                            wavelength=self.wavelength,
+                            spatial_scale=self.spatial_scale,
+                            beam_major=self.beam_major,
+                            beam_minor=self.beam_minor)
 
     @property
-    def sky_pa(self):
+    def position_angle(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
         from the +x axis.
         """
         a, b = self._sky_paxes()
-        return np.degrees(np.arctan2(a[0], a[1]))
+        return np.degrees(np.arctan2(a[0], a[1])) * u.degree
 
     @property
-    def xcen(self):
+    def x_cen(self):
         """
         The mean position of the structure in the x direction.
         """
         return self._world_pos()[1]
 
     @property
-    def ycen(self):
+    def y_cen(self):
         """
         The mean position of the structure in the y direction.
         """
@@ -470,7 +468,7 @@ class PPPStatistic(object):
         pass
 
     @property
-    def vrms(self):
+    def v_rms(self):
         pass
 
     @property
@@ -491,14 +489,16 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
     Make a catalog from a list of structures
     """
 
-    _warn_missing_metadata(statistic, metadata, verbose=verbose)
-
     result = None
 
     for struct in structures:
         stat = ScalarStatistic(struct.values(subtree=True),
                                struct.indices(subtree=True))
         stat = statistic(stat, metadata)
+        row = {}
+        for lbl in fields:
+            row[lbl] = getattr(stat, lbl)
+
         row = dict((lbl, getattr(stat, lbl))
                    for lbl in fields)
         row.update(_idx=struct.idx)
@@ -509,7 +509,10 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
             for k, v in row.items():
                 result[k].units = _unit(v)
 
-        result.add_row(row)
+        # astropy.table.Table should in future support setting row items from
+        # quantities, but for now we need to strip off the quantities
+        new_row = dict((x, row[x].value if isinstance(row[x], Quantity) else row[x]) for x in row)
+        result.add_row(new_row)
 
     return result
 
@@ -537,9 +540,8 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius',
-                        'sky_pa', 'vrms', 'xcen', 'ycen', 'vcen']
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+                        'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
 
@@ -566,7 +568,6 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['flux', 'luminosity', 'sky_major_sigma',
-                        'sky_minor_sigma', 'sky_radius',
-                        'sky_pa', 'xcen', 'ycen']
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+                        'position_angle', 'x_cen', 'y_cen', 'flux']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)

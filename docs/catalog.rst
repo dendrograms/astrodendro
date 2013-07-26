@@ -49,26 +49,28 @@ In order to produce a catalog of properties for all structures, it is also
 possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
 :func:`~astrodendro.analysis.ppv_catalog` functions::
 
-   >>> import numpy as np
-   >>> from astrodendro import Dendrogram, ppv_catalog
-   >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
-   >>> metadata = {}
-   >>> cat = ppv_catalog(d, metadata)
+    >>> import numpy as np
+    >>> from astropy import units as u
+    >>> from astrodendro import Dendrogram, ppv_catalog
+    >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
+    >>> metadata = {'data_unit': u.Jy}
+    >>> cat = ppv_catalog(d, metadata)
+    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
 
-    WARNING: data_unit (Unit of the pixel values) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: distance (Distance) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: velocity_scale (Velocity channel width) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: spatial_scale (Angular length of a pixel) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 1 [astrodendro.analysis]
-    WARNING: wcs (WCS object) missing, defaulting to None [astrodendro.analysis]
+    >>> cat.pprint(show_unit=True, max_lines=10)
+     _idx      flux        major_sigma   ...      v_rms           x_cen         y_cen
+                Jy             pix       ...       pix             pix           pix
+    ----- -------------- --------------- ... ---------------- ------------- -------------
+    370.0  496.226094348   2.91713474893 ...    2.87362235491 4.50889400945 4.50806934301
+    656.0   445.77156819   2.93782845864 ...    2.87924481465  4.5157356994 4.48471005097
+    646.0 0.524101200595             0.0 ...              0.0           5.0           4.0
+      ...            ...             ... ...              ...           ...           ...
+      3.0 0.427355839614             0.0 ...              0.0           2.0           0.0
+    998.0  1.00725874437  0.497077200574 ... 1.7763568394e-15           7.0 8.55398385564
+    270.0 0.482695966707 8.881784197e-16 ...              0.0           9.0           6.0
 
-   >>> print cat[:3]
-   _idx      flux         luminosity    ...  sky_radius        vrms
-   ---- ------------- ----------------- ... ------------- -------------
-    191 64.1306480569   0.0195353125403 ... 2.85334306153 2.96246166695
-     12 4.63582743919   0.0014121537931 ...  3.2987034401  3.5720567466
     >>> print cat.columns
-       <TableColumns names=('_idx','flux','luminosity','sky_deconvolved_radius','sky_major_sigma','sky_minor_sigma','sky_pa','sky_radius','vrms')>
+    <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
@@ -84,22 +86,20 @@ Here's a sensible looking metadata dictionary::
     >>> md = dict(velocity_scale=0.5 * u.km / u.s,
     >>>           vaxis=0,
     >>>           spatial_scale=.002 * u.deg,
-    >>>           distance=100 * u.pc,
     >>>           data_unit=u.K)
     >>> cat = ppv_catalog(d, md)
     >>> for c in cat.columns:
     >>>     print c, cat[c].units
-   _idx None
-   flux deg2 K km / (s)
-   luminosity K km pc2 / (s)
-   sky_major_sigma deg
-   sky_minor_sigma deg
-   sky_pa None
-   sky_radius deg
-   vcen None
-   vrms km / (s)
-   xcen None
-   ycen None
+    _idx None
+    flux Jy
+    major_sigma deg
+    minor_sigma deg
+    position_angle deg
+    radius deg
+    v_cen None
+    v_rms km / s
+    x_cen None
+    y_cen None
 
 Available statistics
 --------------------
