@@ -505,7 +505,9 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
 
         # first row
         if result is None:
-            result = Table(names=sorted(row.keys()))
+            sorted_row_keys = sorted(row.keys())
+            result = Table(names=sorted_row_keys,
+                           dtype=[int if x == '_idx' else float for x in sorted_row_keys])
             for k, v in row.items():
                 result[k].units = _unit(v)
 
@@ -513,6 +515,8 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
         # quantities, but for now we need to strip off the quantities
         new_row = dict((x, row[x].value if isinstance(row[x], Quantity) else row[x]) for x in row)
         result.add_row(new_row)
+
+    result.sort('_idx')
 
     return result
 
