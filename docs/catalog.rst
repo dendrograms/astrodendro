@@ -45,6 +45,9 @@ Note that the objects returned are Astropy
 with units attached. For more information, see the `Astropy Documentation
 <http://docs.astropy.org/en/stable/units/index.html>`_.
 
+Specifying meta-data when computing statistics
+----------------------------------------------
+
 In some cases, meta-data can or should be specified. To demonstrate this, we
 will use a different data set which is a small section
 (:download:`L1551_scuba_850mu.fits`) of a SCUBA 850 micron map from the `SCUBA
@@ -130,28 +133,14 @@ Available statistics
 
 For a full list of available statistics for each type of statistic class, see
 :class:`~astrodendro.analysis.PPStatistic` and
-:class:`~astrodendro.analysis.PPVStatistic`.
-
-Here's a more detailed description of the available statistics:
-
-* ``_idx`` : The structure ``.idx`` that this row describes
-* ``flux`` : The integrated intensity of each structure
-* ``major_sigma`` : The intensity-weighted second moment of emission along the major axis of the structure projected onto the sky
-* ``minor_sigma`` : The intensity-weighted second moment of emission, perpendicular to the major axis of the structure projected onto the sky
-* ``position_angle`` : The position angle of the structure projected onto the sky. Given in radians CCW from the +x axis (note that this is the +x axis in pixel coordinates, which is the ``-x`` axis for conventional astronomy images)
-* ``radius`` : The geometric mean of ``major_sigma`` and ``minor_sigma``
-* ``v_rms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
-* ``x_cen`` : X-position of intensity-weighted centroid (in world units if a ``WCS`` object is stored in ``metadta['wcs']``
-* ``y_cen`` : Y-position of intensity-weighted centroid (see above)
-* ``v_cen`` : V-position of intensity-weighted centroid (see above)
-
-For more information on these quantities, consult the paper on `Bias Free
-Measurements of Molecular Cloud Properties
+:class:`~astrodendro.analysis.PPVStatistic`. For more information on the
+quantities listed in these pages, consult the paper on `Bias Free Measurements
+of Molecular Cloud Properties
 <http://adsabs.harvard.edu/abs/2006PASP..118..590R>`_ or `the original
 dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the
 terminology of the dendrogram paper, the quantities in
-:func:`~astrodendro.analysis.pp_catalog` and
-:func:`~astrodendro.analysis.ppv_catalog` adopt the "bijection" paradigm.
+:class:`~astrodendro.analysis.PPStatistic` and
+:class:`~astrodendro.analysis.PPVStatistic` adopt the "bijection" paradigm.
 
 Example
 -------
