@@ -35,11 +35,12 @@ class TestIO(object):
     def compare_dendrograms(self, d1, d2):
         " Helper method that ensures d1 and d2 are equivalent "
         # Do we get the same number of structures?
-        assert len(d1.structures_dict) == len(d2.structures_dict)
+        assert len(d1) == len(d2)
         # Do we recover the data exactly?
         np.testing.assert_array_equal(d1.data, d2.data)
         # Now check that the structures are the same:
-        for idx in d2.structures_dict:
+        for s in d2:
+            idx = s.idx
             structure1, structure2 = d1[idx], d2[idx]
             assert_permuted_fancyindex(structure1.indices(subtree=False),
                                        structure2.indices(subtree=False))
