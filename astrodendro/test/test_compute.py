@@ -87,7 +87,7 @@ class Test2DimensionalData(object):
                          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], ])
         d = Dendrogram.compute(data)
-        assert len(d.structures_dict) <= 7
+        assert len(d) <= 7
         # Some of the '1' valued pixels get included with the leaves and branches,
         # hence number of structures is currently 7 and not 6 as expected.
         # Fixing this is probably more trouble than it's worth.
