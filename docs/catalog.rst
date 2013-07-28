@@ -33,103 +33,114 @@ we can get statistics for the first structure in the trunk, which is a leaf::
     >>> d.trunk[0]
     <Structure type=leaf idx=101>
     >>> stat = PPStatistic(d.trunk[0])
-    >>> stat.sky_major_sigma  # length of major axis on the sky
-    3.7659611491290619
-    >>> stat.sky_minor_sigma  # length of minor axis on the sky
-    2.9278600766040364
-    >>> stat.sky_pa  # position angle on the sky
-    134.61988014787443
-    >>> stat.flux  # total flux contained in structure
-    88.605692148208618
+    >>> stat.major_sigma  # length of major axis on the sky
+    <Quantity 1.882980574564531 pix>
+    >>> stat.minor_sigma  # length of minor axis on the sky
+    <Quantity 1.4639300383020182 pix>
+    >>> stat.position_angle  # position angle on the sky
+    <Quantity 134.61988014787443 deg>
+
+Note that the objects returned are Astropy
+:class:`~astropy.units.quantity.Quantity` objects that are basically variables
+with units attached. For more information, see the `Astropy Documentation
+<http://docs.astropy.org/en/stable/units/index.html>`_.
+
+Specifying meta-data when computing statistics
+----------------------------------------------
+
+In some cases, meta-data can or should be specified. To demonstrate this, we
+will use a different data set which is a small section
+(:download:`L1551_scuba_850mu.fits`) of a SCUBA 850 micron map from the `SCUBA
+Legacy Catalog
+<http://www3.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/scubalegacy/>`_. This
+map has a pixel scale of 6 arcseconds per pixel, and a circular beam with a
+full-width at half maximum (FWHM) of 22.9 arcseconds. First, we compute the
+dendrogram as usual::
+
+    >>> from astropy.io import fits
+    >>> from astrodendro import Dendrogram
+    >>> image = fits.getdata('L1551_scuba_850mu.fits')
+    >>> d = Dendrogram.compute(image, min_value=0.1, min_delta=0.02)
+
+then we set up a Python dictionary containing the required meta-data::
+
+    >>> from astropy import units as u
+    >>> metadata = {}
+    >>> metadata['data_unit'] = u.Jy / u.beam
+    >>> metadata['spatial_scale'] =  6 * u.arcsec
+    >>> metadata['beam_major'] =  22.9 * u.arcsec
+    >>> metadata['beam_minor'] =  22.9 * u.arcsec
+
+Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class to extract properties for the first structure::
+
+    >>> from astrodendro.analysis import PPStatistic
+    >>> stat = PPStatistic(d.trunk[0], metadata=metadata)
+    >>> stat.major_sigma
+    <Quantity 20.34630778380526 arcsec>
+    >>> stat.minor_sigma
+    <Quantity 8.15504176035544 arcsec>
+    >>> stat.position_angle
+    <Quantity 85.14309012311242 deg>
+    >>> stat.flux
+    <Quantity 0.24119688679751278 Jy>
+
+Note that the major and minor sigma on the sky of the structures are now in
+arcseconds since the spatial scale was specified, and the flux (density) has
+been converted from Jy/beam to Jy.
 
 Making a catalog
 ----------------
 
 In order to produce a catalog of properties for all structures, it is also
 possible to make use of the :func:`~astrodendro.analysis.pp_catalog` and
-:func:`~astrodendro.analysis.ppv_catalog` functions::
+:func:`~astrodendro.analysis.ppv_catalog` functions. We demonstrate this using
+the same SCUBA data as used above::
 
-    >>> import numpy as np
+    >>> from astropy.io import fits
+    >>> from astrodendro import Dendrogram, pp_catalog
+    >>> image = fits.getdata('L1551_scuba_850mu.fits')
+    >>> d = Dendrogram.compute(image, min_value=0.1, min_delta=0.02)
+
     >>> from astropy import units as u
-    >>> from astrodendro import Dendrogram, ppv_catalog
-    >>> d = Dendrogram.compute(np.random.random((10, 10, 10)))
-    >>> metadata = {'data_unit': u.Jy}
-    >>> cat = ppv_catalog(d, metadata)
-    WARNING: vaxis (Index of velocity axis (numpy convention)) missing, defaulting to 0 [astrodendro.analysis]
+    >>> metadata = {}
+    >>> metadata['data_unit'] = u.Jy / u.beam
+    >>> metadata['spatial_scale'] =  6 * u.arcsec
+    >>> metadata['beam_major'] =  22.9 * u.arcsec
+    >>> metadata['beam_minor'] =  22.9 * u.arcsec
 
+    >>> cat = pp_catalog(d, metadata)
     >>> cat.pprint(show_unit=True, max_lines=10)
-     _idx      flux        major_sigma   ...      v_rms           x_cen         y_cen
-                Jy             pix       ...       pix             pix           pix
-    ----- -------------- --------------- ... ---------------- ------------- -------------
-    370.0  496.226094348   2.91713474893 ...    2.87362235491 4.50889400945 4.50806934301
-    656.0   445.77156819   2.93782845864 ...    2.87924481465  4.5157356994 4.48471005097
-    646.0 0.524101200595             0.0 ...              0.0           5.0           4.0
-      ...            ...             ... ...              ...           ...           ...
-      3.0 0.427355839614             0.0 ...              0.0           2.0           0.0
-    998.0  1.00725874437  0.497077200574 ... 1.7763568394e-15           7.0 8.55398385564
-    270.0 0.482695966707 8.881784197e-16 ...              0.0           9.0           6.0
-
-    >>> print cat.columns
-    <TableColumns names=('_idx','flux','major_sigma','minor_sigma','position_angle','radius','v_cen','v_rms','x_cen','y_cen')>
+    _idx       flux       major_sigma   minor_sigma  ...     radius        x_cen         y_cen
+                Jy           arcsec        arcsec    ...     arcsec         pix           pix
+    ---- --------------- ------------- ------------- ... ------------- ------------- -------------
+       7  0.241196886798 20.3463077838 8.15504176036 ... 12.8811874315 168.053017504 3.98809714744
+      51  0.132470059814 14.2778133293 4.81100492125 ...  8.2879810685  163.25495657 9.13394216473
+      60 0.0799106574322 9.66298008473 3.47364264736 ... 5.79359471511 169.278409915 15.1884110291
+     ...             ...           ...           ... ...           ...           ...           ...
+    1203  0.183438198239 22.7202518034 4.04690367115 ... 9.58888264776 15.3760934458 100.136384362
+    1384   2.06217635837 38.1060171889  19.766115194 ... 27.4446338168 136.429313911 107.190835447
+    1504   1.90767291972 8.64476839751 8.09070477357 ... 8.36314946298  68.818705665 120.246719845
 
 The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
 
-The ``metadata`` dictionary provides information about how to convert
-pixel-level quantities to meaningful units. By default,
-:func:`~astrodendro.analysis.ppv_catalog` generates warnings about missing
-metadata items (these can be suppressed by setting ``verbose=False`` in the
-call to :func:`~astrodendro.analysis.ppv_catalog`).
-
-Here's a sensible looking metadata dictionary::
-
-    >>> import astropy.units as u
-    >>> md = dict(velocity_scale=0.5 * u.km / u.s,
-    >>>           vaxis=0,
-    >>>           spatial_scale=.002 * u.deg,
-    >>>           data_unit=u.K)
-    >>> cat = ppv_catalog(d, md)
-    >>> for c in cat.columns:
-    >>>     print c, cat[c].units
-    _idx None
-    flux Jy
-    major_sigma deg
-    minor_sigma deg
-    position_angle deg
-    radius deg
-    v_cen None
-    v_rms km / s
-    x_cen None
-    y_cen None
+Note that :func:`~astrodendro.analysis.pp_catalog` and
+:func:`~astrodendro.analysis.ppv_catalog` generate warnings if required
+meta-data is missing and sensible defaults can be assumed. If no sensible
+defaults can be assumed (e.g. for ``data_unit``) then an exception is raised.
 
 Available statistics
 --------------------
 
 For a full list of available statistics for each type of statistic class, see
 :class:`~astrodendro.analysis.PPStatistic` and
-:class:`~astrodendro.analysis.PPVStatistic`.
-
-Here's a more detailed description of the available quantities:
-
-* ``_idx`` : The structure ``.idx`` that this row describes
-* ``flux`` : The integrated intensity of each structure
-* ``luminosity`` : ``flux * d^2``
-* ``sky_mag`` : The intensity-weighted second moment of emission, along the major axis of the structure projected onto the sky
-* ``sky_major_sigma`` : The intensity-weighted second moment of emission along the major axis of the structure projected onto the sky
-* ``sky_minor_sigma`` : The intensity-weighted second moment of emission, perpendicular to the major axis of the structure projected onto the sky
-* ``sky_pa`` : The position angle of the structure projected onto the sky. Given in radians CCW from the +x axis (note that this is the +x axis in pixel coordinates, which is the ``-x`` axis for conventional astronomy images)
-* ``sky_radius`` : The geometric mean of ``sky_major_sigma`` and ``sky_minor_sigma``
-* ``vrms`` : The intensity-weighted second moment of emission, along the velocity axis. The velocity axis is given by the ``vaxis`` metadata item. This axis is in Numpy convention, which is the reverse of FITS convention (that is, if an array is read from a FITS file where ``AXIS3`` is the velocity axis, then ``vaxis=0``).
-* ``xcen`` : X-position of intensity-weighted centroid (in world units if a ``WCS`` object is stored in ``metadta['wcs']``
-* ``ycen`` : Y-position of intensity-weighted centroid (see above)
-* ``vcen`` : V-position of intensity-weighted centroid (see above)
-
-For more information on these quantities, consult the paper on `Bias Free
-Measurements of Molecular Cloud Properties
+:class:`~astrodendro.analysis.PPVStatistic`. For more information on the
+quantities listed in these pages, consult the paper on `Bias Free Measurements
+of Molecular Cloud Properties
 <http://adsabs.harvard.edu/abs/2006PASP..118..590R>`_ or `the original
 dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the
 terminology of the dendrogram paper, the quantities in
-:func:`~astrodendro.analysis.pp_catalog` and
-:func:`~astrodendro.analysis.ppv_catalog` adopt the "bijection" paradigm.
+:class:`~astrodendro.analysis.PPStatistic` and
+:class:`~astrodendro.analysis.PPVStatistic` adopt the "bijection" paradigm.
 
 Example
 -------
@@ -165,10 +176,10 @@ approximating the structures on top of the structures themselves:
         p.plot_contour(ax, structure=leaf, lw=3, colors='red')
 
         s = PPStatistic(leaf)
-        ax.add_patch(Ellipse((s.xcen, s.ycen),
-                              s.sky_major_sigma * 2.3548,
-                              s.sky_minor_sigma * 2.3548,
-                              angle=s.sky_pa,
+        ax.add_patch(Ellipse((s.x_cen, s.y_cen),
+                              s.major_sigma * 2.3548,
+                              s.minor_sigma * 2.3548,
+                              angle=s.position_angle,
                               edgecolor='orange', facecolor='none'))
 
     ax.set_xlim(75., 170.)

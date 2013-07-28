@@ -120,7 +120,7 @@ class DendrogramPlotter(object):
             raise ValueError("plot_data can only be used with 2- or 3-dimensional data")
 
         if structure is None:
-            mask = self.dendrogram.data > self.dendrogram.min_value
+            mask = self.dendrogram.data > self.dendrogram.params['min_value']
         else:
             if type(structure) is int:
                 structure = self.dendrogram.structures_dict[structure]

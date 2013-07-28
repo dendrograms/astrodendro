@@ -275,7 +275,7 @@ class SpatialBase(object):
     @property
     def radius(self):
         """
-        Geometric mean of major_sigma and minor_sigma.
+        Geometric mean of ``major_sigma`` and ``minor_sigma``.
         """
         u, a = _qsplit(self.major_sigma)
         u, b = _qsplit(self.minor_sigma)
@@ -336,7 +336,9 @@ class PPVStatistic(SpatialBase):
     @property
     def v_cen(self):
         """
-        The mean velocity of the structure.
+        The mean velocity of the structure (where the velocity axis can be
+        specified by the ``vaxis`` metadata parameter, which defaults to 0
+        following the Numpy convention - the third axis in the FITS convention).
         """
         p = self._world_pos()
         return p[self.vaxis]
@@ -344,7 +346,7 @@ class PPVStatistic(SpatialBase):
     @property
     def flux(self):
         """
-        Integrated flux
+        The integrated flux of the structure, in Jy.
         """
         from .flux import compute_flux
         return compute_flux(self.stat.mom0() * self.data_unit,
@@ -358,7 +360,10 @@ class PPVStatistic(SpatialBase):
     @property
     def v_rms(self):
         """
-        Intensity-weighted second moment of velocity
+        Intensity-weighted second moment of velocity (where the velocity axis
+        can be specified by the ``vaxis`` metadata parameter, which defaults to
+        0 following the Numpy convention - the third axis in the FITS
+        convention).
         """
         dv = self.velocity_scale or u.pixel
         ax = [0, 0, 0]
@@ -369,7 +374,8 @@ class PPVStatistic(SpatialBase):
     def position_angle(self):
         """
         The position angle of sky_maj, sky_min in degrees counter-clockwise
-        from the +x axis.
+        from the +x axis (note that this is the +x axis in pixel coordinates,
+        which is the ``-x`` axis for conventional astronomy images).
         """
         a, b = self._sky_paxes()
         a.pop(self.vaxis)
@@ -424,14 +430,18 @@ class PPStatistic(SpatialBase):
     @property
     def x_cen(self):
         """
-        The mean position of the structure in the x direction.
+        The mean position of the structure in the x direction (in pixel
+        coordinates, or in world coordinates if the WCS transformation is
+        available in the meta-data).
         """
         return self._world_pos()[1]
 
     @property
     def y_cen(self):
         """
-        The mean position of the structure in the y direction.
+        The mean position of the structure in the y direction (in pixel
+        coordinates, or in world coordinates if the WCS transformation is
+        available in the meta-data).
         """
         return self._world_pos()[0]
 
@@ -505,14 +515,28 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
 
         # first row
         if result is None:
-            result = Table(names=sorted(row.keys()))
+            sorted_row_keys = sorted(row.keys())
+            try:
+                result = Table(names=sorted_row_keys,
+                               dtype=[int if x == '_idx' else float for x in sorted_row_keys])
+            except TypeError:  # dtype was called dtypes in older versions of Astropy
+                result = Table(names=sorted_row_keys,
+                               dtypes=[int if x == '_idx' else float for x in sorted_row_keys])            
             for k, v in row.items():
                 result[k].units = _unit(v)
 
         # astropy.table.Table should in future support setting row items from
         # quantities, but for now we need to strip off the quantities
-        new_row = dict((x, row[x].value if isinstance(row[x], Quantity) else row[x]) for x in row)
+        new_row = {}
+        for x in row:
+            if row[x] is not None:  # in Astropy 0.3+ we no longer need to exclude None items
+                if isinstance(row[x], Quantity):
+                    new_row[x] = row[x].value
+                else:
+                    new_row[x] = row[x]
         result.add_row(new_row)
+
+    result.sort('_idx')
 
     return result
 
