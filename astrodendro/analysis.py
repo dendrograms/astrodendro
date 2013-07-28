@@ -527,7 +527,13 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
 
         # astropy.table.Table should in future support setting row items from
         # quantities, but for now we need to strip off the quantities
-        new_row = dict((x, row[x].value if isinstance(row[x], Quantity) else row[x]) for x in row)
+        new_row = {}
+        for x in row:
+            if row[x] is not None:  # in Astropy 0.3+ we no longer need to exclude None items
+                if isinstance(row[x], Quantity):
+                    new_row[x] = row[x].value
+                else:
+                    new_row[x] = row[x]
         result.add_row(new_row)
 
     result.sort('_idx')
