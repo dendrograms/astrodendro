@@ -1,8 +1,24 @@
 # Licensed under an MIT open source license - see LICENSE
 
+import os
+
 import numpy as np
 
 from .util import parse_dendrogram
+
+
+HDF5_SIGNATURE = b'\x89HDF\r\n\x1a\n'
+
+
+def is_hdf5(filename, mode='r'):
+    if mode == 'r' and os.path.exists(filename):
+        fileobj = open(filename, 'rb')
+        sig = fileobj.read(8)
+        return sig == HDF5_SIGNATURE
+    elif filename.lower().endswith(('.hdf5', '.h5')):
+        return True
+    else:
+        return False
 
 
 def dendro_export_hdf5(d, filename):

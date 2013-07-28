@@ -8,18 +8,7 @@ import numpy as np
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
-
-
-# Set exporters and importers
-
-from .io.fits import dendro_export_fits, dendro_import_fits
-from .io.hdf5 import dendro_export_hdf5, dendro_import_hdf5
-
-IO_FORMATS = {
-    # name: (export_function, import_function)
-    'fits': (dendro_export_fits, dendro_import_fits),
-    'hdf5': (dendro_export_hdf5, dendro_import_hdf5),
-}
+from .io import IO_FORMATS
 
 # Define main dendrogram class
 
@@ -312,7 +301,7 @@ class Dendrogram(object):
         self._trunk = value
 
     @staticmethod
-    def load_from(filename, format="autodetect"):
+    def load_from(filename, format=None):
         """
         Load a previously computed dendrogram from a file.
 
@@ -328,11 +317,10 @@ class Dendrogram(object):
             and the format is auto-detected from the file extension. At this
             time, the only format supported is ``'hdf5'``.
         """
-        if format == "autodetect":
-            format = filename.rsplit('.', 1)[-1].lower()
-        return IO_FORMATS[format][1](filename)
+        from .io import load_dendrogram
+        return load_dendrogram(filename, format=format)
 
-    def save_to(self, filename, format="autodetect"):
+    def save_to(self, filename, format=None):
         """
         Save the dendrogram to a file.
 
@@ -348,9 +336,8 @@ class Dendrogram(object):
             the format is auto-detected from the file extension. At this time,
             the only format supported is ``'hdf5'``.
         """
-        if format == "autodetect":
-            format = filename.rsplit('.', 1)[-1].lower()
-        return IO_FORMATS[format][0](self, filename)
+        from .io import save_dendrogram
+        return save_dendrogram(self, filename, format=format)
 
     @property
     def leaves(self):
