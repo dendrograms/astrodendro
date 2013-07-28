@@ -10,13 +10,12 @@ astrodendro.analysis
 .. autosummary::
 
       ~PPStatistic.flux
-      ~PPStatistic.luminosity
-      ~PPStatistic.sky_major_sigma
-      ~PPStatistic.sky_minor_sigma
-      ~PPStatistic.sky_pa
-      ~PPStatistic.sky_radius
-      ~PPStatistic.xcen
-      ~PPStatistic.ycen
+      ~PPStatistic.major_sigma
+      ~PPStatistic.minor_sigma
+      ~PPStatistic.position_angle
+      ~PPStatistic.radius
+      ~PPStatistic.x_cen
+      ~PPStatistic.y_cen
 
 .. autoclass:: PPVStatistic
 
@@ -25,15 +24,14 @@ astrodendro.analysis
 .. autosummary::
 
       ~PPVStatistic.flux
-      ~PPVStatistic.luminosity
-      ~PPVStatistic.sky_major_sigma
-      ~PPVStatistic.sky_minor_sigma
-      ~PPVStatistic.sky_pa
-      ~PPVStatistic.sky_radius
-      ~PPVStatistic.xcen
-      ~PPVStatistic.ycen
-      ~PPVStatistic.vcen
-      ~PPVStatistic.vrms
+      ~PPVStatistic.major_sigma
+      ~PPVStatistic.minor_sigma
+      ~PPVStatistic.position_angle
+      ~PPVStatistic.radius
+      ~PPVStatistic.x_cen
+      ~PPVStatistic.y_cen
+      ~PPVStatistic.v_cen
+      ~PPVStatistic.v_rms
 
 .. autofunction:: pp_catalog
 
