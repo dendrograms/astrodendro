@@ -516,8 +516,12 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
         # first row
         if result is None:
             sorted_row_keys = sorted(row.keys())
-            result = Table(names=sorted_row_keys,
-                           dtype=[int if x == '_idx' else float for x in sorted_row_keys])
+            try:
+                result = Table(names=sorted_row_keys,
+                               dtype=[int if x == '_idx' else float for x in sorted_row_keys])
+            except TypeError:  # dtype was called dtypes in older versions of Astropy
+                result = Table(names=sorted_row_keys,
+                               dtypes=[int if x == '_idx' else float for x in sorted_row_keys])            
             for k, v in row.items():
                 result[k].units = _unit(v)
 
