@@ -15,7 +15,7 @@ class DendrogramPlotter(object):
         self._cached_positions = None
         self.sort()
 
-    def sort(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
+    def sort(self, sort_key=None, custom_position=None, reverse=False):
         """
         Sort the position of the leaves for plotting.
 
@@ -27,32 +27,48 @@ class DendrogramPlotter(object):
              then used to sort the leaves.
         reverse : bool, optional
              Whether to reverse the sorting
+        custom_position : function, optional
+            This should be a function that takes a
+            `~astrodendro.structure.Structure`returns the position of the
+            leaves to use for plotting. If the dataset has more than one
+            dimension, using this may cause lines to cross. If this is used,
+            then ``sort_key`` and ``reverse`` are ignored.
         """
 
-        sorted_trunk_structures = sorted(self.dendrogram.trunk, key=sort_key, reverse=reverse)
+        if custom_position is None:
 
-        positions = {}
-        x = 0  # the first index for each trunk structure
-        for structure in sorted_trunk_structures:
+            if sort_key is None:
+                sort_key = lambda s: s.get_peak(subtree=True)[1]
 
-            # Get sorted leaves
-            sorted_leaves = structure.get_sorted_leaves(subtree=True, reverse=reverse)
+            sorted_trunk_structures = sorted(self.dendrogram.trunk, key=sort_key, reverse=reverse)
 
-            # Loop over leaves and assign positions
-            for leaf in sorted_leaves:
-                positions[leaf] = x
-                x += 1
+            positions = {}
+            x = 0  # the first index for each trunk structure
+            for structure in sorted_trunk_structures:
 
-            # Sort structures from the top-down
-            sorted_structures = sorted(structure.descendants, key=lambda s: s.level, reverse=True) + [structure]
+                # Get sorted leaves
+                sorted_leaves = structure.get_sorted_leaves(subtree=True, reverse=reverse)
 
-            # Loop through structures and assing position of branches as the mean
-            # of the leaves
-            for structure in sorted_structures:
-                if not structure.is_leaf:
-                    positions[structure] = np.mean([positions[child] for child in structure.children])
+                # Loop over leaves and assign positions
+                for leaf in sorted_leaves:
+                    positions[leaf] = x
+                    x += 1
 
-        self._cached_positions = positions
+                # Sort structures from the top-down
+                sorted_structures = sorted(structure.descendants, key=lambda s: s.level, reverse=True) + [structure]
+
+                # Loop through structures and assing position of branches as the mean
+                # of the leaves
+                for structure in sorted_structures:
+                    if not structure.is_leaf:
+                        positions[structure] = np.mean([positions[child] for child in structure.children])
+
+            self._cached_positions = positions
+
+        else:
+
+            for structure in self.dendrogram.all_structures:
+                self._cached_positions[structure] = custom_position(structure)
 
     def plot_tree(self, ax, structure=None, subtree=True, autoscale=True, **kwargs):
         """
