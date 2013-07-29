@@ -34,7 +34,7 @@ def save_dendrogram(dendrogram, filename, format=None):
         return IO_FORMATS[format]['export_dendro'](dendrogram, filename)
     else:
         for io_format in IO_FORMATS:
-            if IO_FORMATS[io_format]['identify'](filename, mode='r'):
+            if IO_FORMATS[io_format]['identify'](filename, mode='w'):
                 return IO_FORMATS[io_format]['export_dendro'](dendrogram, filename)
     raise IOError("Could not automatically identify file format - use the "
                   "format= option to specify which format to use (valid "
