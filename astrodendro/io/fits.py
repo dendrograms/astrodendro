@@ -1,9 +1,29 @@
 # Licensed under an MIT open source license - see LICENSE
 
+import os
+
 import numpy as np
 
 from .util import parse_dendrogram
+from .handler import IOHandler
+
 # Import and export
+
+# FITS file signature as per RFC 4047
+FITS_SIGNATURE = (b"\x53\x49\x4d\x50\x4c\x45\x20\x20\x3d\x20\x20\x20\x20\x20"
+                  b"\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+                  b"\x20\x54")
+
+
+def is_fits(filename, mode='r'):
+    if mode == 'r' and os.path.exists(filename):
+        fileobj = open(filename, 'rb')
+        sig = fileobj.read(30)
+        return sig == FITS_SIGNATURE
+    elif filename.lower().endswith(('.fits', '.fits.gz', '.fit', '.fit.gz')):
+        return True
+    else:
+        return False
 
 
 def dendro_export_fits(d, filename):
@@ -29,3 +49,8 @@ def dendro_import_fits(filename):
         newick = ''.join(chr(x) for x in hdus[3].data.flat)
 
     return parse_dendrogram(newick, data, index_map)
+
+
+FITSHandler = IOHandler(identify=is_fits,
+                        export_dendro=dendro_export_fits,
+                        import_dendro=dendro_import_fits)
