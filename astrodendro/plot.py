@@ -41,7 +41,8 @@ class DendrogramPlotter(object):
         sort_key : function, optional
              This should be a function that takes a
              `~astrodendro.structure.Structure` and returns a scalar that is
-             then used to sort the leaves.
+             then used to sort the leaves. If not specified, the leaves are
+             sorted according to their peak value.
         reverse : bool, optional
              Whether to reverse the sorting
         """
