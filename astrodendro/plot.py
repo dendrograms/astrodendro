@@ -15,7 +15,24 @@ class DendrogramPlotter(object):
         self._cached_positions = None
         self.sort()
 
-    def sort(self, sort_key=lambda s: s.get_peak(subtree=True)[1], reverse=False):
+    def set_custom_positions(self, custom_position):
+        """
+        Manually set the positon on the structures for plotting
+
+        Parameters
+        ----------
+        custom_position : function
+            This should be a function that takes a
+            `~astrodendro.structure.Structure`returns the position of the
+            leaves to use for plotting. If the dataset has more than one
+            dimension, using this may cause lines to cross. If this is used,
+            then ``sort_key`` and ``reverse`` are ignored.
+        """
+        self._cached_positions = {}
+        for structure in self.dendrogram.all_structures:
+            self._cached_positions[structure] = custom_position(structure)
+
+    def sort(self, sort_key=None, reverse=False):
         """
         Sort the position of the leaves for plotting.
 
@@ -24,10 +41,14 @@ class DendrogramPlotter(object):
         sort_key : function, optional
              This should be a function that takes a
              `~astrodendro.structure.Structure` and returns a scalar that is
-             then used to sort the leaves.
+             then used to sort the leaves. If not specified, the leaves are
+             sorted according to their peak value.
         reverse : bool, optional
              Whether to reverse the sorting
         """
+
+        if sort_key is None:
+            sort_key = lambda s: s.get_peak(subtree=True)[1]
 
         sorted_trunk_structures = sorted(self.dendrogram.trunk, key=sort_key, reverse=reverse)
 
