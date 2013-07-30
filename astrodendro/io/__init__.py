@@ -10,25 +10,29 @@ IO_FORMATS = {
 }
 
 
+def _valid(formats):
+    return " and ".join(["'{0}'".format(key) for key in formats])
+
+
 def load_dendrogram(filename, format=None):
     if format is not None:
         return IO_FORMATS[format].import_dendro(filename)
     else:
-        for io_format in IO_FORMATS:
-            if IO_FORMATS[io_format].identify(filename, mode='r'):
-                return IO_FORMATS[io_format].import_dendro(filename)
+        for handler in IO_FORMATS.values():
+            if handler.identify(filename, mode='r'):
+                return handler.import_dendro(filename)
     raise IOError("Could not automatically identify file format - use the "
                   "format= option to specify which format to use (valid "
-                  "options are 'fits' and 'hdf5')")
+                  "options are {0})".format(_valid(IO_FORMATS)))
 
 
 def save_dendrogram(dendrogram, filename, format=None):
     if format is not None:
         return IO_FORMATS[format].export_dendro(dendrogram, filename)
     else:
-        for io_format in IO_FORMATS:
-            if IO_FORMATS[io_format].identify(filename, mode='w'):
-                return IO_FORMATS[io_format].export_dendro(dendrogram, filename)
+        for handler in IO_FORMATS.values():
+            if handler.identify(filename, mode='w'):
+                return handler.export_dendro(dendrogram, filename)
     raise IOError("Could not automatically identify file format - use the "
                   "format= option to specify which format to use (valid "
-                  "options are 'fits' and 'hdf5')")
+                  "options are {0})".format(_valid(IO_FORMATS)))
