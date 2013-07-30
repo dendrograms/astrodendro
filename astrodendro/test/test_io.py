@@ -4,11 +4,13 @@
 
 import os
 
+import pytest
 import numpy as np
 
 from .. import Dendrogram
 from ..structure import Structure
 from .test_index import assert_permuted_fancyindex
+
 
 class TestIO(object):
 
@@ -46,10 +48,10 @@ class TestIO(object):
                                        structure2.indices(subtree=False))
             assert np.all(np.sort(structure1.values(subtree=False)) ==
                           np.sort(structure2.values(subtree=False)))
-            assert type(structure1) == type(structure2)
+            assert isinstance(structure1, type(structure2))
             # Compare the coordinates and data values of all peak pixels:
             assert structure1.get_peak(subtree=True) == \
-              structure2.get_peak(subtree=True)
+                structure2.get_peak(subtree=True)
 
             assert structure2._tree_index is not None
 
@@ -58,13 +60,53 @@ class TestIO(object):
     def test_hdf5(self):
         self.test_filename = 'astrodendro-test.hdf5'
         d1 = Dendrogram.compute(self.data, verbose=False)
-        d1.save_to(self.test_filename)
-        d2 = Dendrogram.load_from(self.test_filename)
+        d1.save_to(self.test_filename, format='hdf5')
+        d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
         self.compare_dendrograms(d1, d2)
 
     def test_fits(self):
         self.test_filename = 'astrodendro-test.fits'
         d1 = Dendrogram.compute(self.data, verbose=False)
-        d1.save_to(self.test_filename)
-        d2 = Dendrogram.load_from(self.test_filename)
+        d1.save_to(self.test_filename, format='hdf5')
+        d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
         self.compare_dendrograms(d1, d2)
+
+    def test_hdf5_auto(self):
+
+        d1 = Dendrogram.compute(self.data, verbose=False)
+
+        # recognize from extension
+        d1.save_to('astrodendro-test.hdf5')
+
+        # no way to tell
+        with pytest.raises(IOError):
+            d1.save_to('astrodendro-test')
+
+        # no way to tell, so have to explicitly give format
+        d1.save_to('astrodendro-test', format='hdf5')
+
+        # recognize from extension
+        d2 = Dendrogram.load_from('astrodendro-test.hdf5')
+
+        # recognize from signature
+        d2 = Dendrogram.load_from('astrodendro-test')
+
+    def test_fits_auto(self):
+
+        d1 = Dendrogram.compute(self.data, verbose=False)
+
+        # recognize from extension
+        d1.save_to('astrodendro-test.fits')
+
+        # no way to tell
+        with pytest.raises(IOError):
+            d1.save_to('astrodendro-test')
+
+        # no way to tell, so have to explicitly give format
+        d1.save_to('astrodendro-test', format='fits')
+
+        # recognize from extension
+        d2 = Dendrogram.load_from('astrodendro-test.fits')
+
+        # recognize from signature
+        d2 = Dendrogram.load_from('astrodendro-test')
