@@ -254,11 +254,12 @@ class Dendrogram(object):
         self.trunk = [structure for structure in structures.itervalues() if structure.parent is None]
 
         # Remove orphan leaves that aren't large enough
+        self._discarded_structures = []
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
         for leaf in leaves_in_trunk:
             if (len(leaf.values(subtree=False)) < min_npix or leaf.vmax - leaf.vmin < min_delta):
                 # This leaf is an orphan, so remove all references to it:
-                structures.pop(leaf.idx)
+                self._discarded_structures.append(structures.pop(leaf.idx))
                 self.trunk.remove(leaf)
                 leaf._fill_footprint(self.index_map, 0)
 
@@ -287,6 +288,9 @@ class Dendrogram(object):
         for s in self._structures_dict.itervalues():
             s._tree_index = ti
 
+    @property
+    def discarded_structures(self):
+        return self._discarded_structures
 
     @property
     def trunk(self):
