@@ -1,6 +1,9 @@
 Computing and exploring dendrograms
 ===================================
 
+For a description of the actual algorithm used to compute dendrograms, see
+:doc:`algorithm`.
+
 Computing a Dendrogram
 ----------------------
 
@@ -49,6 +52,8 @@ passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
   branch or leaf it is being merged with and is no longer considered a
   separate entity. By default, this parameter is set to zero, so there is no
   minimum number of pixels required for leaves to remain independent entities.
+
+These options are illustrated graphically in :doc:`algorithm`.
 
 As an example, we can use a publicly available extinction map of the Perseus
 star-formation region from the The COordinated Molecular Probe Line Extinction
