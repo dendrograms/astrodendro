@@ -15,13 +15,13 @@ class DendrogramPlotter(object):
         self._cached_positions = None
         self.sort()
 
-    def set_custom_position(self, custom_position=None):
+    def set_custom_position(self, custom_position):
         """
         Manually set the positon on the structures for plotting
 
         Parameters
         ----------
-        custom_position : function, optional
+        custom_position : function
             This should be a function that takes a
             `~astrodendro.structure.Structure`returns the position of the
             leaves to use for plotting. If the dataset has more than one
