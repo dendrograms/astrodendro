@@ -15,7 +15,7 @@ class DendrogramPlotter(object):
         self._cached_positions = None
         self.sort()
 
-    def set_custom_position(self, custom_position):
+    def set_custom_positions(self, custom_position):
         """
         Manually set the positon on the structures for plotting
 
