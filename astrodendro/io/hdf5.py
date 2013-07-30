@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 from .util import parse_dendrogram
-
+from .handler import IOHandler
 
 HDF5_SIGNATURE = b'\x89HDF\r\n\x1a\n'
 
@@ -53,3 +53,8 @@ def dendro_import_hdf5(filename):
         index_map = h5f['index_map'].value
 
     return parse_dendrogram(newick, data, index_map)
+
+
+HDF5Handler = IOHandler(identify=is_hdf5,
+                        export_dendro=dendro_export_hdf5,
+                        import_dendro=dendro_import_hdf5)

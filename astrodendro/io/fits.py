@@ -5,6 +5,8 @@ import os
 import numpy as np
 
 from .util import parse_dendrogram
+from .handler import IOHandler
+
 # Import and export
 
 # FITS file signature as per RFC 4047
@@ -47,3 +49,8 @@ def dendro_import_fits(filename):
         newick = ''.join(chr(x) for x in hdus[3].data.flat)
 
     return parse_dendrogram(newick, data, index_map)
+
+
+FITSHandler = IOHandler(identify=is_fits,
+                        export_dendro=dendro_export_fits,
+                        import_dendro=dendro_import_fits)
