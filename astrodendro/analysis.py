@@ -304,6 +304,8 @@ class PPVStatistic(SpatialBase):
                                         stat.indices(subtree=True))
         else:
             self.stat = stat
+        if len(self.stat.indices) != 3:
+            raise ValueError("PPVStatistic can only be used on 3-d datasets")
         self.metadata = metadata or {}
 
     def _sky_paxes(self):
@@ -400,6 +402,8 @@ class PPStatistic(SpatialBase):
                                         stat.indices(subtree=True))
         else:
             self.stat = stat
+        if len(self.stat.indices) != 2:
+            raise ValueError("PPStatistic can only be used on 2-d datasets")
         self.metadata = metadata or {}
 
     def _sky_paxes(self):
