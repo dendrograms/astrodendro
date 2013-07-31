@@ -150,7 +150,10 @@ Required metadata
 -----------------
 
 As described above, the metadata needed by the statistic routines depends on
-what statistics are required and on the units of the data:
+what statistics are required and on the units of the data. With the exception
+of ``wcs``, all meta-data should be specified as `Astropy Quantity
+<http://docs.astropy.org/en/stable/units/index.html>`_ objects (e.g. ``3 *
+u.arcsec``):
 
 * ``data_unit`` is **required** in order to compute the flux, so it is needed
   for both the :func:`~astrodendro.analysis.pp_catalog` and
@@ -161,9 +164,12 @@ what statistics are required and on the units of the data:
 * ``spatial_scale`` is **required** if the data are in units of surface
   brightness (e.g. ``MJy/sr`` or ``Jy/beam``) so as to be able to convert the
   surface brightness to the flux in each pixel. Even if the data are not in
-  units a surface brightness, the ``spatial_scale`` can be **optionally**
+  units a surface brightness, the ``spatial_scale`` can **optionally** be
   specified, causing any derived size (e.g. ``major_sigma``) to be in the
   correct units instead of in pixels.
+
+* ``velocity_scale`` can **optionally** be specified for PPV data, causing
+  ``v_rms`` to be in the correct units instead of in pixels.
 
 * ``beam_major`` and ``beam_minor`` are **required** if the data units depend
   on the beam (e.g. ``Jy/beam``).
