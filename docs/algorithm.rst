@@ -72,12 +72,14 @@ are included.
 Let's go back to the original data. We have left the outline of the complete
 tree for reference. We now set a minimum value, which we show below with the
 purple line. This is controlled by the ``min_value`` option in
-:meth:`~astrodendro.Dendrogram.compute`.
+:meth:`~astrodendro.dendrogram.Dendrogram.compute`.
 
 .. image:: algorithm/min_value_final.png
    :align: center
    
-The effect on the tree is simply to get rid of (or *prune*) any structure below this minimum. In this case, the peak on the right is no longer part of the tree since it is below the minimum specified value.
+The effect on the tree is simply to get rid of (or *prune*) any structure below
+this minimum. In this case, the peak on the right is no longer part of the tree
+since it is below the minimum specified value.
 
 Setting a minimum significance for structures (``min_delta``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -85,9 +87,9 @@ Setting a minimum significance for structures (``min_delta``)
 If our data is noisy, we also want to avoid including local maxima that - while
 above the minimum absolute value specified above - are simply due to the noise,
 so we can also define a minimum height required for a structure to be retained.
-This is the ``min_delta`` parameter in :meth:`~astrodendro.Dendrogram.compute`.
-We show the value corresponding to the current value being considered plus this
-minimum height:
+This is the ``min_delta`` parameter in
+:meth:`~astrodendro.dendrogram.Dendrogram.compute`. We show the value
+corresponding to the current value being considered plus this minimum height:
 
 .. image:: algorithm/small_delta_step1.png
    :align: center
@@ -105,7 +107,8 @@ can now be considered part of the tree:
 .. image:: algorithm/small_delta_step3.png
    :align: center
 
-In this case, all structures that are above the minimum value are also all large enough to be significant, so the tree is the same as before:
+In this case, all structures that are above the minimum value are also all
+large enough to be significant, so the tree is the same as before:
 
 .. image:: algorithm/small_delta_final.png
    :align: center
