@@ -1,5 +1,6 @@
 # These tests ensure that the ``is_independent`` function is working correctly
 
+import pytest
 import numpy as np
 
 from ..dendrogram import Dendrogram
@@ -37,3 +38,41 @@ class TestCustomMerge(object):
         # Check that leaf that used to contain pixels 1, 2, and 3 is now just
         # part of the main branch.
         assert np.all(branches[0].indices(subtree=False) == np.array([0, 1, 2, 3, 4, 7, 9]))
+
+
+# Try and reproduce the benchmark tests using a function instead of arguments
+
+
+from .build_benchmark import BENCHMARKS
+
+
+@pytest.mark.parametrize(('filename'), BENCHMARKS.keys())
+def test_benchmark(filename):
+
+    from astropy.io import fits
+    import os
+
+    path = os.path.join(os.path.dirname(__file__),
+                        'benchmark_data', filename)
+
+    p = BENCHMARKS[filename]
+    data = fits.getdata(path, 1)
+
+    # Now define a function that will test the criteria
+    def is_independent_test(structure, index=None, value=None):
+        if value is None:
+            value = structure.vmin
+        if 'min_delta' in p:
+            if structure.vmax - value < p['min_delta']:
+                return False
+        if 'min_npix' in p:
+            if len(structure.values()) < p['min_npix']:
+                return False
+        return True
+
+    d1 = Dendrogram.compute(data,
+                            is_independent=is_independent_test,
+                            min_value=p['min_value'] if 'min_value' in p else -np.inf)
+    d2 = Dendrogram.load_from(path)
+
+    assert d1 == d2
