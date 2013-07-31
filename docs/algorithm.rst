@@ -88,7 +88,7 @@ part of the tree since it is below the minimum specified value.
 Setting a minimum significance for structures (``min_delta``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If our data is noisy, we also want to avoid including local maxima that - while
+If our data are noisy, we also want to avoid including local maxima that - while
 above the minimum absolute value specified above - are simply due to the noise,
 so we can also define a minimum height required for a structure to be retained.
 This is the ``min_delta`` parameter in
@@ -142,6 +142,6 @@ Additional options
 
 In addition to the minimum height of a structure, it is also possible to
 specify the minimum number of pixels that a structure should contain in order
-to remain an independent structure (``min_npix``), and in future, it will be
-possible to specify arbitrary criteria, such as the proximity to a given point
-or set of coordinates.
+to remain an independent structure (``min_npix``), and in the future, it will
+be possible to specify arbitrary criteria, such as the proximity to a given
+point or set of coordinates.
