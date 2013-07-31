@@ -17,27 +17,31 @@ dataset overplotted in green:
 .. image:: algorithm/simple_final.png
    :align: center
 
+In the rest of this document, we will refer to the individual points in this
+dataset as *pixels*.
+
 The way the algorithm works is to construct the tree starting from the
-brightest values in the dataset, and progressively adding fainter and fainter
-values. We will illustrate this by showing the current value being considered,
+brightest pixels in the dataset, and progressively adding fainter and fainter
+pixels. We will illustrate this by showing the current value being considered,
 with the following blue dashed line:
 
 .. image:: algorithm/simple_step1.png
    :align: center
 
-Let's now start moving this line down, starting from the peak value in the
-dataset. We create our first structure from this value. We then move to the
-next largest value, and each time, we decide whether to join the value to an
-existing structure, or create a new structure. We only start a new structure if
-the value is greater than its immediate neighbors, and therefore is a local
-maximum. The first structure being constructed is shown below:
+Let's now start moving this line down, starting from the peak pixel in the
+dataset. We create our first structure from this pixel. We then move to the
+pixel with the next largest value, and each time, we decide whether to join the
+pixel to an existing structure, or create a new structure. We only start a new
+structure if the value of the pixel is greater than its immediate neighbors,
+and therefore is a local maximum. The first structure being constructed is
+shown below:
 
 .. image:: algorithm/simple_step2.png
    :align: center
 
-We have now found a local maximum, so rather than add this value to the first
+We have now found a local maximum, so rather than add this pixel to the first
 structure, we create a new structure. As we move further down, both structures
-keep growing, until we reach a value which is not a local maximum, and is
+keep growing, until we reach a pixel that is not a local maximum, and is
 adjacent to both existing structures:
 
 .. image:: algorithm/simple_step3.png
@@ -65,7 +69,7 @@ Setting a minimum value (``min_value``)
 Most real-life datasets are likely to contain some level of noise, and below a
 certain value, there is no point in constructing a tree since it will not be
 measuring anything physical. By default, the minimum value is set to minus
-infinity, which means all values are added to the tree. However, you will very
+infinity, which means all pixels are added to the tree. However, you will very
 likely want to change this so that only significant features above the noise
 are included.
 
@@ -77,9 +81,9 @@ purple line. This is controlled by the ``min_value`` option in
 .. image:: algorithm/min_value_final.png
    :align: center
    
-The effect on the tree is simply to get rid of (or *prune*) any structure below
-this minimum. In this case, the peak on the right is no longer part of the tree
-since it is below the minimum specified value.
+The effect on the tree is simply to get rid of (or *prune*) any structure
+peaking below this minimum. In this case, the peak on the right is no longer
+part of the tree since it is below the minimum specified value.
 
 Setting a minimum significance for structures (``min_delta``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,7 +125,7 @@ enough above the merging point to be considered an independent structure:
 .. image:: algorithm/large_delta_step1.png
    :align: center
 
-and the values are then simply added to the first structure, rather than
+and the pixels are then simply added to the first structure, rather than
 creating a branch:
 
 .. image:: algorithm/large_delta_step2.png
@@ -137,7 +141,7 @@ Additional options
 ------------------
 
 In addition to the minimum height of a structure, it is also possible to
-specify the minimum number of values that a structure should contain in order
+specify the minimum number of pixels that a structure should contain in order
 to remain an independent structure (``min_npix``), and in future, it will be
 possible to specify arbitrary criteria, such as the proximity to a given point
 or set of coordinates.
