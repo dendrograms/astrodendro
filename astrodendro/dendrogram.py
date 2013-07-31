@@ -17,7 +17,7 @@ class Dendrogram(object):
     """
     This class is used to compute and represent a dendrogram for a given
     dataset. To create a dendrogram from an array, use the
-    :meth:`~astrodendro.dendrogram.Dendrogram.compute`` class method::
+    :meth:`~astrodendro.dendrogram.Dendrogram.compute` class method::
 
         >>> from astrodendro import Dendrogram
         >>> d = Dendrogram.compute(array)

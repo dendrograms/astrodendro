@@ -46,6 +46,7 @@ Documentation
    :maxdepth: 2
 
    installing.rst
+   algorithm.rst
    using.rst
    plotting.rst
    catalog.rst
