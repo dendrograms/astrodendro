@@ -40,17 +40,27 @@ class BasicDendrogramViewer(object):
             self.slice = None
             self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
+            self.slice_slider = None
+
         else:
 
-            self.slice = int(round(self.array.shape[0] / 2.))
-            self.image = self.ax1.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+            if self.array.shape[0] > 1:
 
-            self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
-            self.slice_slider_ax.set_xticklabels("")
-            self.slice_slider_ax.set_yticklabels("")
-            self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice, valfmt="%i")
-            self.slice_slider.on_changed(self.update_slice)
-            self.slice_slider.drawon = False
+                self.slice = int(round(self.array.shape[0] / 2.))
+
+                self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
+                self.slice_slider_ax.set_xticklabels("")
+                self.slice_slider_ax.set_yticklabels("")
+                self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice, valfmt="%i")
+                self.slice_slider.on_changed(self.update_slice)
+                self.slice_slider.drawon = False
+
+            else:
+
+                self.slice = 0
+                self.slice_slider = None
+
+            self.image = self.ax1.imshow(self.array[self.slice, :,:], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
@@ -92,7 +102,7 @@ class BasicDendrogramViewer(object):
             self.image.set_array(self.array)
         else:
             self.slice = int(round(pos))
-            self.image.set_array(self.array[self.slice,:,:])
+            self.image.set_array(self.array[self.slice, :,:])
 
         self.remove_contour()
         self.update_contour()
@@ -157,7 +167,7 @@ class BasicDendrogramViewer(object):
         structure = event.artist.structures[ind]
 
         # If 3-d, select the slice
-        if self.array.ndim == 3:
+        if self.slice_slider is not None:
             peak_index = structure.get_peak(subtree=True)
             self.slice_slider.set_val(peak_index[0][0])
 
@@ -208,5 +218,5 @@ class BasicDendrogramViewer(object):
         if self.selected is not None:
             mask = self.selected.get_mask(self.array.shape, subtree=True)
             if self.array.ndim == 3:
-                mask = mask[self.slice, :, :]
+                mask = mask[self.slice, :,:]
             self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
