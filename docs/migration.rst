@@ -38,12 +38,24 @@ In addition, the following options for ``compute`` have been renamed:
 
 * ``minimum_npix`` is now ``min_npix``
 
+Dendrogram methods and attributes
+---------------------------------
+
+The following dendrogram methods have changed:
+
+* ``get_leaves()`` has now been replaced by a ``leaves`` attribute (it is no
+  longer a method.)
+
+* the ``to_hdf5()`` and ``from_hdf5()`` methods have been replaced by
+  :meth:`~astrodendro.dendrogram.Dendrogram.save_to`
+
 ``Leaf`` and ``Branch`` classes
 -------------------------------
 
 The ``Leaf`` and ``Branch`` classes no longer exist, and have been replaced by
-a single ``Structure`` class that instead has ``is_leaf`` and ``is_branch``
-attributes. Thus, if you were checking if something was a leaf by doing e.g.::
+a single :class:`~astrodendro.structure.Structure` class that instead has
+``is_leaf`` and ``is_branch`` attributes. Thus, if you were checking if
+something was a leaf by doing e.g.::
 
     if type(s) == Leaf:
         # code here
@@ -63,11 +75,11 @@ Leaf and branch attributes
 
 The following leaf and branch attributes have changed:
 
-* ``f`` has been replaced by a method called ``values()`` that can take a
+* ``f`` has been replaced by a method called :meth:`~astrodendro.structure.Structure.values` that can take a
   ``subtree=`` option that indicates whether pixels in sub-structures should be
   included.
 
-* ``coords`` has been replaced by a method called ``indices()`` that can take a
+* ``coords`` has been replaced by a method called :meth:`~astrodendro.structure.Structure.indices` that can take a
   ``subtree=`` option that indicates whether pixels in sub-structures should be
   included.
 
