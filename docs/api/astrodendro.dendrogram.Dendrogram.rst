@@ -39,7 +39,6 @@ astrodendro.dendrogram.Dendrogram
 
    .. automethod:: Dendrogram.compute
    .. automethod:: Dendrogram.structure_at
-   .. automethod:: Dendrogram.all_structures
 
    .. automethod:: Dendrogram.save_to
    .. automethod:: Dendrogram.load_from

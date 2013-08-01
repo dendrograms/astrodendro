@@ -116,4 +116,76 @@ shown.
     p.plot_contour(ax, structure=2077, lw=3, colors='red')
     p.plot_contour(ax, structure=3262, lw=3, colors='orange')
 
+Plotting contours of structures in third-party packages
+-------------------------------------------------------
 
+In some cases you may want to plot the contours in third party packages such as
+APLpy or ds9. For these cases, the best approach is to output FITS files with a
+mask of the structures to plot (one mask file per contour color you want to
+show).
+
+Let's first take the plot above and make a contour plot in APLpy outlining all the leaves. We can use the :meth:`~astrodendro.structure.Structure.get_mask` method to retrieve the footprint of a given structure:
+
+.. plot::
+   :include-source:
+
+    import aplpy
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy.io import fits
+    from astrodendro import Dendrogram
+
+    hdu = fits.open('PerA_Extn2MASS_F_Gal.fits')[0]
+    d = Dendrogram.compute(hdu.data, min_value=2.0, min_delta=1., min_npix=10)
+
+    # Create empty mask. For each leaf we do an 'or' operation with the mask so
+    # that any pixel corresponding to a leaf is set to True.
+    mask = np.zeros(hdu.data.shape, dtype=bool)
+    for leaf in d.leaves:
+        mask = mask | leaf.get_mask(mask.shape)
+
+    # Now we create a FITS HDU object to contain this, with the correct header
+    mask_hdu = fits.PrimaryHDU(mask.astype(int), hdu.header)
+
+    # We then use APLpy to make the final plot
+    fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
+    fig.show_colorscale(cmap='Blues', vmax=4.0)
+    fig.show_contour(mask_hdu, colors='red', linewidths=0.5)
+    fig.tick_labels.set_xformat('dd')
+    fig.tick_labels.set_yformat('dd')
+
+Now let's take the example from `Making plots for publications`_ and try and
+reproduce the same plot. This requires an extra step because we only have the
+``idx`` of the structures to plot, so we first want to get the corresponding
+:class:`~astrodendro.structure.Structure` objects. We also want to create a different mask for each contour so as to have complete control over the colors:
+
+.. plot::
+   :include-source:
+
+    import aplpy
+    from astropy.io import fits
+    from astrodendro import Dendrogram
+
+    hdu = fits.open('PerA_Extn2MASS_F_Gal.fits')[0]
+    d = Dendrogram.compute(hdu.data, min_value=2.0, min_delta=1., min_npix=10)
+
+    # Find the structures
+    structure_2077 = d[2077]
+    structure_3262 = d[3262]
+
+    # Extract the masks
+    mask_2077 = structure_2077.get_mask(hdu.data.shape)
+    mask_3262 = structure_3262.get_mask(hdu.data.shape)
+
+    # Create FITS HDU objects to contain the masks
+    mask_hdu_2077 = fits.PrimaryHDU(mask_2077.astype(int), hdu.header)
+    mask_hdu_3262 = fits.PrimaryHDU(mask_3262.astype(int), hdu.header)
+
+    # Use APLpy to make the final plot
+    fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
+    fig.show_colorscale(cmap='Blues', vmax=4.0)
+    fig.show_contour(hdu, levels=[2.0], colors='black', linewidths=0.5)
+    fig.show_contour(mask_hdu_2077, colors='red', linewidths=0.5)
+    fig.show_contour(mask_hdu_3262, colors='orange', linewidths=0.5)
+    fig.tick_labels.set_xformat('dd')
+    fig.tick_labels.set_yformat('dd')
