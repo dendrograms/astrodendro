@@ -120,7 +120,7 @@ Plotting contours of structures in third-party packages
 -------------------------------------------------------
 
 In some cases you may want to plot the contours in third party packages such as
-`APLpy <http://aplpy.github.com`_ or `DS9
+`APLpy <http://aplpy.github.com>`_ or `DS9
 <http://hea-www.harvard.edu/RD/ds9/site/Home.html>`_. For these cases, the best
 approach is to output FITS files with a mask of the structures to plot (one
 mask file per contour color you want to show).
@@ -156,9 +156,15 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
     fig.tick_labels.set_yformat('dd')
 
 Now let's take the example from `Making plots for publications`_ and try and
-reproduce the same plot. This requires an extra step because we only have the
-``idx`` of the structures to plot, so we first want to get the corresponding
-:class:`~astrodendro.structure.Structure` objects. We also want to create a different mask for each contour so as to have complete control over the colors:
+reproduce the same plot. As described there, one way to find interesting structures in the dendrogram is to use the `Interactive Visualization`_ tool. This tool will give the ID of a structure as an integer (which we call ``idx``).
+
+Because we are starting from this ID rather than a :class:`~astrodendro.structure.Structure` object, we need to first get the structure, which can be done with::
+
+    structure = d[idx]
+
+where ``d`` is a :class:`~astrodendro.dendrogram.Dendrogram` instance. We also
+want to create a different mask for each contour so as to have complete control
+over the colors:
 
 .. plot::
    :include-source:
