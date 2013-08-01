@@ -71,6 +71,10 @@ then we set up a Python dictionary containing the required meta-data::
     >>> metadata['beam_major'] =  22.9 * u.arcsec
     >>> metadata['beam_minor'] =  22.9 * u.arcsec
 
+Note that the meta-data required depends on the units of the data and whether
+you are working in position-position or position-position-velocity (see
+`Required metadata`_).
+
 Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class to extract properties for the first structure::
 
     >>> from astrodendro.analysis import PPStatistic
@@ -141,6 +145,48 @@ dendrogram paper <http://adsabs.harvard.edu/abs/2008ApJ...679.1338R>`_. In the
 terminology of the dendrogram paper, the quantities in
 :class:`~astrodendro.analysis.PPStatistic` and
 :class:`~astrodendro.analysis.PPVStatistic` adopt the "bijection" paradigm.
+
+Required metadata
+-----------------
+
+As described above, the metadata needed by the statistic routines depends on
+what statistics are required and on the units of the data. With the exception
+of ``wcs``, all meta-data should be specified as `Astropy Quantity
+<http://docs.astropy.org/en/stable/units/index.html>`_ objects (e.g. ``3 *
+u.arcsec``):
+
+* ``data_unit`` is **required** in order to compute the flux, so it is needed
+  for both the :func:`~astrodendro.analysis.pp_catalog` and
+  :func:`~astrodendro.analysis.ppv_catalog` functions, as well as for the
+  ``flux`` attribute of the :class:`~astrodendro.analysis.PPStatistic` and
+  :class:`~astrodendro.analysis.PPVStatistic` classes.
+
+* ``spatial_scale`` is **required** if the data are in units of surface
+  brightness (e.g. ``MJy/sr`` or ``Jy/beam``) so as to be able to convert the
+  surface brightness to the flux in each pixel. Even if the data are not in
+  units a surface brightness, the ``spatial_scale`` can **optionally** be
+  specified, causing any derived size (e.g. ``major_sigma``) to be in the
+  correct units instead of in pixels.
+
+* ``velocity_scale`` can **optionally** be specified for PPV data, causing
+  ``v_rms`` to be in the correct units instead of in pixels.
+
+* ``beam_major`` and ``beam_minor`` are **required** if the data units depend
+  on the beam (e.g. ``Jy/beam``).
+
+* ``vaxis`` can **optionally** be specified when using 3-dimensional data to
+  indicate which dimension corresponds to the velocity. By default, this is
+  ``0``, which corresponds to the third axis in e.g. a FITS file (because the
+  dimensions are reversed in Numpy).
+
+* ``wavelength`` is **required** if the data are in monochromatic flux
+  densities per unit wavelength since the fluxes need to be converted to
+  monochromatic flux densities per unit frequency.
+
+* ``wcs`` can **optionally** be specified, and should be an
+  :class:`~astropy.wcs.WCS` instance. If specified, it allows ``x_cen``,
+  ``y_cen``, and ``v_cen`` to be in the correct world coordinates rather than
+  in pixel coordinates.
 
 Example
 -------
