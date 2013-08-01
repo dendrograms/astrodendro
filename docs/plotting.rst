@@ -156,9 +156,13 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
     fig.tick_labels.set_yformat('dd')
 
 Now let's take the example from `Making plots for publications`_ and try and
-reproduce the same plot. As described there, one way to find interesting structures in the dendrogram is to use the `Interactive Visualization`_ tool. This tool will give the ID of a structure as an integer (which we call ``idx``).
+reproduce the same plot. As described there, one way to find interesting
+structures in the dendrogram is to use the `Interactive Visualization`_ tool.
+This tool will give the ID of a structure as an integer (which we call ``idx``).
 
-Because we are starting from this ID rather than a :class:`~astrodendro.structure.Structure` object, we need to first get the structure, which can be done with::
+Because we are starting from this ID rather than a
+:class:`~astrodendro.structure.Structure` object, we need to first get the
+structure, which can be done with::
 
     structure = d[idx]
 
