@@ -16,6 +16,11 @@ astrodendro.analysis
       ~PPStatistic.radius
       ~PPStatistic.x_cen
       ~PPStatistic.y_cen
+      ~PPStatistic.to_mpl_ellipse
+
+.. rubric:: Methods (detail)
+
+.. automethod:: PPStatistic.to_mpl_ellipse
 
 .. autoclass:: PPVStatistic
 
@@ -32,6 +37,11 @@ astrodendro.analysis
       ~PPVStatistic.y_cen
       ~PPVStatistic.v_cen
       ~PPVStatistic.v_rms
+      ~PPVStatistic.to_mpl_ellipse
+
+.. rubric:: Methods (detail)
+
+.. automethod:: PPStatistic.to_mpl_ellipse
 
 .. autofunction:: pp_catalog
 

@@ -222,11 +222,14 @@ approximating the structures on top of the structures themselves:
         p.plot_contour(ax, structure=leaf, lw=3, colors='red')
 
         s = PPStatistic(leaf)
-        ax.add_patch(Ellipse((s.x_cen, s.y_cen),
-                              s.major_sigma * 2.3548,
-                              s.minor_sigma * 2.3548,
-                              angle=s.position_angle,
-                              edgecolor='orange', facecolor='none'))
+        ellipse = s.to_mpl_ellipse(edgecolor='orange', facecolor='none')
+
+        ax.add_patch(ellipse)
 
     ax.set_xlim(75., 170.)
     ax.set_ylim(120., 260.)
+
+As shown above, the :class:`~astrodendro.analysis.PPStatistic` and
+:class:`~astrodendro.analysis.PPVStatistic` classes have a
+:meth:`~astrodendro.analysis.PPStatistic.to_mpl_ellipse` method to convert the
+first and second moments of the structures into schematic ellipses.
