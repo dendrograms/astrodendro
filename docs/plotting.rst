@@ -120,9 +120,10 @@ Plotting contours of structures in third-party packages
 -------------------------------------------------------
 
 In some cases you may want to plot the contours in third party packages such as
-APLpy or ds9. For these cases, the best approach is to output FITS files with a
-mask of the structures to plot (one mask file per contour color you want to
-show).
+`APLpy <http://aplpy.github.com`_ or `DS9
+<http://hea-www.harvard.edu/RD/ds9/site/Home.html>`_. For these cases, the best
+approach is to output FITS files with a mask of the structures to plot (one
+mask file per contour color you want to show).
 
 Let's first take the plot above and make a contour plot in APLpy outlining all the leaves. We can use the :meth:`~astrodendro.structure.Structure.get_mask` method to retrieve the footprint of a given structure:
 
