@@ -1,6 +1,8 @@
 # Licensed under an MIT open source license - see LICENSE
 
+import abc
 import warnings
+
 import numpy as np
 
 from astropy.units import Quantity
@@ -223,6 +225,8 @@ class MetadataWCS(Metadata):
 
 class SpatialBase(object):
 
+    __metaclass__ = abc.ABCMeta
+
     wavelength = MetadataQuantity('wavelength', 'Wavelength')
     spatial_scale = MetadataQuantity('spatial_scale', 'Pixel width/height')
     beam_major = MetadataQuantity('beam_major', 'Major FWHM of beam')
@@ -230,6 +234,7 @@ class SpatialBase(object):
     data_unit = MetadataQuantity('data_unit', 'Units of the pixel values', strict=True)
     wcs = MetadataWCS('wcs', 'WCS object')
 
+    @abc.abstractmethod
     def _sky_paxes(self):
         raise NotImplementedError()
 
@@ -242,9 +247,21 @@ class SpatialBase(object):
             # We use origin=0 since the indices come from Numpy indexing
             return self.wcs.all_pix2world([xyz], 0).ravel()[::-1]
 
-    @property
+    @abc.abstractproperty
     def flux(self):
         raise NotImplementedError
+
+    @abc.abstractproperty
+    def x_cen(self):
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def y_cen(self):
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def position_angle(self):
+        raise NotImplementedError()
 
     @property
     def major_sigma(self):
@@ -281,6 +298,19 @@ class SpatialBase(object):
         u, b = _qsplit(self.minor_sigma)
         return u * np.sqrt(a * b)
 
+    def to_mpl_ellipse(self, **kwargs):
+        """
+        Returns a Matplotlib ellipse representing the first and second moments
+        of the structure.
+
+        Any keyword arguments are passed to :class:`~matplotlib.patches.Ellipse`
+        """
+        from matplotlib.patches import Ellipse
+        return Ellipse((self.x_cen.value, self.y_cen.value),
+                        self.major_sigma.value * 2.3548,
+                        self.minor_sigma.value * 2.3548,
+                        angle=self.position_angle.value,
+                        **kwargs)
 
 class PPVStatistic(SpatialBase):
     """
