@@ -176,7 +176,9 @@ approximating the structures on top of the structures themselves:
         p.plot_contour(ax, structure=leaf, lw=3, colors='red')
 
         s = PPStatistic(leaf)
-        ax.add_patch(s.to_mpl_ellipse(edgecolor='orange', facecolor='none'))
+        ellipse = s.to_mpl_ellipse(edgecolor='orange', facecolor='none')
+
+        ax.add_patch(ellipse)
 
     ax.set_xlim(75., 170.)
     ax.set_ylim(120., 260.)
