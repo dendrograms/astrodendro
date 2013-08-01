@@ -354,7 +354,12 @@ class Dendrogram(object):
                                    in self.trunk])
 
     def structure_at(self, indices):
-        " Get the structure at the given pixel coordinate, or None "
+        """
+        Get the structure at the specified pixel coordinate.
+
+        This will return None if no structure includes the specified pixel
+        coordinates.
+        """
         idx = self.index_map[indices]
         if idx:
             return self._structures_dict[idx]
