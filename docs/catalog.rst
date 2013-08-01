@@ -174,6 +174,11 @@ u.arcsec``):
 * ``beam_major`` and ``beam_minor`` are **required** if the data units depend
   on the beam (e.g. ``Jy/beam``).
 
+* ``vaxis`` can **optionally** be specified when using 3-dimensional data to
+  indicate which dimension corresponds to the velocity. By default, this is
+  ``0``, which corresponds to the third axis in e.g. a FITS file (because the
+  dimensions are reversed in Numpy).
+
 * ``wavelength`` is **required** if the data are in monochromatic flux
   densities per unit wavelength since the fluxes need to be converted to
   monochromatic flux densities per unit frequency.
