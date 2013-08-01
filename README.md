@@ -24,3 +24,10 @@ This package was developed by:
 * Chris Beaumont
 * Thomas Robitaille
 * Erik Rosolowsky
+
+Build and coverage status
+-------------------------
+
+[![Build Status](https://travis-ci.org/dendrograms/dendro-core.png?branch=master)](https://travis-ci.org/dendrograms/dendro-core)
+
+[![Coverage Status](https://coveralls.io/repos/dendrograms/dendro-core/badge.png?branch=master)](https://coveralls.io/r/dendrograms/dendro-core?branch=master)
