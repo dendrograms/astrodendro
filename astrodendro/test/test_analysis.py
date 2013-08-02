@@ -300,6 +300,25 @@ class TestPPStatistic(object):
         assert_allclose_quantity(p.position_angle, 90 * u.degree)
 
 
+def test_statistic_dimensionality():
+
+    d = Dendrogram.compute(np.ones((10,10)))
+
+    with pytest.raises(ValueError) as exc:
+        PPVStatistic(d.trunk[0])
+    assert exc.value.args[0] == "PPVStatistic can only be used on 3-d datasets"
+
+    PPStatistic(d.trunk[0])
+
+    d = Dendrogram.compute(np.ones((10,10,10)))
+
+    with pytest.raises(ValueError) as exc:
+        PPStatistic(d.trunk[0])
+    assert exc.value.args[0] == "PPStatistic can only be used on 2-d datasets"
+
+    PPVStatistic(d.trunk[0])
+
+
 class TestCataloger(object):
     files = []
     cataloger = None
