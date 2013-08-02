@@ -176,16 +176,16 @@ class TestNDimensionalData(object):
         assert (zip(*branches[0].indices(subtree=False)), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
 
 
-from .build_benchmark import params
+from .build_benchmark import BENCHMARKS
 
-@pytest.mark.parametrize(('filename'), params.keys())
+@pytest.mark.parametrize(('filename'), BENCHMARKS.keys())
 def test_benchmark(filename):
     from astropy.io import fits
     import os
 
     path = os.path.join(os.path.dirname(__file__),
                         'benchmark_data', filename)
-    p = params[filename]
+    p = BENCHMARKS[filename]
     data = fits.getdata(path, 1)
 
     d1 = Dendrogram.compute(data, **p)

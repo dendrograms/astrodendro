@@ -67,7 +67,8 @@ class Dendrogram(object):
         self.load_from = static_warning
 
     @staticmethod
-    def compute(data, min_value=-np.inf, min_delta=0, min_npix=0, verbose=False):
+    def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
+                is_independent=None, verbose=False):
         """
         Compute a dendrogram from a Numpy array.
 
@@ -84,6 +85,14 @@ class Dendrogram(object):
         min_npix : int, optional
             The minimum number of pixels/values needed for a leaf to be considered
             an independent entity.
+        is_independent : function, optional
+            A custom function that can be specified that will determine if a
+            leaf can be treated as an independent entity. The signature of the
+            function should be ``func(structure, index=None, value=None)``
+            where ``structure`` is the structure under consideration, and
+            ``index`` and ``value`` are optionally the pixel that is causing
+            the structure to be considered for merging into/attaching to the
+            tree.
 
         Examples
         --------
@@ -101,6 +110,10 @@ class Dendrogram(object):
         More information about the above parameters is available from the
         online documentation at [www.dendrograms.org](www.dendrograms.org).
         """
+
+        if is_independent is None:
+            is_independent = lambda *args, **kwargs: True
+
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
@@ -208,7 +221,9 @@ class Dendrogram(object):
                 merge = [structure for structure in adjacent
                          if structure.is_leaf and
                          (structure.vmax - data_value < min_delta or
-                          len(structure.values(subtree=False)) < min_npix or structure.vmax == data_value)]
+                          len(structure.values(subtree=False)) < min_npix or
+                          structure.vmax == data_value or
+                          not is_independent(structure, index=coord, value=data_value))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -256,7 +271,9 @@ class Dendrogram(object):
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
         for leaf in leaves_in_trunk:
-            if (len(leaf.values(subtree=False)) < min_npix or leaf.vmax - leaf.vmin < min_delta):
+            if (len(leaf.values(subtree=False)) < min_npix or
+                leaf.vmax - leaf.vmin < min_delta or
+                not is_independent(leaf)):
                 # This leaf is an orphan, so remove all references to it:
                 structures.pop(leaf.idx)
                 self.trunk.remove(leaf)
