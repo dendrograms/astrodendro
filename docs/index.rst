@@ -50,6 +50,7 @@ Documentation
    using.rst
    plotting.rst
    catalog.rst
+   advanced.rst
    migration.rst
 
 Reporting issues
