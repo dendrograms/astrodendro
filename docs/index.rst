@@ -17,7 +17,7 @@ two-dimensional map of a hierarchical structure that looks like:
 .. image:: schematic_structure_1.png
    :width: 300px
    :align: center
-   
+
 the equivalent dendrogram/tree representation would look like:
 
 .. image:: schematic_tree.png
@@ -87,3 +87,4 @@ Public API
    api/astrodendro.structure.Structure
    api/astrodendro.plot.DendrogramPlotter
    api/astrodendro.analysis
+   api/astrodendro.pruning
