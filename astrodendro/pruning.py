@@ -1,7 +1,8 @@
 # Licensed under an MIT open source license - see LICENSE
 """
-The pruning module provides several functions to perform
-common pruning via the ``is_independent`` keyword in the Dendrogram :meth:`~astrodendro.dendrogram.Dendrogram.compute` method.
+The pruning module provides several functions to perform common
+pruning via the ``is_independent`` keyword in the Dendrogram
+:meth:`~astrodendro.dendrogram.Dendrogram.compute` method.
 
 Examples::
 
@@ -17,6 +18,40 @@ Examples::
 """
 
 import numpy as np
+
+
+def _ravel_multi_index(multi_index, dims, mode='raise'):
+    #partial implementation of ravel_multi_index,
+    #for compatibility with numpy <= 1.5
+    #does not implement order kwarg
+    ndim = len(dims)
+
+    if len(multi_index) != len(dims):
+        raise ValueError("parameter multi_index must be "
+                         "a sequence of length %i" % ndim)
+
+    indices = [np.asarray(m) for m in multi_index]
+    if mode == 'raise':
+        for i, d in zip(indices, dims):
+            if ((i < 0) | (i >= d)).any():
+                raise ValueError("invalid entry in coordinates array")
+    elif mode == 'clip':
+        indices = [np.clip(i, 0, d - 1) for i, d in zip(indices, dims)]
+    else:  # mode == 'wrap'
+        indices = [i % d for i, d in zip(indices, dims)]
+
+    result = np.zeros(len(multi_index[0]), dtype=np.int)
+    offset = 1
+    for i, d in list(zip(indices, dims))[::-1]:
+        result += (i * offset).ravel()
+        offset *= d
+
+    return result
+
+
+if not hasattr(np, 'ravel_multi_index'):
+    np.ravel_multi_index = _ravel_multi_index
+
 
 def all_true(funcs):
     """Combine several ``is_independent`` functions into one

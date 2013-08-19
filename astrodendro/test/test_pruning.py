@@ -39,3 +39,18 @@ def test_all_true():
     c3 = min_npix(4)
     assert all_true((c1, c2))(st)
     assert not all_true((c1, c2, c3))(st)
+
+def test_multi_ravel():
+    from ..pruning import _ravel_multi_index
+
+    x = _ravel_multi_index([[0, 1], [0, 1]], [3, 3])
+    np.testing.assert_array_equal(x, [0, 4])
+
+    x = _ravel_multi_index([[1, 0], [0, 1]], [4, 2])
+    np.testing.assert_array_equal(x, [2, 1])
+
+    x = _ravel_multi_index([[0], [9]], [5, 3], mode='clip')
+    np.testing.assert_array_equal(x, [2])
+
+    x = _ravel_multi_index([[0], [9]], [5, 3], mode='wrap')
+    np.testing.assert_array_equal(x, [0])
