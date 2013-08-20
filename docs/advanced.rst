@@ -52,7 +52,8 @@ The following example compares the dendrogram obtained without and with a custom
     ax.set_title("Default merging")
 
     # Require minimum peak value
-
+    # this is equivalent to
+    # custom_independent = astrodendro.pruning.min_peak(3.5)
     def custom_independent(structure, index=None, value=None):
         peak_index, peak_value = structure.get_peak()
         return peak_value > 3.5
@@ -65,3 +66,10 @@ The following example compares the dendrogram obtained without and with a custom
     ax.set_xlabel("Structure")
     ax.set_ylabel("Flux")
     ax.set_title("Custom merging")
+
+Several pre-implemented functions suitable for use as ``is_independent`` tests are provided in :mod:`astrodendro.pruning`. In addition, the :meth:`astrodendro.pruning.all_true` function can be used to combine several criteria. For example, the following code builds a dendrogram where each leaf contains a pixel whose value >=20, and whose pixels sum to >= 100::
+
+    from astrodendro.pruning import all_true, min_peak, min_sum
+
+    custom_independent = all_true((min_peak(20), min_delta(100)))
+    Dendrogram.compute(image, is_independent=custom_independent)

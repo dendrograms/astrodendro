@@ -9,8 +9,7 @@ import numpy as np
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
 from .io import IO_FORMATS
-
-# Define main dendrogram class
+from . import pruning
 
 
 class Dendrogram(object):
@@ -85,7 +84,7 @@ class Dendrogram(object):
         min_npix : int, optional
             The minimum number of pixels/values needed for a leaf to be considered
             an independent entity.
-        is_independent : function, optional
+        is_independent : function or list of functions, optional
             A custom function that can be specified that will determine if a
             leaf can be treated as an independent entity. The signature of the
             function should be ``func(structure, index=None, value=None)``
@@ -93,6 +92,9 @@ class Dendrogram(object):
             ``index`` and ``value`` are optionally the pixel that is causing
             the structure to be considered for merging into/attaching to the
             tree.
+
+            If multiple functions are provided as a list, they
+            are all applied when testing for independence.
 
         Examples
         --------
@@ -110,9 +112,14 @@ class Dendrogram(object):
         More information about the above parameters is available from the
         online documentation at [www.dendrograms.org](www.dendrograms.org).
         """
-
-        if is_independent is None:
-            is_independent = lambda *args, **kwargs: True
+        tests = [pruning.min_delta(min_delta),
+                 pruning.min_npix(min_npix)]
+        if is_independent is not None:
+            if hasattr(is_independent, '__iter__'):
+                tests.extend(is_independent)
+            else:
+                tests.append(is_independent)
+        is_independent = pruning.all_true(tests)
 
         self = Dendrogram()
         self.data = data
@@ -215,15 +222,14 @@ class Dendrogram(object):
                 # At this stage, the adjacent structures might consist of an
                 # arbitrary number of leaves and branches.
 
-                # Find all leaves that are not important enough to be kept
-                # separate. These leaves will now be treated the same as the pixel
-                # under consideration
+                # Find all leaves that are not important enough to be
+                # kept separate. These leaves will now be treated the
+                # same as the pixel under consideration
                 merge = [structure for structure in adjacent
                          if structure.is_leaf and
-                         (structure.vmax - data_value < min_delta or
-                          len(structure.values(subtree=False)) < min_npix or
-                          structure.vmax == data_value or
-                          not is_independent(structure, index=coord, value=data_value))]
+                         (structure.vmax == data_value or
+                          not is_independent(structure, index=coord,
+                                            value=data_value))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -271,9 +277,7 @@ class Dendrogram(object):
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
         for leaf in leaves_in_trunk:
-            if (len(leaf.values(subtree=False)) < min_npix or
-                leaf.vmax - leaf.vmin < min_delta or
-                not is_independent(leaf)):
+            if not is_independent(leaf):
                 # This leaf is an orphan, so remove all references to it:
                 structures.pop(leaf.idx)
                 self.trunk.remove(leaf)
