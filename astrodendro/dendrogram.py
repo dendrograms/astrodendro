@@ -10,7 +10,7 @@ from .structure import Structure
 from .progressbar import AnimatedProgressBar
 from .io import IO_FORMATS
 from . import pruning
-
+from . import six
 
 class Dendrogram(object):
     """
@@ -272,7 +272,7 @@ class Dendrogram(object):
             print("")  # newline
 
         # Create trunk from objects with no ancestors
-        self.trunk = [structure for structure in structures.itervalues() if structure.parent is None]
+        self.trunk = [structure for structure in six.itervalues(structures) if structure.parent is None]
 
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
@@ -305,7 +305,7 @@ class Dendrogram(object):
         # add dendrogram index
         ti = TreeIndex(self)
 
-        for s in self._structures_dict.itervalues():
+        for s in six.itervalues(self._structures_dict):
             s._tree_index = ti
 
 
@@ -365,7 +365,7 @@ class Dendrogram(object):
         """
         A flattened list of all leaves in the dendrogram
         """
-        return [i for i in self._structures_dict.itervalues() if i.is_leaf]
+        return [i for i in six.itervalues(self._structures_dict) if i.is_leaf]
 
     def to_newick(self):
         #this caches newicks, and prevents too much recursion
