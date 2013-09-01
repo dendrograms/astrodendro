@@ -14,8 +14,8 @@ def assert_permuted_fancyindex(x, y):
         raise TypeError("Second argument not a fancy index: %s" % y)
 
     dtype = [('%i' % i, 'i') for i in range(len(x))]
-    x = np.array(zip(*x), dtype=dtype)
-    y = np.array(zip(*y), dtype=dtype)
+    x = np.array(list(zip(*x)), dtype=dtype)
+    y = np.array(list(zip(*y)), dtype=dtype)
     np.testing.assert_array_equal(np.sort(x),
                                   np.sort(y))
 

@@ -1,5 +1,6 @@
 import numpy as np
 
+from .. import six
 
 def parse_newick(string):
 
@@ -95,7 +96,7 @@ def parse_dendrogram(newick, data, index_map):
                 # What we do is look at the heights of this branch's
                 # 1st child as stored in the newick representation, and then
                 # work backwards to compute the merge level of this branch
-                first_child_repr = sub_structures_repr.itervalues().next()
+                first_child_repr = six.next(six.itervalues(sub_structures_repr))
                 if type(first_child_repr) == tuple:
                     height = first_child_repr[1]
                 else:

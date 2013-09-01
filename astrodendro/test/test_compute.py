@@ -173,7 +173,7 @@ class TestNDimensionalData(object):
         assert leaf.vmin == 2
         assert leaf.get_npix() == 1 + 6 + 2  # Contains 1x '5', 6x '3', and 2x '2'. The other '2' should be in the branch
         # Check that the only pixel in the branch is a '2' at [0,0,2,2]
-        assert (zip(*branches[0].indices(subtree=False)), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
+        assert (list(zip(*branches[0].indices(subtree=False))), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
 
 
 from .build_benchmark import BENCHMARKS
