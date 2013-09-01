@@ -299,6 +299,13 @@ class SpatialBase(object):
         u, b = _qsplit(self.minor_sigma)
         return u * np.sqrt(a * b)
 
+    @property
+    def area_ellipse(self):
+        """
+        The area of the ellipse representing the first and second moments of the structure.
+        """
+        return np.pi * self.major_sigma * self.minor_sigma
+
     def to_mpl_ellipse(self, **kwargs):
         """
         Returns a Matplotlib ellipse representing the first and second moments
@@ -414,6 +421,15 @@ class PPVStatistic(SpatialBase):
         a.pop(self.vaxis)
         return np.degrees(np.arctan2(a[0], a[1])) * u.degree
 
+    @property
+    def area_exact(self):
+        """
+        The exact area of the structure on the sky.
+        """
+        # This is not trivial because the area on the sky should ignore
+        # repeated pixels in the velocity direction.
+        raise NotImplementedError()
+
 
 class PPStatistic(SpatialBase):
     """
@@ -479,6 +495,14 @@ class PPStatistic(SpatialBase):
         available in the meta-data).
         """
         return self._world_pos()[0]
+
+    @property
+    def area_exact(self):
+        """
+        The exact area of the structure on the sky.
+        """
+        dx = self.spatial_scale or u.pixel
+        return self.stat.count() * dx**2
 
 
 class PPPStatistic(object):
@@ -599,7 +623,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse',
                         'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
@@ -627,6 +651,6 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse', 'area_exact',
                         'position_angle', 'x_cen', 'y_cen', 'flux']
     return _make_catalog(structures, fields, metadata, PPStatistic, verbose)
