@@ -57,9 +57,13 @@ class Structure(object):
             self._indices = [indices]
             self._values = [values]
             self._vmin, self._vmax = values, values
-        else:  # values are for a sequence of pixels
+        elif isinstance(indices, list) and isinstance(values, list):
             self._indices = indices
             self._values = values
+            self._vmin, self._vmax = min(values), max(values)
+        else:  # could be an array or iterator
+            self._indices = [x for x in indices]
+            self._values = [x for x in values]
             self._vmin, self._vmax = min(values), max(values)
 
         self.idx = idx
@@ -314,7 +318,7 @@ class Structure(object):
             to_add = [self]  # branches with children we will need to add to the list
             while True:
                 children = []
-                map(children.extend, [branch.children for branch in to_add])
+                list(map(children.extend, [branch.children for branch in to_add]))
                 self._descendants.extend(children)
                 # Then proceed, essentially recursing through child branches:
                 to_add = [b for b in children if not b.is_leaf]

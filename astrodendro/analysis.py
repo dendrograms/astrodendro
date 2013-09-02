@@ -10,6 +10,7 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.wcs import WCS
 
+from . import six
 from .structure import Structure
 
 __all__ = ['ppv_catalog', 'pp_catalog']
@@ -181,7 +182,7 @@ class Metadata(object):
                If True, raise KeyError if metadata not provided.
                This overrides default
         """
-        if not isinstance(key, basestring):
+        if not isinstance(key, six.string_types):
             raise TypeError("Key is", key, type(key))
         self.key = key
         self.description = description or 'no description'
