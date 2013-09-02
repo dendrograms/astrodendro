@@ -65,6 +65,7 @@ def benchmark_values():
                         -0.2420406304632855, -0.9632409194100563]
     result['sig_maj'] = np.sqrt(2.0619485)
     result['sig_min'] = np.sqrt(0.27942730)
+    result['area_exact'] = 21
 
     return result
 
@@ -224,6 +225,10 @@ class TestPPVStatistic(object):
         p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
         assert_allclose_quantity(p.radius, np.sqrt(self.v['sig_min'] * self.v['sig_maj']) * 4 * u.arcsec)
 
+    def test_area_ellipse(self):
+        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_ellipse,  (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi)
+
     def test_v_rms(self):
         p = PPVStatistic(self.stat, self.metadata())
         assert_allclose_quantity(p.v_rms, np.sqrt(self.v['mom2_100']) * u.pixel)
@@ -283,6 +288,14 @@ class TestPPStatistic(object):
     def test_radius(self):
         p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
         assert_allclose_quantity(p.radius, np.sqrt(self.v['sig_min'] * self.v['sig_maj']) * 4 * u.arcsec)
+
+    def test_area_exact(self):
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_exact, (4 * u.arcsec)**2 * self.v['area_exact'])
+
+    def test_area_ellipse(self):
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi)
 
     def test_position_angle(self):
         x = np.array([0, 1, 2])
