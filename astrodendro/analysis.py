@@ -426,9 +426,9 @@ class PPVStatistic(SpatialBase):
         """
         The exact area of the structure on the sky.
         """
-        # This is not trivial because the area on the sky should ignore
-        # repeated pixels in the velocity direction.
-        raise NotImplementedError()
+        dx = self.spatial_scale or u.pixel
+        indices = zip(*tuple(self.stat.indices[i] for i in range(3) if i != self.vaxis))
+        return len(set(indices)) * dx**2
 
 
 class PPStatistic(SpatialBase):
