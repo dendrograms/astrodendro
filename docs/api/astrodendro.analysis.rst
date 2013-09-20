@@ -35,6 +35,7 @@ astrodendro.analysis
       ~PPVStatistic.minor_sigma
       ~PPVStatistic.position_angle
       ~PPVStatistic.radius
+      ~PPStatistic.area_exact
       ~PPStatistic.area_ellipse
       ~PPVStatistic.x_cen
       ~PPVStatistic.y_cen
