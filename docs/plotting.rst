@@ -55,7 +55,7 @@ tool::
 
 and then use this to make the plot you need. The following complete example
 shows how to make a plot of the dendrogram of the extinction map of the Perseus
-region (introduced in :doc:using) using the
+region (introduced in :doc:`using`) using the
 :meth:`~astrodendro.plot.DendrogramPlotter.plot_tree`, highlighting two of the
 main branches:
 
@@ -146,7 +146,7 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
         mask = mask | leaf.get_mask()
 
     # Now we create a FITS HDU object to contain this, with the correct header
-    mask_hdu = fits.PrimaryHDU(mask.astype(int), hdu.header)
+    mask_hdu = fits.PrimaryHDU(mask.astype('short'), hdu.header)
 
     # We then use APLpy to make the final plot
     fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
@@ -189,8 +189,8 @@ over the colors:
     mask_24 = structure_24.get_mask()
 
     # Create FITS HDU objects to contain the masks
-    mask_hdu_08 = fits.PrimaryHDU(mask_08.astype(int), hdu.header)
-    mask_hdu_24 = fits.PrimaryHDU(mask_24.astype(int), hdu.header)
+    mask_hdu_08 = fits.PrimaryHDU(mask_08.astype('short'), hdu.header)
+    mask_hdu_24 = fits.PrimaryHDU(mask_24.astype('short'), hdu.header)
 
     # Use APLpy to make the final plot
     fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
