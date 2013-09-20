@@ -94,6 +94,10 @@ class Test2DimensionalData(object):
         leaf_with_twos = d.structure_at((10, 9))
         assert leaf_with_twos.height == 2
 
+        # Check that all structures contain a reference to the dendrogram
+        for structure in d:
+            assert structure._dendrogram is d
+
 
 class Test3DimensionalData(object):
     def setup_method(self, method):
@@ -192,3 +196,8 @@ def test_benchmark(filename):
     d2 = Dendrogram.load_from(path)
 
     assert d1 == d2
+
+    # Check that all structures contain a reference to the dendrogram
+    for structure in d1:
+        assert structure._dendrogram is d1
+

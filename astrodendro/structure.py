@@ -44,8 +44,9 @@ class Structure(object):
     #   for computing the dendrogram and should never be used manually:       #
     ###########################################################################
 
-    def __init__(self, indices, values, children=[], idx=None):
+    def __init__(self, indices, values, children=[], idx=None, dendrogram=None):
 
+        self._dendrogram = dendrogram
         self.parent = None
         self.children = children
 
@@ -418,14 +419,15 @@ class Structure(object):
                 leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
         return leaves
 
-    def get_mask(self, shape, subtree=True):
+    def get_mask(self, shape=None, subtree=True):
         """
         Return a boolean mask outlining the structure.
 
         Parameters
         ----------
-        shape : tuple
-            The shape of the array upon which to compute the mask.
+        shape : tuple, optional
+            The shape of the array upon which to compute the mask. This is only
+            required if the structure is not attached to a dendrogram.
         subtree : bool, optional
             Whether to recursively include all sub-structures in the mask.
 
@@ -435,6 +437,8 @@ class Structure(object):
             The mask outlining the structure (``False`` values are used outside
             the structure, and ``True`` values inside).
         """
+        if shape is None:
+            shape = self._dendrogram.data.shape
         indices = self.indices(subtree=True) if subtree else self.indices
         mask = np.zeros(shape, dtype=bool)
         mask[indices] = True
