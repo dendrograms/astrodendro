@@ -17,7 +17,7 @@ two-dimensional map of a hierarchical structure that looks like:
 .. image:: schematic_structure_1.png
    :width: 300px
    :align: center
-   
+
 the equivalent dendrogram/tree representation would look like:
 
 .. image:: schematic_tree.png
@@ -46,8 +46,12 @@ Documentation
    :maxdepth: 2
 
    installing.rst
+   algorithm.rst
    using.rst
    plotting.rst
+   catalog.rst
+   advanced.rst
+   migration.rst
 
 Reporting issues
 ----------------
@@ -60,15 +64,28 @@ Developers
 
 This package was developed by:
 
-* Braden MacDonald
-* Chris Beaumont
 * Thomas Robitaille
+* Chris Beaumont
+* Braden MacDonald
 * Erik Rosolowsky
 
-Indices and tables
-==================
+Acknowledgments
+---------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Thanks to the following users for using early versions of this package and
+providing valuable feedback:
 
+* Katharine Johnston
+* Adam Ginsburg
+
+Public API
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   api/astrodendro.dendrogram.Dendrogram
+   api/astrodendro.structure.Structure
+   api/astrodendro.plot.DendrogramPlotter
+   api/astrodendro.analysis
+   api/astrodendro.pruning
