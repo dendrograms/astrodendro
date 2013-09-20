@@ -34,7 +34,7 @@ All of these examples use the Perseus data set
 
     for leaf in d.leaves:
         id = leaf.idx
-        print "Examining ID ",id
+        print("Plotting ID ",id)
         # need one suite of plotted things for each leaf
         flux[id] = []
         radius[id] = []
