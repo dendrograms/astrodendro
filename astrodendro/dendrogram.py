@@ -196,7 +196,7 @@ class Dendrogram(object):
             adjacent = [structures[a].ancestor for a in adjacent]
 
             # Remove duplicates
-            adjacent = _sorted_by_idx(list(set(adjacent)))
+            adjacent = _sorted_by_idx(set(adjacent))
 
             # What happens next depends on how many unique adjacent structures there are
 
