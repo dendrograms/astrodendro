@@ -143,7 +143,7 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
     # that any pixel corresponding to a leaf is set to True.
     mask = np.zeros(hdu.data.shape, dtype=bool)
     for leaf in d.leaves:
-        mask = mask | leaf.get_mask(mask.shape)
+        mask = mask | leaf.get_mask()
 
     # Now we create a FITS HDU object to contain this, with the correct header
     mask_hdu = fits.PrimaryHDU(mask.astype(int), hdu.header)
@@ -185,8 +185,8 @@ over the colors:
     structure_3262 = d[3262]
 
     # Extract the masks
-    mask_2077 = structure_2077.get_mask(hdu.data.shape)
-    mask_3262 = structure_3262.get_mask(hdu.data.shape)
+    mask_2077 = structure_2077.get_mask()
+    mask_3262 = structure_3262.get_mask()
 
     # Create FITS HDU objects to contain the masks
     mask_hdu_2077 = fits.PrimaryHDU(mask_2077.astype(int), hdu.header)

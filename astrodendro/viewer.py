@@ -216,7 +216,7 @@ class BasicDendrogramViewer(object):
     def update_contour(self):
 
         if self.selected is not None:
-            mask = self.selected.get_mask(self.array.shape, subtree=True)
+            mask = self.selected.get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :,:]
             self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)

@@ -201,7 +201,7 @@ class Dendrogram(object):
                 idx = next_idx()
 
                 # Create leaf
-                leaf = Structure(coord, data_value, idx=idx)
+                leaf = Structure(coord, data_value, idx=idx, dendrogram=self)
 
                 # Add leaf to overall list
                 structures[idx] = leaf
@@ -249,7 +249,9 @@ class Dendrogram(object):
                     belongs_to._add_pixel(coord, data_value)
                 else:
                     # Create a branch
-                    belongs_to = Structure(coord, data_value, children=adjacent, idx=next_idx())
+                    belongs_to = Structure(coord, data_value,
+                                           children=adjacent, idx=next_idx(),
+                                           dendrogram=self)
                     # Add branch to overall list
                     structures[belongs_to.idx] = belongs_to
 
