@@ -236,7 +236,7 @@ class TestPPVStatistic(object):
 
     def test_area_ellipse(self):
         p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
-        assert_allclose_quantity(p.area_ellipse,  (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi)
+        assert_allclose_quantity(p.area_ellipse,  (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5)**2)
 
     def test_v_rms(self):
         p = PPVStatistic(self.stat, self.metadata())
@@ -305,7 +305,7 @@ class TestPPStatistic(object):
 
     def test_area_ellipse(self):
         p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
-        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi)
+        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5) ** 2)
 
     def test_position_angle(self):
         x = np.array([0, 1, 2])
