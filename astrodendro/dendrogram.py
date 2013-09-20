@@ -12,6 +12,11 @@ from .io import IO_FORMATS
 from . import pruning
 from . import six
 
+
+def _sorted_by_idx(d):
+    return sorted(d, key=lambda s: s.idx)
+
+
 class Dendrogram(object):
     """
     This class is used to compute and represent a dendrogram for a given
@@ -191,7 +196,7 @@ class Dendrogram(object):
             adjacent = [structures[a].ancestor for a in adjacent]
 
             # Remove duplicates
-            adjacent = list(set(adjacent))
+            adjacent = _sorted_by_idx(set(adjacent))
 
             # What happens next depends on how many unique adjacent structures there are
 
@@ -274,7 +279,7 @@ class Dendrogram(object):
             print("")  # newline
 
         # Create trunk from objects with no ancestors
-        self.trunk = [structure for structure in six.itervalues(structures) if structure.parent is None]
+        self.trunk = _sorted_by_idx([structure for structure in six.itervalues(structures) if structure.parent is None])
 
         # Remove orphan leaves that aren't large enough
         leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
