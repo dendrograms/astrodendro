@@ -19,6 +19,7 @@ call signature::
     def is_independent(structure, index=None, value=None):
         ...
 
+
 where ``structure`` is the :class:`~astrodendro.structure.Structure` object
 that is being considered, and ``index`` and ``value`` are the pixel index and
 value of the pixel that is linking the structure to the rest of the tree. These
@@ -45,11 +46,12 @@ The following example compares the dendrogram obtained without and with a custom
     d1 = Dendrogram.compute(image, min_value=2.0)
     p1 = d1.plotter()
 
-    ax = fig.add_subplot(1, 2, 1)
-    p1.plot_tree(ax, color='black')
-    ax.set_xlabel("Structure")
-    ax.set_ylabel("Flux")
-    ax.set_title("Default merging")
+    ax1 = fig.add_subplot(1, 3, 1)
+    p1.plot_tree(ax1, color='black')
+    ax1.hlines(3.5, *ax1.gca().get_xlim(), color='b', linestyle='--') 
+    ax1.set_xlabel("Structure")
+    ax1.set_ylabel("Flux")
+    ax1.set_title("Default merging")
 
     # Require minimum peak value
     # this is equivalent to
@@ -58,18 +60,36 @@ The following example compares the dendrogram obtained without and with a custom
         peak_index, peak_value = structure.get_peak()
         return peak_value > 3.5
 
-    d2 = Dendrogram.compute(image, min_value=2.0, is_independent=custom_independent)
+    d2 = Dendrogram.compute(image, min_value=2.0,
+                            is_independent=custom_independent)
     p2 = d2.plotter()
 
-    ax = fig.add_subplot(1, 2, 2)
-    p2.plot_tree(ax, color='black')
-    ax.set_xlabel("Structure")
-    ax.set_ylabel("Flux")
-    ax.set_title("Custom merging")
+    ax2 = fig.add_subplot(1, 3, 2)
+    p2.plot_tree(ax2, color='black')
+    ax2.hlines(3.5, *ax2.gca().get_xlim(), color='b', linestyle='--') 
+    ax2.set_xlabel("Structure")
+    ax2.set_ylabel("Flux")
+    ax2.set_title("Custom merging")
 
-Several pre-implemented functions suitable for use as ``is_independent`` tests are provided in :mod:`astrodendro.pruning`. In addition, the :meth:`astrodendro.pruning.all_true` function can be used to combine several criteria. For example, the following code builds a dendrogram where each leaf contains a pixel whose value >=20, and whose pixels sum to >= 100::
+    # For comparison, this is what changing the min_value does:
+    d3 = Dendrogram.compute(image, min_value=3.5)
+    p3 = d3.plotter()
+
+    ax3 = fig.add_subplot(1, 3, 3)
+    p3.plot_tree(ax3, color='black')
+    ax3.hlines(3.5, *ax3.gca().get_xlim(), color='b', linestyle='--') 
+    ax3.set_xlabel("Structure")
+    ax3.set_ylabel("Flux")
+    ax3.set_title("min_value=3.5 merging")
+    ax3.set_ylim(*ax2.get_ylim())
+
+Several pre-implemented functions suitable for use as ``is_independent`` tests
+are provided in :mod:`astrodendro.pruning`. In addition, the
+:meth:`astrodendro.pruning.all_true` function can be used to combine several
+criteria. For example, the following code builds a dendrogram where each leaf
+contains a pixel whose value >=20, and whose pixels sum to >= 100::
 
     from astrodendro.pruning import all_true, min_peak, min_sum
 
-    custom_independent = all_true((min_peak(20), min_delta(100)))
+    custom_independent = all_true((min_peak(20), min_sum(100)))
     Dendrogram.compute(image, is_independent=custom_independent)
