@@ -1,5 +1,5 @@
-Core algorithm
-==============
+A Graphical Description of the Core Algorithm
+=============================================
 
 This page contains an explanation of the algorithm behind the Python dendrogram
 code. This is demonstrated with a step by step example of how the algorithm
