@@ -41,7 +41,7 @@ custom ``is_independent`` function:
 
     image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
 
-    fig = plt.figure(figsize=(10,5))
+    fig = plt.figure(figsize=(15,5))
 
     # Default merging strategy
 
@@ -50,7 +50,7 @@ custom ``is_independent`` function:
 
     ax1 = fig.add_subplot(1, 3, 1)
     p1.plot_tree(ax1, color='black')
-    ax1.hlines(3.5, *ax1.gca().get_xlim(), color='b', linestyle='--') 
+    ax1.hlines(3.5, *ax1.get_xlim(), color='b', linestyle='--') 
     ax1.set_xlabel("Structure")
     ax1.set_ylabel("Flux")
     ax1.set_title("Default merging")
@@ -68,7 +68,7 @@ custom ``is_independent`` function:
 
     ax2 = fig.add_subplot(1, 3, 2)
     p2.plot_tree(ax2, color='black')
-    ax2.hlines(3.5, *ax2.gca().get_xlim(), color='b', linestyle='--') 
+    ax2.hlines(3.5, *ax2.get_xlim(), color='b', linestyle='--') 
     ax2.set_xlabel("Structure")
     ax2.set_ylabel("Flux")
     ax2.set_title("Custom merging")
@@ -79,7 +79,7 @@ custom ``is_independent`` function:
 
     ax3 = fig.add_subplot(1, 3, 3)
     p3.plot_tree(ax3, color='black')
-    ax3.hlines(3.5, *ax3.gca().get_xlim(), color='b', linestyle='--') 
+    ax3.hlines(3.5, *ax3.get_xlim(), color='b', linestyle='--') 
     ax3.set_xlabel("Structure")
     ax3.set_ylabel("Flux")
     ax3.set_title("min_value=3.5 merging")
