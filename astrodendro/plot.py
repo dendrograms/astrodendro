@@ -145,7 +145,7 @@ class DendrogramPlotter(object):
         else:
             if type(structure) is int:
                 structure = self.dendrogram[structure]
-            mask = structure.get_mask(self.dendrogram.data.shape, subtree=subtree)
+            mask = structure.get_mask(subtree=subtree)
             if self.dendrogram.data.ndim == 3:
                 if slice is None:
                     peak_index = structure.get_peak(subtree=subtree)
