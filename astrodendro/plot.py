@@ -57,7 +57,7 @@ class DendrogramPlotter(object):
         for structure in sorted_trunk_structures:
 
             # Get sorted leaves
-            sorted_leaves = structure.get_sorted_leaves(subtree=True, reverse=reverse)
+            sorted_leaves = structure.sorted_leaves(subtree=True, reverse=reverse)
 
             # Loop over leaves and assign positions
             for leaf in sorted_leaves:

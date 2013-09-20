@@ -3,6 +3,8 @@
 import sys
 
 import numpy as np
+import matplotlib.pyplot as plt
+plt.switch_backend('Agg')
 
 from .. import Dendrogram
 
@@ -19,13 +21,18 @@ class TestRecursionLimit(object):
         self._oldlimit = sys.getrecursionlimit()
         sys.setrecursionlimit(100)  # Reduce recursion limit dramatically (default is 1000)
         size = 10000  # number of leaves desired in the dendrogram
+        self._make_data(size)
+
+    def _make_data(self, size):
         data1 = np.arange(size * 2)  # first row
         data2 = np.arange(size * 2)  # second row
         data2[::2] += 2
         data1[-1] = 0  # set the last pixel in the first row to zero, to trigger a deep ancestor search
-        self.data = np.vstack((data1, data2))
+        data = np.vstack((data1, data2))
+        self.data = data
         self.size = size
-        # self.data now looks like this:
+
+        # result looks like this:
         # [[ 0, 1, 2, 3, 4, 5, ...],
         #  [ 2, 1, 4, 3, 6, 5, ...]]
         # Notice every second column has a local maximum
@@ -52,6 +59,16 @@ class TestRecursionLimit(object):
                 assert structure.level == 0
             else:
                 assert structure.level == structure.parent.level + 1
+
+
+    def test_plot(self):
+        sys.setrecursionlimit(self._oldlimit)
+        ax = plt.gca()
+        sys.setrecursionlimit(100)
+
+        d = Dendrogram.compute(self.data)
+        p = d.plotter()
+        p.plot_tree(ax)
 
     def teardown_method(self, method):
         sys.setrecursionlimit(self._oldlimit)
