@@ -103,8 +103,14 @@ Perseus extinction map, we get::
      <Structure type=leaf idx=733>,
      <Structure type=branch idx=303>]
 
-In the above case, the trunk contains two leaves and two branches. Since
-``trunk`` is just a list, you can access items in it with e.g.::
+In the above case, the trunk contains two leaves and two branches. Note that
+the representation of the structures shows the type of structure (``leaf`` or
+``branch``) and also an ID number (``idx``). The ID is a value that may change
+for different calls to :meth:`~astrodendro.dendrogram.Dendrogram.compute`. See
+`Saving and loading the dendrogram`_ for a discussion of how to get around this
+if you will need to write analysis code that depends on ``idx``.
+
+Since ``trunk`` is just a list, you can access items in it with e.g.::
 
     >>> d.trunk[1]
     <Structure type=branch idx=2152>
@@ -142,8 +148,10 @@ is available from the :class:`~astrodendro.structure.Structure` page, while a
 list of attributes and methods for the dendrogram itself is available from the
 :class:`~astrodendro.dendrogram.Dendrogram` page.
 
-Saving the dendrogram
----------------------
+.. _saving:
+
+Saving and loading the dendrogram
+---------------------------------
 
 A :class:`~astrodendro.dendrogram.Dendrogram` object can be exported to an HDF5 file (requires h5py) or FITS file (requires astropy). To export the
 dendrogram to a file, use::
@@ -157,3 +165,27 @@ or::
 and to load and existing dendrogram::
 
     >>> d = Dendrogram.load_from('my_other_dendrogram.hdf5')
+
+or::
+
+    >>> d = Dendrogram.load_from('my_other_dendrogram.fits')
+
+If you rely on structure IDs (``idx``) for your analysis, you should separate
+the computation and analysis of the dendrogram into two scripts, to ensure that
+the dendrogram is only computed once. Any analysis done in a separate script
+can then be repeated several times, without changing the ID values since the
+dendrogram is not recomputed. For example, you might have a script ``compute.py`` that contains::
+
+    from astropy.io import fits
+    from astrodendro import Dendrogram
+
+    array = fits.getdata('observations.fits')
+    d = Dendrogram.compute(array)
+    d.save_to('dendrogram.fits')
+
+and a second file containing::
+
+    from astrodendro import Dendrogram
+    d = Dendrogram.load_from('dendrogram.fits')
+
+    # any analysis code here

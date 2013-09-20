@@ -158,7 +158,10 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
 Now let's take the example from `Making plots for publications`_ and try and
 reproduce the same plot. As described there, one way to find interesting
 structures in the dendrogram is to use the `Interactive Visualization`_ tool.
-This tool will give the ID of a structure as an integer (which we call ``idx``).
+This tool will give the ID of a structure as an integer (``idx``). Note that
+this ``idx`` is not guaranteed to be constant for subsequent calls to
+:meth:`~astrodendro.dendrogram.Dendrogram.compute`. See :ref:`saving` for a
+discussion of how to get around this issue.
 
 Because we are starting from this ID rather than a
 :class:`~astrodendro.structure.Structure` object, we need to first get the
