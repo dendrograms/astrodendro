@@ -623,7 +623,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse',
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse', 'area_exact',
                         'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
     return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
