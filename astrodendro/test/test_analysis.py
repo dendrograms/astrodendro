@@ -376,7 +376,7 @@ class TestCataloger(object):
 class TestPPVCataloger(TestCataloger):
     fields = ['_idx', 'flux',
               'major_sigma', 'minor_sigma', 'radius', 'area_ellipse',
-              'v_rms', 'position_angle', 'x_cen', 'y_cen', 'v_cen']
+              'area_exact', 'v_rms', 'position_angle', 'x_cen', 'y_cen', 'v_cen']
     cataloger = staticmethod(ppv_catalog)
 
     def stat(self):
