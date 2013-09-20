@@ -16,6 +16,10 @@ from .structure import Structure
 __all__ = ['ppv_catalog', 'pp_catalog']
 
 
+class MissingMetadataWarning(UserWarning):
+    pass
+
+
 def _qsplit(q):
     """Split a potential astropy Quantity into unit/quantity"""
     if isinstance(1. * q, Quantity):
@@ -201,7 +205,8 @@ class Metadata(object):
                 raise KeyError("Required metadata item not found: %s" % self)
             else:
                 if self.default is not None:
-                    warnings.warn("{0} ({1}) missing, defaulting to {2}".format(self.key, self.description, self.default))
+                    warnings.warn("{0} ({1}) missing, defaulting to {2}".format(self.key, self.description, self.default),
+                                  MissingMetadataWarning)
                 value = self.default
 
         if value is not None and self._restrict_types is not None:
@@ -529,7 +534,7 @@ class PPPStatistic(object):
         pass
 
 
-def _make_catalog(structures, fields, metadata, statistic, verbose):
+def _make_catalog(structures, fields, metadata, statistic):
     """
     Make a catalog from a list of structures
     """
@@ -558,7 +563,10 @@ def _make_catalog(structures, fields, metadata, statistic, verbose):
                 result = Table(names=sorted_row_keys,
                                dtypes=[int if x == '_idx' else float for x in sorted_row_keys])            
             for k, v in row.items():
-                result[k].units = _unit(v)
+                try:  # Astropy API change
+                    result[k].unit = _unit(v)
+                except AttributeError:
+                    result[k].units = _unit(v)
 
         # astropy.table.Table should in future support setting row items from
         # quantities, but for now we need to strip off the quantities
@@ -601,10 +609,12 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     """
     fields = fields or ['major_sigma', 'minor_sigma', 'radius',
                         'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
-    return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
+    with warnings.catch_warnings():
+        warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
+        return _make_catalog(structures, fields, metadata, PPVStatistic)
 
 
-def pp_catalog(structures, metadata, fields=None, verbose=False):
+def pp_catalog(structures, metadata, fields=None, verbose=True):
     """
     Iterate over a collection of position-position (PP) structures, extracting
     several quantities from each, and building a catalog.
@@ -629,4 +639,6 @@ def pp_catalog(structures, metadata, fields=None, verbose=False):
     """
     fields = fields or ['major_sigma', 'minor_sigma', 'radius',
                         'position_angle', 'x_cen', 'y_cen', 'flux']
-    return _make_catalog(structures, fields, metadata, PPStatistic, verbose)
+    with warnings.catch_warnings():
+        warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
+        return _make_catalog(structures, fields, metadata, PPStatistic)
