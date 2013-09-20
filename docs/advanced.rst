@@ -29,7 +29,8 @@ during the tree computation, but the ``is_independent`` function is also used
 at the end of the computation to prune leaves that are not attached to the
 tree, and in this case ``index`` and ``value`` are not set.
 
-The following example compares the dendrogram obtained without and with a custom ``is_independent`` function:
+The following example compares the dendrogram obtained with and without a
+custom ``is_independent`` function:
 
 .. plot::
    :include-source:
