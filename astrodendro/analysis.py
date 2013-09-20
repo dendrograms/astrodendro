@@ -302,7 +302,7 @@ class SpatialBase(object):
     @property
     def area_ellipse(self):
         """
-        The area of the ellipse defined by the second moment, where the
+        The area of the ellipse defined by the second moments, where the
         semi-major and semi-minor axes used are the HWHM (half-width at
         half-maximum) derived from the moments.
         """
