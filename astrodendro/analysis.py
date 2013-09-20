@@ -304,7 +304,7 @@ class SpatialBase(object):
         """
         The area of the ellipse representing the first and second moments of the structure.
         """
-        return np.pi * self.major_sigma * self.minor_sigma
+        return np.pi * self.major_sigma * 2.3548 * 0.5 * self.minor_sigma * 2.3548 * 0.5
 
     def to_mpl_ellipse(self, **kwargs):
         """
