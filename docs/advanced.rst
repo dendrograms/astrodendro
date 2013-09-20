@@ -4,12 +4,13 @@ Advanced topics
 Specifying a custom structure merging strategy
 ----------------------------------------------
 
-By default, the decision about whether a leaf remains independent when merged
-is made based on the ``min_delta`` and ``min_npix`` parameters, but in some
-cases, you may want to use more specialized criteria. For example, you may want
-only leaves overlapping with a certain position, or you may want leaves with a
-certain spatial or velocity extent, or a minimum peak value, to be considered
-independent structures.
+By default, the decision about whether a leaf remains independent (i.e.,
+whether it remains a leaf or its pixels get incorporated into another branch)
+when merged is made based on the ``min_delta`` and ``min_npix`` parameters, but
+in some cases, you may want to use more specialized criteria. For example, you
+may want only leaves overlapping with a certain position, or you may want
+leaves with a certain spatial or velocity extent, or a minimum peak value, to
+be considered independent structures.
 
 In order to accomodate this, the
 :meth:`~astrodendro.dendrogram.Dendrogram.compute` method can optionally take
