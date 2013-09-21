@@ -45,17 +45,17 @@ All of these examples use the Perseus data set
             radius[id].append(stat.radius.value)
             leaf = leaf.parent
         
-        ax1.loglog(np.array(radius[id])**2 * np.pi,
+        L, = ax1.loglog(np.array(radius[id])**2 * np.pi,
                    flux[id],
                    'o-')
         ax2.loglog(np.array(radius[id])**2 * np.pi,
                    np.array(flux[id]) / (4/3. * np.pi * np.array(radius[id])**3),
-                   'o-')
-        d.plotter().plot_tree(ax3)
+                   'o-', color=L.get_color())
+        d.plotter().plot_tree(ax3, structure=id, color=L.get_color())
 
-    ax1.set_xlabel('Area (arcsec^2)')
+    ax1.set_xlabel('Area (arcsec$^2$)')
     ax1.set_ylabel('Flux (Jy)')
-    ax2.set_xlabel('Area (arcsec^2)')
-    ax2.set_ylabel('"Density" (Jy/arcsec^3)')
+    ax2.set_xlabel('Area (arcsec$^2$)')
+    ax2.set_ylabel('"Density" (Jy/arcsec$^3$)')
     ax3.set_xlabel("Structure")
     ax3.set_ylabel("Flux")
