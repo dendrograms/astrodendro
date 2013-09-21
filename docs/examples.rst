@@ -3,6 +3,18 @@ Example Uses of astrodendro
 
 All of these examples use the Perseus data set
 
+Example 1
+---------
+
+Extract the dendrogram structure using a minimum-peak cutoff, then make some
+intricate plots.
+
+These plots show two derived quantities - the "flux" and the effective radius -
+plotted against each other in two different ways.  In order to visualize the
+structure as plotted, the lines are color- and marker- coded to match each
+other.
+
+
 .. plot::
    :include-source:
 
@@ -17,6 +29,8 @@ All of these examples use the Perseus data set
     image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
 
     from astropy import units as u
+    # this metadata isn't really appropriate for this data set, but it is
+    # useful for the example
     metadata = {}
     metadata['data_unit'] = u.Jy / u.beam
     metadata['spatial_scale'] =  6 * u.arcsec
