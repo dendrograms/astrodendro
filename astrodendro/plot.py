@@ -184,7 +184,7 @@ class DendrogramPlotter(object):
         if structure is None:
             structures = list(self.dendrogram.all_structures)
         else:
-            if type(structure) is int:
+            if isinstance(structure,int):
                 structure = self.dendrogram[structure]
             structures = structure.descendants + [structure]
 
