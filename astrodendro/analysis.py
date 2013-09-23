@@ -304,6 +304,15 @@ class SpatialBase(object):
         u, b = _qsplit(self.minor_sigma)
         return u * np.sqrt(a * b)
 
+    @property
+    def area_ellipse(self):
+        """
+        The area of the ellipse defined by the second moments, where the
+        semi-major and semi-minor axes used are the HWHM (half-width at
+        half-maximum) derived from the moments.
+        """
+        return np.pi * self.major_sigma * self.minor_sigma * (2.3548 * 0.5) ** 2
+
     def to_mpl_ellipse(self, **kwargs):
         """
         Returns a Matplotlib ellipse representing the first and second moments
@@ -419,6 +428,15 @@ class PPVStatistic(SpatialBase):
         a.pop(self.vaxis)
         return np.degrees(np.arctan2(a[0], a[1])) * u.degree
 
+    @property
+    def area_exact(self):
+        """
+        The exact area of the structure on the sky.
+        """
+        dx = self.spatial_scale or u.pixel
+        indices = zip(*tuple(self.stat.indices[i] for i in range(3) if i != self.vaxis))
+        return len(set(indices)) * dx**2
+
 
 class PPStatistic(SpatialBase):
     """
@@ -484,6 +502,14 @@ class PPStatistic(SpatialBase):
         available in the meta-data).
         """
         return self._world_pos()[0]
+
+    @property
+    def area_exact(self):
+        """
+        The exact area of the structure on the sky.
+        """
+        dx = self.spatial_scale or u.pixel
+        return self.stat.count() * dx**2
 
 
 class PPPStatistic(object):
@@ -607,7 +633,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse', 'area_exact',
                         'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
@@ -637,7 +663,7 @@ def pp_catalog(structures, metadata, fields=None, verbose=True):
     table : a :class:`~astropy.table.table.Table` instance
         The resulting catalog
     """
-    fields = fields or ['major_sigma', 'minor_sigma', 'radius',
+    fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse', 'area_exact',
                         'position_angle', 'x_cen', 'y_cen', 'flux']
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)

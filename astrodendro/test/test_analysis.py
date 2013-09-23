@@ -65,11 +65,14 @@ def benchmark_values():
                         -0.2420406304632855, -0.9632409194100563]
     result['sig_maj'] = np.sqrt(2.0619485)
     result['sig_min'] = np.sqrt(0.27942730)
+    result['area_exact_pp'] = 21
+    result['area_exact_ppv'] = 10
 
     return result
 
 
 class TestScalarStatistic(object):
+
     def setup_method(self, method):
         self.stat = benchmark_stat()
 
@@ -126,6 +129,7 @@ class TestScalarStatistic(object):
 
 
 class TestScalar2D(object):
+
     def setup_method(self, method):
         x = np.array([213, 213, 214, 211, 212, 212])
         y = np.array([71, 71, 71, 71, 71, 71])
@@ -165,6 +169,7 @@ class TestScalar2D(object):
 
 
 class TestScalarNan(TestScalar2D):
+
     def setup_method(self, method):
         x = np.array([213, 213, 214, 211, 212, 212])
         y = np.array([71, 71, 71, 71, 71, 71])
@@ -181,6 +186,7 @@ class TestScalarNan(TestScalar2D):
 
 
 class TestPPVStatistic(object):
+
     def setup_method(self, method):
         self.stat = benchmark_stat()
         self.v = benchmark_values()
@@ -224,6 +230,14 @@ class TestPPVStatistic(object):
         p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
         assert_allclose_quantity(p.radius, np.sqrt(self.v['sig_min'] * self.v['sig_maj']) * 4 * u.arcsec)
 
+    def test_area_exact(self):
+        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_exact,  (4 * u.arcsec)**2 * self.v['area_exact_ppv'])
+
+    def test_area_ellipse(self):
+        p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_ellipse,  (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5)**2)
+
     def test_v_rms(self):
         p = PPVStatistic(self.stat, self.metadata())
         assert_allclose_quantity(p.v_rms, np.sqrt(self.v['mom2_100']) * u.pixel)
@@ -259,6 +273,7 @@ class TestPPVStatistic(object):
 
 
 class TestPPStatistic(object):
+
     def setup_method(self, method):
         self.stat = benchmark_stat()
         #this trick essentially collapses along the 0th axis
@@ -283,6 +298,14 @@ class TestPPStatistic(object):
     def test_radius(self):
         p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
         assert_allclose_quantity(p.radius, np.sqrt(self.v['sig_min'] * self.v['sig_maj']) * 4 * u.arcsec)
+
+    def test_area_exact(self):
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_exact, (4 * u.arcsec)**2 * self.v['area_exact_pp'])
+
+    def test_area_ellipse(self):
+        p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
+        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5) ** 2)
 
     def test_position_angle(self):
         x = np.array([0, 1, 2])
@@ -352,8 +375,8 @@ class TestCataloger(object):
 
 class TestPPVCataloger(TestCataloger):
     fields = ['_idx', 'flux',
-              'major_sigma', 'minor_sigma', 'radius',
-              'v_rms', 'position_angle', 'x_cen', 'y_cen', 'v_cen']
+              'major_sigma', 'minor_sigma', 'radius', 'area_ellipse',
+              'area_exact', 'v_rms', 'position_angle', 'x_cen', 'y_cen', 'v_cen']
     cataloger = staticmethod(ppv_catalog)
 
     def stat(self):
@@ -365,8 +388,8 @@ class TestPPVCataloger(TestCataloger):
 
 class TestPPCataloger(TestCataloger):
     fields = ['_idx', 'flux',
-              'major_sigma', 'minor_sigma', 'radius',
-              'position_angle', 'x_cen', 'y_cen']
+              'major_sigma', 'minor_sigma', 'radius', 'area_ellipse',
+              'area_exact', 'position_angle', 'x_cen', 'y_cen']
     cataloger = staticmethod(pp_catalog)
 
     def stat(self):
