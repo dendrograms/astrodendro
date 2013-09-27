@@ -304,6 +304,11 @@ class Dendrogram(object):
 
         self._index()
 
+        # Assign a unique 'clean' ID between 0 and the number of structures minus 1.
+        sorted_structures = sorted(self, key=lambda s: s._identifying_pixel)
+        for clean_id, s in enumerate(sorted_structures):
+            s.clean_id = clean_id
+
         # Return the newly-created dendrogram:
         return self
 

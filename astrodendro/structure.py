@@ -80,6 +80,16 @@ class Structure(object):
         self._tree_index = None
 
     @property
+    def _identifying_pixel(self):
+        """
+        Pixel identifying the structure.
+
+        This is the first pixel in the list of pixels belonging to the
+        structure (excluding subtree pixels) when sorted by indices.
+        """
+        return sorted(self._indices)[0]
+
+    @property
     def parent(self):
         """
         The parent structure containing the present structure.
