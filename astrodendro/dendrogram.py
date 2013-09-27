@@ -146,7 +146,7 @@ class Dendrogram(object):
         # We expand each dimension by one, so the last value of each
         # index (accessed with e.g. [nx,#,#] or [-1,#,#]) is always zero
         # This permits an optimization below when finding adjacent structures
-        self.index_map = np.zeros(np.add(self.data.shape, 1), dtype=np.int32)
+        self.index_map = -np.ones(np.add(self.data.shape, 1), dtype=np.int32)
 
         # Dictionary of currently-defined structures:
         structures = {}
@@ -190,7 +190,7 @@ class Dendrogram(object):
             # any one dimension will always land on an extra "padding" cell
             # with value zero added above when index_map was created
             indices_adjacent = [tuple(c) for c in np.add(neighbour_offsets, indices[i])]
-            adjacent = [self.index_map[c] for c in indices_adjacent if self.index_map[c]]
+            adjacent = [self.index_map[c] for c in indices_adjacent if self.index_map[c] > -1]
 
             # Replace adjacent elements by its ancestor
             adjacent = [structures[a].ancestor for a in adjacent]
@@ -288,7 +288,7 @@ class Dendrogram(object):
                 # This leaf is an orphan, so remove all references to it:
                 structures.pop(leaf.idx)
                 self.trunk.remove(leaf)
-                leaf._fill_footprint(self.index_map, 0)
+                leaf._fill_footprint(self.index_map, -1)
 
         # To make the structure.level property fast, we ensure all the structures in the
         # trunk have their level cached as "0"
@@ -397,7 +397,7 @@ class Dendrogram(object):
         coordinates.
         """
         idx = self.index_map[indices]
-        if idx:
+        if idx > -1:
             return self._structures_dict[idx]
         return None
 
@@ -473,7 +473,7 @@ class TreeIndex(object):
         nd = len(index_map.shape)
 
         assert sz == dendrogram.data.size
-        assert index_map.min() >= 0
+        assert index_map.min() >= -1
 
         #map ids to [0, 1, ...] for storage efficiency
         uniq, bins = np.unique(index_map, return_inverse=True)
