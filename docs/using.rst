@@ -148,8 +148,6 @@ is available from the :class:`~astrodendro.structure.Structure` page, while a
 list of attributes and methods for the dendrogram itself is available from the
 :class:`~astrodendro.dendrogram.Dendrogram` page.
 
-.. _saving:
-
 Saving and loading the dendrogram
 ---------------------------------
 
@@ -170,11 +168,9 @@ or::
 
     >>> d = Dendrogram.load_from('my_other_dendrogram.fits')
 
-If you rely on structure IDs (``idx``) for your analysis, you should separate
-the computation and analysis of the dendrogram into two scripts, to ensure that
-the dendrogram is only computed once. Any analysis done in a separate script
-can then be repeated several times, without changing the ID values since the
-dendrogram is not recomputed. For example, you might have a script ``compute.py`` that contains::
+If you wish, you can use this to separate the computation and analysis of the
+dendrogram into two scripts, to ensure that the dendrogram is only computed
+once. For example, you could have a script ``compute.py`` that contains::
 
     from astropy.io import fits
     from astrodendro import Dendrogram
