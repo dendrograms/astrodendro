@@ -296,13 +296,14 @@ class Dendrogram(object):
             structure._level = 0  # See the definition of level() in structure.py
 
         # Save a list of all structures accessible by ID
-        self._structures_dict = structures
+        self._structures_dict = {}
 
         # Re-assign idx and update index map
         sorted_structures = sorted(self, key=lambda s: s.smallest_index)
         for idx, s in enumerate(sorted_structures):
             s.idx = idx
             s._fill_footprint(self.index_map, idx, recursive=False)
+            self._structures_dict[idx] = s
 
         # Remove border from index map
         s = tuple(slice(0, s, 1) for s in data.shape)
