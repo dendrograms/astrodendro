@@ -111,7 +111,7 @@ class Test3DimensionalData(object):
         assert len(d.leaves) == 55
 
         # Now check every pixel in the data cube (this takes a while).
-        st_map = np.zeros(self.data.shape, dtype=np.int)
+        st_map = -np.ones(self.data.shape, dtype=np.int)
         for st in d.all_structures:
             st_map[st.indices(subtree=False)] = st.idx
 
@@ -139,7 +139,7 @@ class Test3DimensionalData(object):
             if structure is not None:
                 assert structure.idx == st_map[coord], "Pixel at {0} is claimed to be part of {1}, but that structure does not contain the coordinate {0}!".format(coord, structure)
             else:
-                assert st_map[coord] == 0
+                assert st_map[coord] == -1
 
 
 class TestNDimensionalData(object):
