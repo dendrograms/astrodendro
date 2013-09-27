@@ -67,6 +67,8 @@ class Structure(object):
             self._values = [x for x in values]
             self._vmin, self._vmax = min(values), max(values)
 
+        self._smallest_index = min(self._indices)
+
         self.idx = idx
 
         self._reset_cache()
@@ -80,14 +82,12 @@ class Structure(object):
         self._tree_index = None
 
     @property
-    def _identifying_pixel(self):
-        """
-        Pixel identifying the structure.
+    def smallest_index(self):
+        return self._smallest_index
 
-        This is the first pixel in the list of pixels belonging to the
-        structure (excluding subtree pixels) when sorted by indices.
-        """
-        return sorted(self._indices)[0]
+    @smallest_index.setter
+    def smallest_index(self, value):
+        self._smallest_index = value
 
     @property
     def parent(self):
@@ -198,6 +198,7 @@ class Structure(object):
         self._indices.append(index)
         self._values.append(value)
         self._vmin, self._vmax = min(value, self.vmin), max(value, self.vmax)
+        self._smallest_index = min(self._smallest_index, index)
         self._reset_cache()
 
     def _merge(self, structure):
@@ -210,6 +211,7 @@ class Structure(object):
         self._indices.extend(structure._indices)
         self._values.extend(structure._values)
         self._vmin, self._vmax = min(structure.vmin, self.vmin), max(structure.vmax, self.vmax)
+        self._smallest_index = min(structure._smallest_index, self._smallest_index)
         self._reset_cache()
 
     ###########################################################################

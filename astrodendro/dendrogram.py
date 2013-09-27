@@ -298,16 +298,18 @@ class Dendrogram(object):
         # Save a list of all structures accessible by ID
         self._structures_dict = structures
 
-        #remove border from index map
+        # Re-assign idx and update index map
+        sorted_structures = sorted(self, key=lambda s: s.smallest_index)
+        for idx, s in enumerate(sorted_structures):
+            s.idx = idx
+            s._fill_footprint(self.index_map, idx, recursive=False)
+
+        # Remove border from index map
         s = tuple(slice(0, s, 1) for s in data.shape)
         self.index_map = self.index_map[s]
 
+        # Add dendrogram index
         self._index()
-
-        # Assign a unique 'clean' ID between 0 and the number of structures minus 1.
-        sorted_structures = sorted(self, key=lambda s: s._identifying_pixel)
-        for clean_id, s in enumerate(sorted_structures):
-            s.clean_id = clean_id
 
         # Return the newly-created dendrogram:
         return self
