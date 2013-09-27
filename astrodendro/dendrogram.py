@@ -510,7 +510,7 @@ class TreeIndex(object):
         npix = offset * 0
         npix_subtree = offset * 0
 
-        index = np.zeros(sz, dtype=np.int)
+        index = -np.ones(sz, dtype=np.int)
         order = dendrogram.all_structures
 
         pos = 0
