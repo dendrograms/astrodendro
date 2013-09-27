@@ -103,14 +103,8 @@ Perseus extinction map, we get::
      <Structure type=leaf idx=733>,
      <Structure type=branch idx=303>]
 
-In the above case, the trunk contains two leaves and two branches. Note that
-the representation of the structures shows the type of structure (``leaf`` or
-``branch``) and also an ID number (``idx``). The ID is a value that may change
-for different calls to :meth:`~astrodendro.dendrogram.Dendrogram.compute`. See
-`Saving and loading the dendrogram`_ for a discussion of how to get around this
-if you will need to write analysis code that depends on ``idx``.
-
-Since ``trunk`` is just a list, you can access items in it with e.g.::
+In the above case, the trunk contains two leaves and two branches. Since
+``trunk`` is just a list, you can access items in it with e.g.::
 
     >>> d.trunk[1]
     <Structure type=branch idx=2152>
