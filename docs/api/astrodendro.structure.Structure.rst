@@ -30,7 +30,7 @@ astrodendro.structure.Structure
       ~Structure.values
       ~Structure.get_npix
       ~Structure.get_peak
-      ~Structure.get_sorted_leaves
+      ~Structure.sorted_leaves
       ~Structure.get_mask
 
    .. rubric:: Methods (detail)
@@ -39,6 +39,5 @@ astrodendro.structure.Structure
    .. automethod:: Structure.values
    .. automethod:: Structure.get_npix
    .. automethod:: Structure.get_peak
-   .. automethod:: Structure.get_sorted_leaves
+   .. automethod:: Structure.sorted_leaves
    .. automethod:: Structure.get_mask
-
