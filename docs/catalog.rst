@@ -75,8 +75,8 @@ Note that the meta-data required depends on the units of the data and whether
 you are working in position-position or position-position-velocity (see
 `Required metadata`_).
 
-Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class to extract properties for the first structure.
-Note that the major/minor axes are beam-deconvolved values, i.e. (FWHM(measured)^2 - FWHM(beam)^2)^(1/2)::
+Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class
+to extract properties for the first structure.  ::
 
     >>> from astrodendro.analysis import PPStatistic
     >>> stat = PPStatistic(d.trunk[0], metadata=metadata)
@@ -134,8 +134,8 @@ meta-data is missing and sensible defaults can be assumed. If no sensible
 defaults can be assumed (e.g. for ``data_unit``) then an exception is raised.
 
 Unlike clumpfind-style algorithms, there is not a one-to-one mapping between
-identifiers and pixels in the map: each pixel may belong to multiple branches
-in the catalog.
+identifiers and pixels in the map: each pixel may belong to multiple nested
+branches in the catalog.
 
 Available statistics
 --------------------
@@ -184,8 +184,6 @@ u.arcsec``):
   ``0``, which corresponds to the third axis in a FITS file (because the
   dimensions are reversed in numpy).
 
-.. this shouldn't really be required: flux density per wavelength should be an
-   allowed output unit
 * ``wavelength`` is **required** if the data are in monochromatic flux
   densities per unit wavelength because the fluxes need to be converted to
   monochromatic flux densities per unit frequency.

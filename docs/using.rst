@@ -56,7 +56,6 @@ passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
   minimum number of pixels required for leaves to remain independent entities.
 
 These options are illustrated graphically in :doc:`algorithm`.
-.. they're not yet, actually...
 
 As an example, we can use a publicly available extinction map of the Perseus
 star-formation region from the The COordinated Molecular Probe Line Extinction
