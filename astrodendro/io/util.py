@@ -116,7 +116,7 @@ def parse_dendrogram(newick, data, index_map):
     for coord in indices:
         coord = tuple(coord)
         idx = d.index_map[coord]
-        if idx:
+        if idx > -1:
             try:
                 flux_by_structure[idx].append(d.data[coord])
                 indices_by_structure[idx].append(coord)

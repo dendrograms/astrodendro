@@ -77,8 +77,8 @@ main branches:
     p.plot_tree(ax, color='black')
 
     # Highlight two branches
-    p.plot_tree(ax, structure=2077, color='red', lw=2, alpha=0.5)
-    p.plot_tree(ax, structure=3262, color='orange', lw=2, alpha=0.5)
+    p.plot_tree(ax, structure=8, color='red', lw=2, alpha=0.5)
+    p.plot_tree(ax, structure=24, color='orange', lw=2, alpha=0.5)
 
     # Add axis labels
     ax.set_xlabel("Structure")
@@ -113,8 +113,8 @@ shown.
     p.plot_contour(ax, color='black')
 
     # Highlight two branches
-    p.plot_contour(ax, structure=2077, lw=3, colors='red')
-    p.plot_contour(ax, structure=3262, lw=3, colors='orange')
+    p.plot_contour(ax, structure=8, lw=3, colors='red')
+    p.plot_contour(ax, structure=24, lw=3, colors='orange')
 
 Plotting contours of structures in third-party packages
 -------------------------------------------------------
@@ -158,7 +158,7 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
 Now let's take the example from `Making plots for publications`_ and try and
 reproduce the same plot. As described there, one way to find interesting
 structures in the dendrogram is to use the `Interactive Visualization`_ tool.
-This tool will give the ID of a structure as an integer (which we call ``idx``).
+This tool will give the ID of a structure as an integer (``idx``).
 
 Because we are starting from this ID rather than a
 :class:`~astrodendro.structure.Structure` object, we need to first get the
@@ -181,22 +181,22 @@ over the colors:
     d = Dendrogram.compute(hdu.data, min_value=2.0, min_delta=1., min_npix=10)
 
     # Find the structures
-    structure_2077 = d[2077]
-    structure_3262 = d[3262]
+    structure_08 = d[8]
+    structure_24 = d[24]
 
     # Extract the masks
-    mask_2077 = structure_2077.get_mask()
-    mask_3262 = structure_3262.get_mask()
+    mask_08 = structure_08.get_mask()
+    mask_24 = structure_24.get_mask()
 
     # Create FITS HDU objects to contain the masks
-    mask_hdu_2077 = fits.PrimaryHDU(mask_2077.astype(int), hdu.header)
-    mask_hdu_3262 = fits.PrimaryHDU(mask_3262.astype(int), hdu.header)
+    mask_hdu_08 = fits.PrimaryHDU(mask_08.astype(int), hdu.header)
+    mask_hdu_24 = fits.PrimaryHDU(mask_24.astype(int), hdu.header)
 
     # Use APLpy to make the final plot
     fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
     fig.show_colorscale(cmap='Blues', vmax=4.0)
     fig.show_contour(hdu, levels=[2.0], colors='black', linewidths=0.5)
-    fig.show_contour(mask_hdu_2077, colors='red', linewidths=0.5)
-    fig.show_contour(mask_hdu_3262, colors='orange', linewidths=0.5)
+    fig.show_contour(mask_hdu_08, colors='red', linewidths=0.5)
+    fig.show_contour(mask_hdu_24, colors='orange', linewidths=0.5)
     fig.tick_labels.set_xformat('dd')
     fig.tick_labels.set_yformat('dd')
