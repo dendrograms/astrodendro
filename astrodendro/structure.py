@@ -13,6 +13,17 @@ def cached_property(func):
     return property(result)
 
 
+def prefix_visit(s, key=None, reverse=False):
+    todo = [s]
+    while todo:
+        st = todo.pop(0)
+        yield st
+        children = st.children
+        if key is not None:
+            children = sorted(children, key=key, reverse=reverse)
+        todo = children + todo
+
+
 class Structure(object):
     """
     A structure in the dendrogram, for example a leaf or a branch.
@@ -77,6 +88,7 @@ class Structure(object):
         self._descendants = None
         self._npix_total = None
         self._peak = None
+        self._peak_subtree = None
         self._tree_index = None
 
     @property
@@ -368,18 +380,26 @@ class Structure(object):
         value : float
             The value of the peak pixel
         """
+        # populate caches without recursion
+        def key(x):
+            return x[1]
+
         if self._peak is None:
-            self._peak = (self._indices[self._values.index(self.vmax)], self.vmax)
-            # Note the above cached value never includes descendants
+            for s in reversed(list(prefix_visit(self))):
+                s._peak = (s._indices[s._values.index(s.vmax)],
+                          s.vmax)
+                if s.is_leaf:
+                    s._peak_subtree = s._peak
+                else:
+                    s._peak_subtree = max((c._peak_subtree
+                                           for c in s.children),
+                                           key=key)
+                    s._peak_subtree = max(s._peak_subtree, s._peak, key=key)
 
         if not subtree:
             return self._peak
-        else:
-            found = self._peak
-            for structure in self.descendants:
-                if found[1] < structure.vmax:
-                    found = structure.get_peak()
-            return found
+
+        return self._peak_subtree
 
     def __repr__(self):
         if self.is_leaf:
@@ -387,7 +407,7 @@ class Structure(object):
         else:
             return "<Structure type=branch idx={0}>".format(self.idx)
 
-    def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
+    def sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
                           reverse=False, subtree=True):
         """
         Return a list of sorted leaves.
@@ -408,16 +428,17 @@ class Structure(object):
         leaves : list
             A list of sorted leaves
         """
-
         if self.is_leaf:
             return [self]
-        leaves = []
-        for structure in sorted(self.children, key=sort_key, reverse=reverse):
-            if structure.is_leaf:
-                leaves.append(structure)
-            elif subtree:
-                leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
-        return leaves
+        if not subtree:
+            return [s for s in sorted(self.children, key=sort_key,
+                                      reverse=reverse)
+                    if s.is_leaf]
+        # flip reverse keyword, so that nodes are properly
+        # sorted after reversed()
+        sts = reversed(list(prefix_visit(self, key=sort_key,
+                                         reverse=not reverse)))
+        return [s for s in sts if s.is_leaf]
 
     def get_mask(self, shape=None, subtree=True):
         """
