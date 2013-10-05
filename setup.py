@@ -41,7 +41,7 @@ class DendroTest(Command):
         raise SystemExit(errno)
 
 
-setup(name='dendro-core',
+setup(name='astrodendro',
       version='0.0.1',
       description='Python package for computation of astronomical dendrograms',
       author='Thomas Robitaille, Chris Beaumont, Braden MacDonald, and Erik Rosolowsky',

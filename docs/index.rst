@@ -57,7 +57,7 @@ Reporting issues
 ----------------
 
 Please help us improve this package by reporting issues via `GitHub
-<https://github.com/dendrograms/dendro-core/issues>`_.
+<https://github.com/dendrograms/astrodendro/issues>`_.
 
 Developers
 ----------

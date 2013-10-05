@@ -13,7 +13,7 @@ For information on installing and using ``astrodendro``, please visit:
 Reporting issues
 ----------------
 
-Please report issues via the [GitHub issue tracker](https://github.com/dendrograms/dendro-core/issues)
+Please report issues via the [GitHub issue tracker](https://github.com/dendrograms/astrodendro/issues)
 
 Credits
 -------
@@ -28,6 +28,6 @@ This package was developed by:
 Build and coverage status
 -------------------------
 
-[![Build Status](https://travis-ci.org/dendrograms/dendro-core.png?branch=master)](https://travis-ci.org/dendrograms/dendro-core)
+[![Build Status](https://travis-ci.org/dendrograms/astrodendro.png?branch=master)](https://travis-ci.org/dendrograms/astrodendro)
 
-[![Coverage Status](https://coveralls.io/repos/dendrograms/dendro-core/badge.png?branch=master)](https://coveralls.io/r/dendrograms/dendro-core?branch=master)
+[![Coverage Status](https://coveralls.io/repos/dendrograms/astrodendro/badge.png?branch=master)](https://coveralls.io/r/dendrograms/astrodendro?branch=master)

@@ -15,7 +15,7 @@ code to ensure that it will work correctly. This only covers changes that will
 documentation to read about new features! Also, only the main
 backward-incompatible changes are mentioned, but for any questions on changes
 not mentioned here, please open an issue on `GitHub
-<https://github.com/dendrograms/dendro-core/issues>`_.
+<https://github.com/dendrograms/astrodendro/issues>`_.
 
 Computing a dendrogram
 ----------------------

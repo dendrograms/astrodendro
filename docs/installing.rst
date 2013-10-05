@@ -17,8 +17,8 @@ Installation
 At this time, there are no stable releases of the core dendrogram code, so you
 will need to install the package from the git repository::
 
-    git clone https://github.com/dendrograms/dendro-core.git
-    cd dendro-core
+    git clone https://github.com/dendrograms/astrodendro.git
+    cd astrodendro
     python setup.py install
 
 You may need to add the ``--user`` option to the last line if you do not have
