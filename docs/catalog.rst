@@ -4,7 +4,7 @@ Computing Dendrogram Statistics
 For 2D position-position (PP) and 3D position-position-velocity (PPV)
 observational data, the :doc:`api/astrodendro.analysis` module can be used to
 compute basic properties for each Dendrogram structure. There are two ways to
-compute statistics - on a structure-by-structure basis, and as a catalog, both
+compute statistics - on a structure-by-structure basis and as a catalog, both
 of which are described below.
 
 Deriving statistics for individual structures
@@ -41,7 +41,7 @@ we can get statistics for the first structure in the trunk, which is a leaf::
     <Quantity 134.61988014787443 deg>
 
 Note that the objects returned are Astropy
-:class:`~astropy.units.quantity.Quantity` objects that are basically variables
+:class:`~astropy.units.quantity.Quantity` objects, which are `numpy arrays`_
 with units attached. For more information, see the `Astropy Documentation
 <http://docs.astropy.org/en/stable/units/index.html>`_.
 
@@ -53,7 +53,7 @@ will use a different data set which is a small section
 (:download:`L1551_scuba_850mu.fits`) of a SCUBA 850 micron map from the `SCUBA
 Legacy Catalog
 <http://www3.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/community/scubalegacy/>`_. This
-map has a pixel scale of 6 arcseconds per pixel, and a circular beam with a
+map has a pixel scale of 6 arcseconds per pixel and a circular beam with a
 full-width at half maximum (FWHM) of 22.9 arcseconds. First, we compute the
 dendrogram as usual::
 
@@ -68,14 +68,15 @@ then we set up a Python dictionary containing the required meta-data::
     >>> metadata = {}
     >>> metadata['data_unit'] = u.Jy / u.beam
     >>> metadata['spatial_scale'] =  6 * u.arcsec
-    >>> metadata['beam_major'] =  22.9 * u.arcsec
-    >>> metadata['beam_minor'] =  22.9 * u.arcsec
+    >>> metadata['beam_major'] =  22.9 * u.arcsec # FWHM
+    >>> metadata['beam_minor'] =  22.9 * u.arcsec # FWHM
 
 Note that the meta-data required depends on the units of the data and whether
 you are working in position-position or position-position-velocity (see
 `Required metadata`_).
 
-Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class to extract properties for the first structure::
+Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class
+to extract properties for the first structure.  ::
 
     >>> from astrodendro.analysis import PPStatistic
     >>> stat = PPStatistic(d.trunk[0], metadata=metadata)
@@ -125,12 +126,16 @@ the same SCUBA data as used above::
     1384   2.06217635837 38.1060171889  19.766115194 ... 27.4446338168 136.429313911 107.190835447
     1504   1.90767291972 8.64476839751 8.09070477357 ... 8.36314946298  68.818705665 120.246719845
 
-The catalog functions return an Astropy :class:`~astropy.table.table.Table` object.
+The catalog function returns an Astropy :class:`~astropy.table.table.Table` object.
 
 Note that :func:`~astrodendro.analysis.pp_catalog` and
 :func:`~astrodendro.analysis.ppv_catalog` generate warnings if required
 meta-data is missing and sensible defaults can be assumed. If no sensible
 defaults can be assumed (e.g. for ``data_unit``) then an exception is raised.
+
+Unlike clumpfind-style algorithms, there is not a one-to-one mapping between
+identifiers and pixels in the map: each pixel may belong to multiple nested
+branches in the catalog.
 
 Available statistics
 --------------------
@@ -152,7 +157,7 @@ Required metadata
 As described above, the metadata needed by the statistic routines depends on
 what statistics are required and on the units of the data. With the exception
 of ``wcs``, all meta-data should be specified as `Astropy Quantity
-<http://docs.astropy.org/en/stable/units/index.html>`_ objects (e.g. ``3 *
+<http://docs.astropy.org/en/stable/units/index.html>`_ objects (e.g., ``3 *
 u.arcsec``):
 
 * ``data_unit`` is **required** in order to compute the flux, so it is needed
@@ -164,7 +169,7 @@ u.arcsec``):
 * ``spatial_scale`` is **required** if the data are in units of surface
   brightness (e.g. ``MJy/sr`` or ``Jy/beam``) so as to be able to convert the
   surface brightness to the flux in each pixel. Even if the data are not in
-  units a surface brightness, the ``spatial_scale`` can **optionally** be
+  units of surface brightness, the ``spatial_scale`` can **optionally** be
   specified, causing any derived size (e.g. ``major_sigma``) to be in the
   correct units instead of in pixels.
 
@@ -176,14 +181,14 @@ u.arcsec``):
 
 * ``vaxis`` can **optionally** be specified when using 3-dimensional data to
   indicate which dimension corresponds to the velocity. By default, this is
-  ``0``, which corresponds to the third axis in e.g. a FITS file (because the
-  dimensions are reversed in Numpy).
+  ``0``, which corresponds to the third axis in a FITS file (because the
+  dimensions are reversed in numpy).
 
 * ``wavelength`` is **required** if the data are in monochromatic flux
-  densities per unit wavelength since the fluxes need to be converted to
+  densities per unit wavelength because the fluxes need to be converted to
   monochromatic flux densities per unit frequency.
 
-* ``wcs`` can **optionally** be specified, and should be an
+* ``wcs`` can **optionally** be specified and should be a
   :class:`~astropy.wcs.WCS` instance. If specified, it allows ``x_cen``,
   ``y_cen``, and ``v_cen`` to be in the correct world coordinates rather than
   in pixel coordinates.
@@ -233,3 +238,6 @@ As shown above, the :class:`~astrodendro.analysis.PPStatistic` and
 :class:`~astrodendro.analysis.PPVStatistic` classes have a
 :meth:`~astrodendro.analysis.PPStatistic.to_mpl_ellipse` method to convert the
 first and second moments of the structures into schematic ellipses.
+
+
+.. _numpy arrays: http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html

@@ -1,5 +1,5 @@
-Core algorithm
-==============
+An Illustrated Description of the Core Algorithm
+================================================
 
 This page contains an explanation of the algorithm behind the Python dendrogram
 code. This is demonstrated with a step by step example of how the algorithm
@@ -10,7 +10,7 @@ any number of dimensions.
 Basic example
 -------------
 
-The following diagram shows a one-dimensional datasaet (with flux versus
+The following diagram shows a one-dimensional dataset (with flux versus
 position) in the solid black line, with the corresponding dendrogram for that
 dataset overplotted in green:
 
@@ -67,11 +67,11 @@ Setting a minimum value (``min_value``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Most real-life datasets are likely to contain some level of noise, and below a
-certain value, there is no point in constructing a tree since it will not be
-measuring anything physical. By default, the minimum value is set to minus
-infinity, which means all pixels are added to the tree. However, you will very
-likely want to change this so that only significant features above the noise
-are included.
+certain value of the noise, there is no point in expanding the tree since it
+will not be measuring anything physical; new branches will be `noise spikes.'
+By default, the minimum value is set to negative infinity, which means all
+pixels are added to the tree. However, you will very likely want to change this
+so that only significant features above the noise are included.
 
 Let's go back to the original data. We have left the outline of the complete
 tree for reference. We now set a minimum value, which we show below with the
@@ -88,8 +88,8 @@ part of the tree since it is below the minimum specified value.
 Setting a minimum significance for structures (``min_delta``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If our data are noisy, we also want to avoid including local maxima that - while
-above the minimum absolute value specified above - are simply due to the noise,
+If our data are noisy, we also want to avoid including *local* maxima that - while
+above the minimum absolute value specified above - are only identified because of noise,
 so we can also define a minimum height required for a structure to be retained.
 This is the ``min_delta`` parameter in
 :meth:`~astrodendro.dendrogram.Dendrogram.compute`. We show the value
@@ -98,7 +98,7 @@ corresponding to the current value being considered plus this minimum height:
 .. image:: algorithm/small_delta_step1.png
    :align: center
 
-In this case, ``min_delta`` is set to 0.1. As we now move down in flux as
+In this case, ``min_delta`` is set to 0.01. As we now move down in flux as
 before, the structure first appears red. This indicates that the structure is
 not yet part of the tree:
 
@@ -118,7 +118,7 @@ large enough to be significant, so the tree is the same as before:
    :align: center
 
 We can now repeat this experiment, but this time, with a larger minimum height
-for structures to be retained (``min_delta=0.25``). Once we reach the point
+for structures to be retained (``min_delta=0.025``). Once we reach the point
 where the second peak would have been merged, we can see that it is not high
 enough above the merging point to be considered an independent structure:
 
