@@ -21,7 +21,7 @@ two-dimensional map of a hierarchical structure that looks like:
 the equivalent dendrogram/tree representation would look like:
 
 .. image:: schematic_tree.png
-   :width: 350px
+   :width: 400px
    :align: center
 
 A dendrogram is composed of two types of structures: *branches*, which are
