@@ -58,15 +58,15 @@ These options are illustrated graphically in :doc:`algorithm`.
 As an example, we can use a publicly available extinction map of the Perseus
 star-formation region from the The COordinated Molecular Probe Line Extinction
 Thermal Emission (COMPLETE) Survey of Star Forming Regions
-(:download:`PerA_Extn2MASS_F_Gal.fits`, originally obtained from
+(originally obtained from
 `<http://hdl.handle.net/10904/10080>`_). The units of the map are magnitudes of
 extinction, and we want to make a dendrogram of all structures above a minimum
 value of 2 magnitudes, and we only consider leaves with at least 10 pixels and
 which have a peak to base different larger than one magnitude of extinction::
 
-    >>> from astrodendro import Dendrogram
+    >>> from astrodendro import Dendrogram, load_perseus
     >>> from astropy.io import fits
-    >>> image = fits.getdata('PerA_Extn2MASS_F_Gal.fits')
+    >>> image = load_perseus().data
     >>> d = Dendrogram.compute(image, min_value=2.0, min_delta=1., min_npix=10)
 
 By default, the computation will be silent, but for large dendrograms, it can
