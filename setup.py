@@ -42,7 +42,7 @@ class DendroTest(Command):
 
 
 setup(name='astrodendro',
-      version='0.0.1',
+      version='0.1.0rc1',
       description='Python package for computation of astronomical dendrograms',
       author='Thomas Robitaille, Chris Beaumont, Braden MacDonald, and Erik Rosolowsky',
       author_email='braden@bradenmacdonald.com',
