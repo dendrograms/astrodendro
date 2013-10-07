@@ -40,10 +40,19 @@ we can get statistics for the first structure in the trunk, which is a leaf::
     >>> stat.position_angle  # position angle on the sky
     <Quantity 134.61988014787443 deg>
 
-Note that the objects returned are Astropy
-:class:`~astropy.units.quantity.Quantity` objects, which are `numpy arrays`_
-with units attached. For more information, see the `Astropy Documentation
-<http://docs.astropy.org/en/stable/units/index.html>`_.
+.. note:: The objects returned are Astropy :class:`~astropy.units.quantity.Quantity`
+          objects, which are Numpy scalars or arrays with units attached. For more
+          information, see the `Astropy Documentation
+          <http://docs.astropy.org/en/stable/units/index.html>`_. In most cases,
+          you should be able to use these objects directly, but if for any
+          reason you need to access the underlying value, then you can do so
+          with the ``value`` and ``unit`` attributes::
+
+              >>> q = 1.882980574564531 * u.pix
+              >>> q.unit
+              Unit("pix")
+              >>> q.value
+              1.882980574564531
 
 Specifying meta-data when computing statistics
 ----------------------------------------------
@@ -240,4 +249,3 @@ As shown above, the :class:`~astrodendro.analysis.PPStatistic` and
 first and second moments of the structures into schematic ellipses.
 
 
-.. _numpy arrays: http://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html
