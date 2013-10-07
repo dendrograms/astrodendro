@@ -1,0 +1,4 @@
+include runtests.py
+recursive-include astrodendro/tests *.npz
+recursive-include astrodendro/tests/benchmark_data *.fits
+recursive-include docs *
