@@ -68,7 +68,7 @@ Setting a minimum value (``min_value``)
 
 Most real-life datasets are likely to contain some level of noise, and below a
 certain value of the noise, there is no point in expanding the tree since it
-will not be measuring anything physical; new branches will be `noise spikes.'
+will not be measuring anything physical; new branches will be 'noise spikes'.
 By default, the minimum value is set to negative infinity, which means all
 pixels are added to the tree. However, you will very likely want to change this
 so that only significant features above the noise are included.
