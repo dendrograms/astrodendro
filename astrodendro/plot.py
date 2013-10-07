@@ -6,7 +6,7 @@ import numpy as np
 class DendrogramPlotter(object):
 
     """
-    A class to plot a dendrogram object
+    A class to plot a dendrogram object.
     """
 
     def __init__(self, dendrogram):
@@ -17,7 +17,7 @@ class DendrogramPlotter(object):
 
     def set_custom_positions(self, custom_position):
         """
-        Manually set the positon on the structures for plotting
+        Manually set the positon on the structures for plotting.
 
         Parameters
         ----------

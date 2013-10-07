@@ -6,7 +6,7 @@ from astropy.constants import si
 
 def quantity_sum(quantities):
     """
-    In Astropy 0.3, np.sum will do the right thing for quantities, but in the mean time we need a workaround
+    In Astropy 0.3, np.sum will do the right thing for quantities, but in the mean time we need a workaround.
     """
     return np.sum(quantities.value) * quantities.unit
 

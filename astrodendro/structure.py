@@ -126,14 +126,14 @@ class Structure(object):
     @property
     def is_leaf(self):
         """
-        Whether the present structure is a leaf
+        Whether the present structure is a leaf.
         """
         return not self.children
 
     @property
     def is_branch(self):
         """
-        Whether the present structure is a branch
+        Whether the present structure is a branch.
         """
         return not self.is_leaf
 
@@ -182,14 +182,14 @@ class Structure(object):
     @property
     def vmin(self):
         """
-        The minimum value of pixels belonging to the branch (excluding sub-structure)
+        The minimum value of pixels belonging to the branch (excluding sub-structure).
         """
         return self._vmin
 
     @property
     def vmax(self):
         """
-        The maximum value of pixels belonging to the branch (excluding sub-structure)
+        The maximum value of pixels belonging to the branch (excluding sub-structure).
         """
         return self._vmax
 

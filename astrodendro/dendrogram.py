@@ -19,8 +19,9 @@ def _sorted_by_idx(d):
 
 class Dendrogram(object):
     """
-    This class is used to compute and represent a dendrogram for a given
-    dataset. To create a dendrogram from an array, use the
+    This class is used to compute and represent a dendrogram for a given dataset.
+
+    To create a dendrogram from an array, use the
     :meth:`~astrodendro.dendrogram.Dendrogram.compute` class method::
 
         >>> from astrodendro import Dendrogram
@@ -378,7 +379,7 @@ class Dendrogram(object):
     @property
     def leaves(self):
         """
-        A flattened list of all leaves in the dendrogram
+        A flattened list of all leaves in the dendrogram.
         """
         return [i for i in six.itervalues(self._structures_dict) if i.is_leaf]
 
@@ -458,8 +459,8 @@ class Dendrogram(object):
 class TreeIndex(object):
     def __init__(self, dendrogram):
         """
-        Object that efficiently extracts
-        the locations of Structures in an ndarray
+        Object that efficiently extracts the locations of Structures in an
+        ndarray.
 
         Parameters
         ----------
@@ -536,7 +537,7 @@ class TreeIndex(object):
 
     def indices(self, sid, subtree=True):
         """
-        Return pixel indices associated with a dendrogram structure
+        Return pixel indices associated with a dendrogram structure.
 
         Returns the pixels in the original dendrogram array
         which are associated with a particular structure id.

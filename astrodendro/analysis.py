@@ -40,8 +40,8 @@ class ScalarStatistic(object):
     #This class does all of the heavy computation
     def __init__(self, values, indices):
         """
-        Compute pixel-level statistics from
-        a scalar field, sampled at specific locations
+        Compute pixel-level statistics from a scalar field, sampled at specific
+        locations.
 
         Parameters
         ----------
@@ -82,7 +82,8 @@ class ScalarStatistic(object):
         return result
 
     def mom2_along(self, direction):
-        """Intensity-weighted variance/covariance along 1 or more directions
+        """
+        Intensity-weighted variance/covariance along 1 or more directions.
 
         Parameters
         ----------
@@ -91,8 +92,9 @@ class ScalarStatistic(object):
 
         Returns
         -------
-        The variance (or co-variance matrix) of the data along
-        the specified direction(s).
+        result : array
+            The variance (or co-variance matrix) of the data along the
+            specified direction(s).
         """
         w = np.atleast_2d(direction).astype(np.float)
         for row in w:
@@ -109,8 +111,11 @@ class ScalarStatistic(object):
 
         Returns
         -------
-        Ordered list of ndarrays
+        result : tuple
+            Ordered tuple of ndarrays
 
+        Notes
+        -----
         Each array is a normalized direction vector. The arrays
         are sorted in decreasing order of elongation of the data
         """
@@ -132,8 +137,11 @@ class ScalarStatistic(object):
 
         Returns
         --------
-        tuple of arrays (nnew items)
+        result : tuple
+            Tuple of arrays (nnew items)
 
+        Notes
+        -----
         The ordered principal axes in the new space
         """
         mom2 = self.mom2_along(axes)
@@ -143,7 +151,9 @@ class ScalarStatistic(object):
         return tuple(v[:, o] for o in order[::-1])
 
     def count(self):
-        """Number of elements in the dataset"""
+        """
+        Number of elements in the dataset.
+        """
         return self.values.size
 
     def surface_area(self):
@@ -165,7 +175,8 @@ class VectorStatistic(object):
 
 
 class Metadata(object):
-    """A descriptor to wrap around metadata dictionaries
+    """
+    A descriptor to wrap around metadata dictionaries.
 
     Lets classes reference self.x instead of self.metadata['x'],
     """
@@ -466,7 +477,7 @@ class PPStatistic(SpatialBase):
     @property
     def flux(self):
         """
-        Integrated flux
+        Integrated flux.
         """
         from .flux import compute_flux
         return compute_flux(self.stat.mom0() * self.data_unit,
@@ -516,7 +527,7 @@ class PPPStatistic(object):
 
     def __init__(self, rhostat, vstat, metadata=None):
         """
-        Derive properties from PPP density and velocity fields
+        Derive properties from PPP density and velocity fields.
 
         This is not currently implemented
 
@@ -613,7 +624,7 @@ def _make_catalog(structures, fields, metadata, statistic):
 def ppv_catalog(structures, metadata, fields=None, verbose=True):
     """
     Iterate over a collection of position-position-velocity (PPV) structures,
-    extracting several quantities from each, and building a catalog
+    extracting several quantities from each, and building a catalog.
 
     Parameters
     ----------
