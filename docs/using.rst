@@ -26,12 +26,12 @@ interested in making a dendrogram from data in a FITS file, you can do:
 
 .. There should probably be a stronger/bolder warning against doing this
    example blindly because it will create a LOT of dendro branches.
-The computation may take anywhere between less than a second to several
-minutes depending on the size and complexity of the data. By default, the
-above command will compute a dendrogram where there are as many levels in the
-dendrograms as pixels, which is likely not what you are interested in. There
-are several options to control the computation of the dendrogram and can be
-passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
+   The computation may take anywhere between less than a second to several
+   minutes depending on the size and complexity of the data. By default, the
+   above command will compute a dendrogram where there are as many levels in the
+   dendrograms as pixels, which is likely not what you are interested in. There
+   are several options to control the computation of the dendrogram and can be
+   passed to the :meth:`~astrodendro.dendrogram.Dendrogram.compute` method:
 
 * ``min_value``: the minimum value to consider in the dataset - any value
   lower than this will not be considered in the dendrogram. If you are working
