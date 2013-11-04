@@ -2,10 +2,7 @@ Astronomical Dendrograms in Python
 ==================================
 
 The ``astrodendro`` package provides an easy way to compute dendrograms of
-observed or simulated Astronomical data in Python. This package is still under
-development, although a first release will be available in the near future.
-You can already try out the existing package, but we recommend that you get in
-contect with the developers to be kept up-to-date with changes and bug fixes.
+observed or simulated Astronomical data in Python.
 
 About dendrograms
 -----------------
@@ -66,6 +63,7 @@ This package was developed by:
 
 * Thomas Robitaille
 * Chris Beaumont
+* Adam Ginsburg
 * Braden MacDonald
 * Erik Rosolowsky
 
