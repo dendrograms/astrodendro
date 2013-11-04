@@ -20,10 +20,11 @@ Credits
 
 This package was developed by:
 
-* Braden MacDonald
-* Chris Beaumont
-* Thomas Robitaille
-* Erik Rosolowsky
+* [Braden MacDonald](https://github.com/bradenmacdonald)
+* [Chris Beaumont](https://github.com/ChrisBeaumont)
+* [Thomas Robitaille](https://github.com/astrofrog)
+* [Adam Ginsburg](https://github.com/keflavich)
+* [Erik Rosolowsky](https://github.com/low-sky)
 
 Build and coverage status
 -------------------------
