@@ -232,6 +232,10 @@ class Structure(object):
 
     @property
     def height(self):
+        """
+        This is defined as the minimum value in the children structures, or the
+        peak value of the present structure if it has no children.
+        """
         return min(c.vmin for c in self.children) if self.children else self.vmax
 
     @property
