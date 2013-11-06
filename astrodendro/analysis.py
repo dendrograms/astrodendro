@@ -404,7 +404,9 @@ class PPVStatistic(SpatialBase):
     @property
     def flux(self):
         """
-        The integrated flux of the structure, in Jy.
+        The integrated flux of the structure, in Jy (note that this does not
+        include any kind of background subtraction, and is just a plain sum of
+        the values in the structure, converted to Jy).
         """
         from .flux import compute_flux
         return compute_flux(self.stat.mom0() * self.data_unit,
@@ -477,7 +479,9 @@ class PPStatistic(SpatialBase):
     @property
     def flux(self):
         """
-        Integrated flux.
+        The integrated flux of the structure, in Jy (note that this does not
+        include any kind of background subtraction, and is just a plain sum of
+        the values in the structure, converted to Jy).
         """
         from .flux import compute_flux
         return compute_flux(self.stat.mom0() * self.data_unit,
