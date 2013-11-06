@@ -85,7 +85,7 @@ you are working in position-position or position-position-velocity (see
 `Required metadata`_).
 
 Finally, as before, we use the :class:`~astrodendro.analysis.PPStatistic` class
-to extract properties for the first structure.  ::
+to extract properties for the first structure::
 
     >>> from astrodendro.analysis import PPStatistic
     >>> stat = PPStatistic(d.trunk[0], metadata=metadata)
@@ -100,7 +100,9 @@ to extract properties for the first structure.  ::
 
 Note that the major and minor sigma on the sky of the structures are now in
 arcseconds since the spatial scale was specified, and the flux (density) has
-been converted from Jy/beam to Jy.
+been converted from Jy/beam to Jy. Note also that the flux does not include any
+kind of background subtraction, and is just a plain sum of the values in the
+structure, converted to Jy
 
 Making a catalog
 ----------------
