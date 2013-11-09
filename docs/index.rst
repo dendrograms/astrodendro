@@ -50,11 +50,12 @@ Documentation
    advanced.rst
    migration.rst
 
-Reporting issues
-----------------
+Reporting issues and getting help
+---------------------------------
 
 Please help us improve this package by reporting issues via `GitHub
-<https://github.com/dendrograms/astrodendro/issues>`_.
+<https://github.com/dendrograms/astrodendro/issues>`_. You can also open an
+issue if you need help with using the package.
 
 Developers
 ----------
