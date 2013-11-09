@@ -55,7 +55,7 @@ tool::
 
 and then use this to make the plot you need. The following complete example
 shows how to make a plot of the dendrogram of the extinction map of the Perseus
-region (introduced in :doc:`using`) using the
+region (introduced in :doc:`using`) using
 :meth:`~astrodendro.plot.DendrogramPlotter.plot_tree`, highlighting two of the
 main branches:
 
