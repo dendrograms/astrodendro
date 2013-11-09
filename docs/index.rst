@@ -76,6 +76,19 @@ providing valuable feedback:
 
 * Katharine Johnston
 
+Citing astrodendro
+------------------
+
+If you make use of this package in a publication, please consider adding the
+following acknowledgment:
+
+*This research made use of astrodendro, a Python package to compute dendrograms
+of Astronomical data (http://www.dendrograms.org/)*
+
+If you make use of the analysis code (:doc:`catalog`) or read/write FITS files,
+please also consider adding an acknowledgment for Astropy (see
+`<http://www.astropy.org>`_ for the latest recommended citation).
+
 Public API
 ----------
 
