@@ -6,9 +6,7 @@ The aim of this module is to provide an easy way to compute dendrograms of obser
 Documentation
 -------------
 
-For information on installing and using ``astrodendro``, please visit:
-
-[http://www.dendrograms.org](http://www.dendrograms.org)
+For information on installing and using ``astrodendro``, please visit [http://www.dendrograms.org](http://www.dendrograms.org)
 
 Reporting issues
 ----------------
