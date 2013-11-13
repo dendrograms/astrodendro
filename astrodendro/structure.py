@@ -283,7 +283,7 @@ class Structure(object):
 
         Parameters
         ----------
-        array : `~numpy.ndarray`
+        array : :class:`~numpy.ndarray`
             The array to write the footprint to
         recursive : bool
             Whether to also add the footprint for the sub-structures
@@ -470,7 +470,7 @@ class Structure(object):
 
         Returns
         -------
-        mask : `~numpy.ndarray`
+        mask : :class:`~numpy.ndarray`
             The mask outlining the structure (``False`` values are used outside
             the structure, and ``True`` values inside).
         """

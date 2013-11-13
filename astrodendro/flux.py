@@ -19,21 +19,21 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
 
     Parameters
     ----------
-    input_quantities : `~astropy.units.quantity.Quantity` instance
-        A `~astropy.units.quantity.Quantity` instance containing an array of
+    input_quantities : :class:`~astropy.units.quantity.Quantity` instance
+        A `astropy.units.quantity.Quantity` instance containing an array of
         flux values to be summed.
-    output_unit : `~astropy.units.core.Unit` instance
+    output_unit : :class:`~astropy.units.core.Unit` instance
         The final unit to give the total flux in (should be equivalent to Jy)
-    wavelength : `~astropy.units.quantity.Quantity` instance
+    wavelength : :class:`~astropy.units.quantity.Quantity` instance
         The wavelength of the data (required if converting e.g.
         ergs/cm^2/s/micron to Jy)
-    spatial_scale : `~astropy.units.quantity.Quantity` instance
+    spatial_scale : :class:`~astropy.units.quantity.Quantity` instance
         The pixel scale of the data (should be an angle)
-    velocity_scale : `~astropy.units.quantity.Quantity` instance
+    velocity_scale : :class:`~astropy.units.quantity.Quantity` instance
         The pixel scale of the data (should be a velocity)
-    beam_major : `~astropy.units.quantity.Quantity` instance
+    beam_major : :class:`~astropy.units.quantity.Quantity` instance
         The beam major full width at half_maximum (FWHM)
-    beam_minor : `~astropy.units.quantity.Quantity` instance
+    beam_minor : :class:`~astropy.units.quantity.Quantity` instance
         The beam minor full width at half_maximum (FWHM)
     """
 

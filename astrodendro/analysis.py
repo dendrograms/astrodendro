@@ -345,7 +345,7 @@ class PPVStatistic(SpatialBase):
 
     Parameters
     ----------
-    structure : `~astrodendro.structure.Structure` instance
+    structure : :class:`~astrodendro.structure.Structure` instance
         The structure to compute the statistics for
     metadata : dict
          Key-value pairs of metadata
@@ -457,7 +457,7 @@ class PPStatistic(SpatialBase):
 
     Parameters
     ----------
-    structure : `~astrodendro.structure.Structure` instance
+    structure : :class:`~astrodendro.structure.Structure` instance
         The structure to compute the statistics for
     metadata : dict
          Key-value pairs of metadata
