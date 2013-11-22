@@ -81,7 +81,7 @@ class DendrogramPlotter(object):
 
         Parameters
         ----------
-        ax : `matplotlib.axes.Axes` instance
+        ax : :class:`~matplotlib.axes.Axes` instance
             The Axes inside which to plot the dendrogram
         structure : int or `~astrodendro.structure.Structure`, optional
             If specified, only plot this structure. This can be either the
@@ -117,7 +117,7 @@ class DendrogramPlotter(object):
 
         Parameters
         ----------
-        ax : `matplotlib.axes.Axes` instance
+        ax : :class:`~matplotlib.axes.Axes` instance
             The Axes inside which to plot the dendrogram
         structure : int or `~astrodendro.structure.Structure`, optional
             If specified, only plot this structure. This can be either the
@@ -164,12 +164,12 @@ class DendrogramPlotter(object):
 
         Parameters
         ----------
-        structure : `~astrodendro.structure.Structure`
+        structure : :class:`~astrodendro.structure.Structure`
             The structure to plot. If not set, the whole tree will be plotted.
 
         Returns
         -------
-        lines : `astrodendro.plot.StructureCollection`
+        lines : :class:`~astrodendro.plot.StructureCollection`
             The lines (sub-class of LineCollection) which can be directly used in Matplotlib
 
         Notes

@@ -79,7 +79,7 @@ class Dendrogram(object):
 
         Parameters
         ----------
-        data : `~numpy.ndarray`
+        data : :class:`numpy.ndarray`
             The n-dimensional array to compute the dendrogram for
         min_value : float, optional
             The minimum data value to go down to when computing the
