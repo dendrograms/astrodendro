@@ -106,8 +106,10 @@ class BasicDendrogramViewer(object):
             self.slice = int(round(pos))
             self.image.set_array(self.array[self.slice, :,:])
 
-        self.remove_contour()
-        self.update_contour()
+        # This is gonna have to be a little more nuanced, because we'll want to
+        # update contours for ALL of the currently-defined Input Keys.
+        self.remove_contour(input_key)
+        self.update_contour(input_key)
 
         self.fig.canvas.draw()
 
@@ -129,20 +131,18 @@ class BasicDendrogramViewer(object):
 
     def select_from_map(self, event):
 
-        if isinstance(event, matplotlib.backend_bases.MouseEvent):
-            print "Mouse button pressed: ",
-            print event.button
-            input_key = event.button
-        elif isinstance(event, matplotlib.backend_bases.KeyEvent):
-            print "Key pressed: "
-            print event.key
-            input_key = event.key
-
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
 
         if event.inaxes is self.ax1:
+
+            if isinstance(event, matplotlib.backend_bases.MouseEvent):
+                print "Mouse button pressed: ", event.button
+                input_key = event.button
+            elif isinstance(event, matplotlib.backend_bases.KeyEvent):
+                print "Key pressed: ", event.key
+                input_key = event.key
 
             # Find pixel co-ordinates of click
             ix = int(round(event.xdata))
@@ -162,13 +162,12 @@ class BasicDendrogramViewer(object):
 
     def line_picker(self, event):
 
-        print "Mouse button pressed: ",
-        print event.mouseevent.button
-        input_key = event.mouseevent.button
-
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
+
+        print "Mouse button pressed: ", event.mouseevent.button
+        input_key = event.mouseevent.button
 
         # event.ind gives the indices of the paths that have been selected
 
@@ -195,11 +194,11 @@ class BasicDendrogramViewer(object):
     def select(self, structure, input_key=1):
 
         # Remove previously selected collection
-        if self.selected_lines[input_key] is not None:
+        if input_key in self.selected_lines:
             self.ax2.collections.remove(self.selected_lines[input_key])
             self.selected_lines[input_key] = None
 
-        self.remove_contour()
+        self.remove_contour(input_key)
 
         if structure is None:
             self.selected_label.set_text("No structure selected")
@@ -223,15 +222,15 @@ class BasicDendrogramViewer(object):
 
     def remove_contour(self, input_key=1):
 
-        if self.selected_contour[input_key] is not None:
+        if input_key in self.selected_contour:
             for collection in self.selected_contour[input_key].collections:
                 self.ax1.collections.remove(collection)
             self.selected_contour[input_key] = None
 
     def update_contour(self, input_key=1):
 
-        if self.selected[input_key] is not None:
-            mask = self.selected.get_mask(subtree=True)
+        if input_key in self.selected:
+            mask = self.selected[input_key].get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :,:]
             self.selected_contour[input_key] = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
