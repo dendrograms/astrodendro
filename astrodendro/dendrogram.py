@@ -396,8 +396,16 @@ class Dendrogram(object):
 
         This will return None if no structure includes the specified pixel
         coordinates.
+
+        Parameters
+        ----------
+        indices: tuple
+            The pixel coordinates of the structure of interest
         """
-        idx = self.index_map[indices]
+        if len(indices) != self.index_map.ndim:
+            raise ValueError("Must have {0:d} indices for data with {0:d} dimensions.".format(self.index_map.ndim))
+        # Needs to be a tuple; indexing with a list or array will return multiple
+        idx = self.index_map[tuple(indices)]
         if idx > -1:
             return self._structures_dict[idx]
         return None
