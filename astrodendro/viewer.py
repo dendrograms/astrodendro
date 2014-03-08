@@ -196,7 +196,7 @@ class BasicDendrogramViewer(object):
         # Remove previously selected collection
         if input_key in self.selected_lines:
             self.ax2.collections.remove(self.selected_lines[input_key])
-            self.selected_lines[input_key] = None
+            del self.selected_lines[input_key]
 
         self.remove_contour(input_key)
 
@@ -225,7 +225,7 @@ class BasicDendrogramViewer(object):
         if input_key in self.selected_contour:
             for collection in self.selected_contour[input_key].collections:
                 self.ax1.collections.remove(collection)
-            self.selected_contour[input_key] = None
+            del self.selected_contour[input_key]
 
     def update_contour(self, input_key=1):
 
