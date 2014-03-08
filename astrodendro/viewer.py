@@ -1,6 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
 import numpy as np
+import matplotlib.backend_bases
 from .plot import DendrogramPlotter
 
 
@@ -94,6 +95,7 @@ class BasicDendrogramViewer(object):
 
         self.fig.canvas.mpl_connect('pick_event', self.line_picker)
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
+        self.fig.canvas.mpl_connect('key_press_event', self.select_from_map)
 
         plt.show()
 
@@ -127,6 +129,15 @@ class BasicDendrogramViewer(object):
 
     def select_from_map(self, event):
 
+        if isinstance(event, matplotlib.backend_bases.MouseEvent):
+            print "Mouse button pressed: ",
+            print event.button
+            input_key = event.button
+        elif isinstance(event, matplotlib.backend_bases.KeyEvent):
+            print "Key pressed: "
+            print event.key
+            input_key = event.key
+
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
@@ -150,6 +161,10 @@ class BasicDendrogramViewer(object):
             event.canvas.draw()
 
     def line_picker(self, event):
+
+        print "Mouse button pressed: ",
+        print event.mouseevent.button
+        input_key = event.mouseevent.button
 
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
