@@ -21,9 +21,9 @@ class BasicDendrogramViewer(object):
         self.lines = self.plotter.get_lines()
 
         # Define the currently selected subtree
-        self.selected = None
-        self.selected_lines = None
-        self.selected_contour = None
+        self.selected = {}
+        self.selected_lines = {}
+        self.selected_contour = {}
 
         # Initiate plot
         import matplotlib.pyplot as plt
@@ -155,7 +155,7 @@ class BasicDendrogramViewer(object):
 
             # Select the structure
             structure = self.dendrogram.structure_at(indices)
-            self.select(structure)
+            self.select(structure, input_key=input_key)
 
             # Re-draw
             event.canvas.draw()
@@ -187,17 +187,17 @@ class BasicDendrogramViewer(object):
             self.slice_slider.set_val(peak_index[0][0])
 
         # Select the structure
-        self.select(structure)
+        self.select(structure, input_key=input_key)
 
         # Re-draw
         event.canvas.draw()
 
-    def select(self, structure):
+    def select(self, structure, input_key=1):
 
         # Remove previously selected collection
-        if self.selected_lines is not None:
-            self.ax2.collections.remove(self.selected_lines)
-            self.selected_lines = None
+        if self.selected_lines[input_key] is not None:
+            self.ax2.collections.remove(self.selected_lines[input_key])
+            self.selected_lines[input_key] = None
 
         self.remove_contour()
 
@@ -206,32 +206,32 @@ class BasicDendrogramViewer(object):
             self.fig.canvas.draw()
             return
 
-        self.selected = structure
+        self.selected[input_key] = structure
 
         self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
-        self.selected_lines = self.plotter.get_lines(structure=structure)
-        self.selected_lines.set_color('red')
-        self.selected_lines.set_linewidth(2)
-        self.selected_lines.set_alpha(0.5)
+        self.selected_lines[input_key] = self.plotter.get_lines(structure=structure)
+        self.selected_lines[input_key].set_color('red')
+        self.selected_lines[input_key].set_linewidth(2)
+        self.selected_lines[input_key].set_alpha(0.5)
 
         # Add to axes
-        self.ax2.add_collection(self.selected_lines)
+        self.ax2.add_collection(self.selected_lines[input_key])
 
         self.update_contour()
 
-    def remove_contour(self):
+    def remove_contour(self, input_key=1):
 
-        if self.selected_contour is not None:
-            for collection in self.selected_contour.collections:
+        if self.selected_contour[input_key] is not None:
+            for collection in self.selected_contour[input_key].collections:
                 self.ax1.collections.remove(collection)
-            self.selected_contour = None
+            self.selected_contour[input_key] = None
 
-    def update_contour(self):
+    def update_contour(self, input_key=1):
 
-        if self.selected is not None:
+        if self.selected[input_key] is not None:
             mask = self.selected.get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :,:]
-            self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
+            self.selected_contour[input_key] = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
