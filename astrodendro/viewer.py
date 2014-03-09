@@ -27,6 +27,7 @@ class BasicDendrogramViewer(object):
         self.selected_lines = {}
         self.selected_contour = {}
 
+        # should not be tied to any details of what's being selected/deselecting
         self.colordict = defaultdict(lambda: 'red')
         self.colordict[1] = 'red'
         self.colordict[2] = 'green'
@@ -106,6 +107,7 @@ class BasicDendrogramViewer(object):
 
         plt.show()
 
+# seems to only operate on the "current" contour? why is that?
     def update_slice(self, pos=None):
         if self.array.ndim == 2:
             self.image.set_array(self.array)
@@ -136,6 +138,8 @@ class BasicDendrogramViewer(object):
         self.image.set_clim(*self._clim)
         self.fig.canvas.draw()
 
+# maybe we should explicitly clear old selections just like is what happens in the picker method?
+# or that's probably handled in select()?
     def select_from_map(self, event):
 
         # Only do this if no tools are currently selected
