@@ -1,5 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
+from collections import defaultdict
+
 import numpy as np
 import matplotlib.backend_bases
 from .plot import DendrogramPlotter
@@ -24,6 +26,11 @@ class BasicDendrogramViewer(object):
         self.selected = {}
         self.selected_lines = {}
         self.selected_contour = {}
+
+        self.colordict = defaultdict(lambda: 'red')
+        self.colordict[1] = 'red'
+        self.colordict[2] = 'green'
+        self.colordict[3] = 'magenta'
 
         # Initiate plot
         import matplotlib.pyplot as plt
@@ -211,7 +218,7 @@ class BasicDendrogramViewer(object):
 
         # Get collection for this substructure
         self.selected_lines[input_key] = self.plotter.get_lines(structure=structure)
-        self.selected_lines[input_key].set_color('red')
+        self.selected_lines[input_key].set_color(self.colordict[input_key])
         self.selected_lines[input_key].set_linewidth(2)
         self.selected_lines[input_key].set_alpha(0.5)
 
@@ -244,4 +251,5 @@ class BasicDendrogramViewer(object):
                 mask = self.selected[input_key].get_mask(subtree=True)
                 if self.array.ndim == 3:
                     mask = mask[self.slice, :,:]
-                self.selected_contour[input_key] = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
+                self.selected_contour[input_key] = self.ax1.contour(mask, 
+                    colors=self.colordict[input_key], linewidths=2, levels=[0.5], alpha=0.5)
