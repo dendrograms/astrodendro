@@ -108,8 +108,8 @@ class BasicDendrogramViewer(object):
 
         # This is gonna have to be a little more nuanced, because we'll want to
         # update contours for ALL of the currently-defined Input Keys.
-        self.remove_contour(input_key)
-        self.update_contour(input_key)
+        self.remove_all_contours()
+        self.update_contour()
 
         self.fig.canvas.draw()
 
@@ -227,10 +227,21 @@ class BasicDendrogramViewer(object):
                 self.ax1.collections.remove(collection)
             del self.selected_contour[input_key]
 
-    def update_contour(self, input_key=1):
+    def remove_all_contours(self):
+        """ Remove all selected contours. """
+        for key in self.selected_contour.keys():
+            self.remove_contour(key)
 
-        if input_key in self.selected:
-            mask = self.selected[input_key].get_mask(subtree=True)
-            if self.array.ndim == 3:
-                mask = mask[self.slice, :,:]
-            self.selected_contour[input_key] = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
+
+# Perhaps this shouldn't take input_key as a keyword, but instead should go through 
+# ALL the input keys available?
+    def update_contour(self):
+
+        keys = self.selected.keys()
+
+        for input_key in keys:
+            if input_key in self.selected:
+                mask = self.selected[input_key].get_mask(subtree=True)
+                if self.array.ndim == 3:
+                    mask = mask[self.slice, :,:]
+                self.selected_contour[input_key] = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
