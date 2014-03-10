@@ -104,7 +104,6 @@ class BasicDendrogramViewer(object):
 
         self.fig.canvas.mpl_connect('pick_event', self.line_picker)
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
-        self.fig.canvas.mpl_connect('key_press_event', self.select_from_map)
 
         plt.show()
 
@@ -147,9 +146,6 @@ class BasicDendrogramViewer(object):
             if isinstance(event, matplotlib.backend_bases.MouseEvent):
                 print "Mouse button pressed: ", event.button
                 input_key = event.button
-            elif isinstance(event, matplotlib.backend_bases.KeyEvent):
-                print "Key pressed: ", event.key
-                input_key = event.key
 
             # Find pixel co-ordinates of click
             ix = int(round(event.xdata))
