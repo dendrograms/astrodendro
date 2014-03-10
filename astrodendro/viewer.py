@@ -243,12 +243,10 @@ class BasicDendrogramViewer(object):
 
     def update_contours(self):
 
-        keys = self.selected.keys()
-
-        for input_key in keys:
-            if input_key in self.selected:
-                mask = self.selected[input_key].get_mask(subtree=True)
-                if self.array.ndim == 3:
-                    mask = mask[self.slice, :,:]
-                self.selected_contour[input_key] = self.ax1.contour(mask, 
-                    colors=self.colordict[input_key], linewidths=2, levels=[0.5], alpha=0.5)
+        for input_key in self.selected.keys():
+            mask = self.selected[input_key].get_mask(subtree=True)
+            if self.array.ndim == 3:
+                mask = mask[self.slice, :,:]
+            self.selected_contour[input_key] = self.ax1.contour(
+                mask, colors=self.colordict[input_key], 
+                linewidths=2, levels=[0.5], alpha=0.5)
