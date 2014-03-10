@@ -205,12 +205,13 @@ class BasicDendrogramViewer(object):
             self.ax2.collections.remove(self.selected_lines[input_key])
             del self.selected_lines[input_key]
 
-        self.remove_all_contours()
-
         if structure is None:
             self.selected_label.set_text("No structure selected")
+            self.remove_contour(input_key)
             self.fig.canvas.draw()
             return
+
+        self.remove_all_contours()
 
         self.selected[input_key] = structure
 
