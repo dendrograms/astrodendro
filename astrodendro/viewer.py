@@ -142,7 +142,6 @@ class BasicDendrogramViewer(object):
 
         if event.inaxes is self.ax1:
 
-            print "Mouse button pressed: ", event.button
             input_key = event.button
 
             # Find pixel co-ordinates of click
@@ -167,7 +166,6 @@ class BasicDendrogramViewer(object):
         if event.canvas.toolbar.mode != '':
             return
 
-        print "Mouse button pressed: ", event.mouseevent.button
         input_key = event.mouseevent.button
 
         # event.ind gives the indices of the paths that have been selected
