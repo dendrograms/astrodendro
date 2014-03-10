@@ -3,7 +3,6 @@
 from collections import defaultdict
 
 import numpy as np
-import matplotlib.backend_bases
 from .plot import DendrogramPlotter
 
 
@@ -143,9 +142,8 @@ class BasicDendrogramViewer(object):
 
         if event.inaxes is self.ax1:
 
-            if isinstance(event, matplotlib.backend_bases.MouseEvent):
-                print "Mouse button pressed: ", event.button
-                input_key = event.button
+            print "Mouse button pressed: ", event.button
+            input_key = event.button
 
             # Find pixel co-ordinates of click
             ix = int(round(event.xdata))
