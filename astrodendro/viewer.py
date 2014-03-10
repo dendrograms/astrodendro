@@ -166,7 +166,7 @@ class BasicDendrogramViewer(object):
 
             # Select the structure
             structure = self.dendrogram.structure_at(indices)
-            self.select(structure, input_key=input_key)
+            self.select(structure, input_key)
 
             # Re-draw
             event.canvas.draw()
@@ -197,12 +197,12 @@ class BasicDendrogramViewer(object):
             self.slice_slider.set_val(peak_index[0][0])
 
         # Select the structure
-        self.select(structure, input_key=input_key)
+        self.select(structure, input_key)
 
         # Re-draw
         event.canvas.draw()
 
-    def select(self, structure, input_key=1):
+    def select(self, structure, input_key):
 
         # Remove previously selected collection
         if input_key in self.selected_lines:
@@ -231,7 +231,7 @@ class BasicDendrogramViewer(object):
 
         self.update_contour()
 
-    def remove_contour(self, input_key=1):
+    def remove_contour(self, input_key):
 
         if input_key in self.selected_contour:
             for collection in self.selected_contour[input_key].collections:
