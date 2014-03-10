@@ -108,7 +108,6 @@ class BasicDendrogramViewer(object):
 
         plt.show()
 
-# seems to only operate on the "current" contour? why is that?
     def update_slice(self, pos=None):
         if self.array.ndim == 2:
             self.image.set_array(self.array)
@@ -116,10 +115,8 @@ class BasicDendrogramViewer(object):
             self.slice = int(round(pos))
             self.image.set_array(self.array[self.slice, :,:])
 
-        # This is gonna have to be a little more nuanced, because we'll want to
-        # update contours for ALL of the currently-defined Input Keys.
         self.remove_all_contours()
-        self.update_contour()
+        self.update_contours()
 
         self.fig.canvas.draw()
 
@@ -139,8 +136,6 @@ class BasicDendrogramViewer(object):
         self.image.set_clim(*self._clim)
         self.fig.canvas.draw()
 
-# maybe we should explicitly clear old selections just like is what happens in the picker method?
-# or that's probably handled in select()?
     def select_from_map(self, event):
 
         # Only do this if no tools are currently selected
@@ -230,7 +225,7 @@ class BasicDendrogramViewer(object):
         # Add to axes
         self.ax2.add_collection(self.selected_lines[input_key])
 
-        self.update_contour()
+        self.update_contours()
 
     def remove_contour(self, input_key):
 
@@ -245,9 +240,7 @@ class BasicDendrogramViewer(object):
             self.remove_contour(key)
 
 
-# Perhaps this shouldn't take input_key as a keyword, but instead should go through 
-# ALL the input keys available?
-    def update_contour(self):
+    def update_contours(self):
 
         keys = self.selected.keys()
 
