@@ -29,9 +29,10 @@ class BasicDendrogramViewer(object):
 
         # should not be tied to any details of what's being selected/deselecting
         self.colordict = defaultdict(lambda: 'red')
-        self.colordict[1] = 'red'
-        self.colordict[2] = 'green'
+        self.colordict[1] = 'yellow'
+        self.colordict[2] = 'orange'
         self.colordict[3] = 'magenta'
+        # someday we may provide a UI to update what goes in colordict.
 
         # Initiate plot
         import matplotlib.pyplot as plt
