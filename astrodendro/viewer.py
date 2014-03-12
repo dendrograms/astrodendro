@@ -1,5 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
+from collections import defaultdict
+
 import numpy as np
 from .plot import DendrogramPlotter
 
@@ -17,12 +19,21 @@ class BasicDendrogramViewer(object):
         self.plotter.sort(reverse=True)
 
         # Get the lines as individual elements, and the mapping from line to structure
-        self.lines = self.plotter.get_lines()
+        self.lines = self.plotter.get_lines(edgecolor='k')
 
         # Define the currently selected subtree
-        self.selected = None
-        self.selected_lines = None
-        self.selected_contour = None
+        self.selected = {}
+        self.selected_lines = {}
+        self.selected_contour = {}
+        # The keys in these dictionaries are event button IDs.        
+
+        # should not be tied to any details of what's being selected/deselecting
+        self.colordict = defaultdict(lambda: 'red')
+        # colors from http://colorbrewer2.org/?type=qualitative&scheme=Set1&n=3
+        self.colordict[1] = '#e41a1c' 
+        self.colordict[2] = '#377eb8'
+        self.colordict[3] = '#4daf4a'
+        # someday we may provide a UI to update what goes in colordict.
 
         # Initiate plot
         import matplotlib.pyplot as plt
@@ -104,8 +115,8 @@ class BasicDendrogramViewer(object):
             self.slice = int(round(pos))
             self.image.set_array(self.array[self.slice, :,:])
 
-        self.remove_contour()
-        self.update_contour()
+        self.remove_all_contours()
+        self.update_contours()
 
         self.fig.canvas.draw()
 
@@ -133,6 +144,8 @@ class BasicDendrogramViewer(object):
 
         if event.inaxes is self.ax1:
 
+            input_key = event.button
+
             # Find pixel co-ordinates of click
             ix = int(round(event.xdata))
             iy = int(round(event.ydata))
@@ -144,7 +157,7 @@ class BasicDendrogramViewer(object):
 
             # Select the structure
             structure = self.dendrogram.structure_at(indices)
-            self.select(structure)
+            self.select(structure, input_key)
 
             # Re-draw
             event.canvas.draw()
@@ -154,6 +167,8 @@ class BasicDendrogramViewer(object):
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
+
+        input_key = event.mouseevent.button
 
         # event.ind gives the indices of the paths that have been selected
 
@@ -172,51 +187,59 @@ class BasicDendrogramViewer(object):
             self.slice_slider.set_val(peak_index[0][0])
 
         # Select the structure
-        self.select(structure)
+        self.select(structure, input_key)
 
         # Re-draw
         event.canvas.draw()
 
-    def select(self, structure):
+    def select(self, structure, selection_id):
 
         # Remove previously selected collection
-        if self.selected_lines is not None:
-            self.ax2.collections.remove(self.selected_lines)
-            self.selected_lines = None
-
-        self.remove_contour()
+        if selection_id in self.selected_lines:
+            self.ax2.collections.remove(self.selected_lines[selection_id])
+            del self.selected_lines[selection_id]
 
         if structure is None:
             self.selected_label.set_text("No structure selected")
+            self.remove_contour(selection_id)
             self.fig.canvas.draw()
             return
 
-        self.selected = structure
+        self.remove_all_contours()
+
+        self.selected[selection_id] = structure
 
         self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
-        self.selected_lines = self.plotter.get_lines(structure=structure)
-        self.selected_lines.set_color('red')
-        self.selected_lines.set_linewidth(2)
-        self.selected_lines.set_alpha(0.5)
+        self.selected_lines[selection_id] = self.plotter.get_lines(structure=structure)
+        self.selected_lines[selection_id].set_color(self.colordict[selection_id])
+        self.selected_lines[selection_id].set_linewidth(2)
 
         # Add to axes
-        self.ax2.add_collection(self.selected_lines)
+        self.ax2.add_collection(self.selected_lines[selection_id])
 
-        self.update_contour()
+        self.update_contours()
 
-    def remove_contour(self):
+    def remove_contour(self, selection_id):
 
-        if self.selected_contour is not None:
-            for collection in self.selected_contour.collections:
+        if selection_id in self.selected_contour:
+            for collection in self.selected_contour[selection_id].collections:
                 self.ax1.collections.remove(collection)
-            self.selected_contour = None
+            del self.selected_contour[selection_id]
 
-    def update_contour(self):
+    def remove_all_contours(self):
+        """ Remove all selected contours. """
+        for key in self.selected_contour.keys():
+            self.remove_contour(key)
 
-        if self.selected is not None:
-            mask = self.selected.get_mask(subtree=True)
+
+    def update_contours(self):
+
+        for selection_id in self.selected.keys():
+            mask = self.selected[selection_id].get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :,:]
-            self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
+            self.selected_contour[selection_id] = self.ax1.contour(
+                mask, colors=self.colordict[selection_id], 
+                linewidths=2, levels=[0.5], alpha=0.75)
