@@ -303,6 +303,7 @@ class BasicDendrogramViewer(object):
             self.remove_contour(key)
 
     def update_contours(self):
+        self.remove_all_contours()
 
         for input_key in self.hub.selections.keys():
             struct = self.hub.selections[input_key]
@@ -310,6 +311,8 @@ class BasicDendrogramViewer(object):
                 raise NotImplemented(
                     "Multiple structures per selection not supported")
             struct = struct[0]
+            if struct is None:
+                continue
             mask = struct.get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :, :]
