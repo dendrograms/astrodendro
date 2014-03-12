@@ -19,18 +19,20 @@ class BasicDendrogramViewer(object):
         self.plotter.sort(reverse=True)
 
         # Get the lines as individual elements, and the mapping from line to structure
-        self.lines = self.plotter.get_lines()
+        self.lines = self.plotter.get_lines(edgecolor='k')
 
         # Define the currently selected subtree
         self.selected = {}
         self.selected_lines = {}
         self.selected_contour = {}
+        # The keys in these dictionaries are event button IDs.        
 
         # should not be tied to any details of what's being selected/deselecting
         self.colordict = defaultdict(lambda: 'red')
-        self.colordict[1] = 'yellow'
-        self.colordict[2] = 'orange'
-        self.colordict[3] = 'magenta'
+        # colors from http://colorbrewer2.org/?type=qualitative&scheme=Set1&n=3
+        self.colordict[1] = '#e41a1c' 
+        self.colordict[2] = '#377eb8'
+        self.colordict[3] = '#4daf4a'
         # someday we may provide a UI to update what goes in colordict.
 
         # Initiate plot
@@ -190,42 +192,41 @@ class BasicDendrogramViewer(object):
         # Re-draw
         event.canvas.draw()
 
-    def select(self, structure, input_key):
+    def select(self, structure, selection_id):
 
         # Remove previously selected collection
-        if input_key in self.selected_lines:
-            self.ax2.collections.remove(self.selected_lines[input_key])
-            del self.selected_lines[input_key]
+        if selection_id in self.selected_lines:
+            self.ax2.collections.remove(self.selected_lines[selection_id])
+            del self.selected_lines[selection_id]
 
         if structure is None:
             self.selected_label.set_text("No structure selected")
-            self.remove_contour(input_key)
+            self.remove_contour(selection_id)
             self.fig.canvas.draw()
             return
 
         self.remove_all_contours()
 
-        self.selected[input_key] = structure
+        self.selected[selection_id] = structure
 
         self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
-        self.selected_lines[input_key] = self.plotter.get_lines(structure=structure)
-        self.selected_lines[input_key].set_color(self.colordict[input_key])
-        self.selected_lines[input_key].set_linewidth(2)
-        self.selected_lines[input_key].set_alpha(0.5)
+        self.selected_lines[selection_id] = self.plotter.get_lines(structure=structure)
+        self.selected_lines[selection_id].set_color(self.colordict[selection_id])
+        self.selected_lines[selection_id].set_linewidth(2)
 
         # Add to axes
-        self.ax2.add_collection(self.selected_lines[input_key])
+        self.ax2.add_collection(self.selected_lines[selection_id])
 
         self.update_contours()
 
-    def remove_contour(self, input_key):
+    def remove_contour(self, selection_id):
 
-        if input_key in self.selected_contour:
-            for collection in self.selected_contour[input_key].collections:
+        if selection_id in self.selected_contour:
+            for collection in self.selected_contour[selection_id].collections:
                 self.ax1.collections.remove(collection)
-            del self.selected_contour[input_key]
+            del self.selected_contour[selection_id]
 
     def remove_all_contours(self):
         """ Remove all selected contours. """
@@ -235,10 +236,10 @@ class BasicDendrogramViewer(object):
 
     def update_contours(self):
 
-        for input_key in self.selected.keys():
-            mask = self.selected[input_key].get_mask(subtree=True)
+        for selection_id in self.selected.keys():
+            mask = self.selected[selection_id].get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :,:]
-            self.selected_contour[input_key] = self.ax1.contour(
-                mask, colors=self.colordict[input_key], 
-                linewidths=2, levels=[0.5], alpha=0.5)
+            self.selected_contour[selection_id] = self.ax1.contour(
+                mask, colors=self.colordict[selection_id], 
+                linewidths=2, levels=[0.5], alpha=0.75)
