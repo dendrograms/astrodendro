@@ -69,7 +69,8 @@ class BasicDendrogramViewer(object):
         self.plotter = DendrogramPlotter(dendrogram)
         self.plotter.sort(reverse=True)
 
-        # Get the lines as individual elements, and the mapping from line to structure
+        # Get the lines as individual elements, and the mapping from line to
+        # structure
         self.lines = self.plotter.get_lines()
 
         # Define the currently selected subtree
@@ -84,13 +85,17 @@ class BasicDendrogramViewer(object):
 
         from matplotlib.widgets import Slider
 
-        self._clim = (np.min(self.array[~np.isnan(self.array) & ~np.isinf(self.array)]),
-                      np.max(self.array[~np.isnan(self.array) & ~np.isinf(self.array)]))
+        self._clim = (
+            np.min(self.array[~np.isnan(self.array) & ~np.isinf(self.array)]),
+            np.max(self.array[~np.isnan(self.array) & ~np.isinf(self.array)]))
 
         if self.array.ndim == 2:
 
             self.slice = None
-            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+            self.image = self.ax1.imshow(
+                self.array, origin='lower', interpolation='nearest',
+                vmin=self._clim[0], vmax=self._clim[1],
+                cmap=plt.cm.gray)
 
             self.slice_slider = None
 
@@ -100,10 +105,13 @@ class BasicDendrogramViewer(object):
 
                 self.slice = int(round(self.array.shape[0] / 2.))
 
-                self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
+                self.slice_slider_ax = self.fig.add_axes(
+                    [0.1, 0.95, 0.4, 0.03])
                 self.slice_slider_ax.set_xticklabels("")
                 self.slice_slider_ax.set_yticklabels("")
-                self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice, valfmt="%i")
+                self.slice_slider = Slider(
+                    self.slice_slider_ax, "3-d slice", 0, self.array.shape[0],
+                    valinit=self.slice, valfmt="%i")
                 self.slice_slider.on_changed(self.update_slice)
                 self.slice_slider.drawon = False
 
@@ -112,26 +120,34 @@ class BasicDendrogramViewer(object):
                 self.slice = 0
                 self.slice_slider = None
 
-            self.image = self.ax1.imshow(self.array[self.slice, :,:], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+            self.image = self.ax1.imshow(
+                self.array[self.slice, :, :], origin='lower',
+                interpolation='nearest', vmin=self._clim[0],
+                vmax=self._clim[1], cmap=plt.cm.gray)
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
         self.vmin_slider_ax.set_yticklabels("")
-        self.vmin_slider = Slider(self.vmin_slider_ax, "vmin", self._clim[0], self._clim[1], valinit=self._clim[0])
+        self.vmin_slider = Slider(
+            self.vmin_slider_ax, "vmin", self._clim[0],
+            self._clim[1], valinit=self._clim[0])
         self.vmin_slider.on_changed(self.update_vmin)
         self.vmin_slider.drawon = False
 
         self.vmax_slider_ax = self.fig.add_axes([0.1, 0.85, 0.4, 0.03])
         self.vmax_slider_ax.set_xticklabels("")
         self.vmax_slider_ax.set_yticklabels("")
-        self.vmax_slider = Slider(self.vmax_slider_ax, "vmax", self._clim[0], self._clim[1], valinit=self._clim[1])
+        self.vmax_slider = Slider(
+            self.vmax_slider_ax, "vmax", self._clim[0],
+            self._clim[1], valinit=self._clim[1])
         self.vmax_slider.on_changed(self.update_vmax)
         self.vmax_slider.drawon = False
 
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
 
-        self.selected_label = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18)
+        self.selected_label = self.fig.text(
+            0.6, 0.75, "No structure selected", fontsize=18)
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
         y = [p.vertices[:, 1] for p in self.lines.get_paths()]
         xmin = np.min(x)
@@ -221,7 +237,8 @@ class BasicDendrogramViewer(object):
         # event.ind gives the indices of the paths that have been selected
 
         # Find levels of selected paths
-        peaks = [event.artist.structures[i].get_peak(subtree=True)[1] for i in event.ind]
+        peaks = [event.artist.structures[i]
+                 .get_peak(subtree=True)[1] for i in event.ind]
 
         # Find position of minimum level (may be duplicates, let Numpy decide)
         ind = event.ind[np.argmax(peaks)]
