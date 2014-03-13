@@ -164,7 +164,6 @@ class BasicDendrogramViewer(object):
             self.slice = int(round(pos))
             self.image.set_array(self.array[self.slice, :, :])
 
-        self.remove_all_contours()
         self.update_contours()
 
         self.fig.canvas.draw()
@@ -174,7 +173,6 @@ class BasicDendrogramViewer(object):
 
     def _on_selection_change(self, selection_id):
         self._update_lines(selection_id)
-        self.remove_all_contours()
         self.update_contours()
 
     def update_vmin(self, vmin):
@@ -295,6 +293,7 @@ class BasicDendrogramViewer(object):
             self.remove_contour(key)
 
     def update_contours(self):
+        self.remove_all_contours()
 
         for selection_id in self.hub.selections.keys():
             struct = self.hub.selections[selection_id]
