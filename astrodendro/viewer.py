@@ -133,7 +133,13 @@ class BasicDendrogramViewer(object):
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
 
-        self.selected_label = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18)
+        self.selected_label = {} # map selection IDs -> text objects
+        self.selected_label[1] = self.fig.text(0.6, 0.85, "No structure selected", fontsize=18, 
+            color=self.hub.colors[1])
+        self.selected_label[2] = self.fig.text(0.6, 0.8, "No structure selected", fontsize=18,
+            color=self.hub.colors[2])
+        self.selected_label[3] = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18,
+            color=self.hub.colors[3])
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
         y = [p.vertices[:, 1] for p in self.lines.get_paths()]
         xmin = np.min(x)
@@ -256,14 +262,14 @@ class BasicDendrogramViewer(object):
             del self.selected_lines[selection_id]
 
         if structure is None:
-            self.selected_label.set_text("No structure selected")
+            self.selected_label[selection_id].set_text("No structure selected")
             self.remove_contour(selection_id)
             self.fig.canvas.draw()
             return
 
         self.remove_all_contours()
 
-        self.selected_label.set_text(
+        self.selected_label[selection_id].set_text(
             "Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
