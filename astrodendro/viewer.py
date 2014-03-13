@@ -168,6 +168,7 @@ class BasicDendrogramViewer(object):
 
     def _on_selection_change(self, selection_id):
         self._update_lines(selection_id)
+        self.remove_all_contours()
         self.update_contours()
 
     def update_vmin(self, vmin):
@@ -295,7 +296,7 @@ class BasicDendrogramViewer(object):
                     "Multiple structures per selection not supported")
             struct = struct[0]
             if struct is None:
-                return
+                continue
             mask = struct.get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :, :]
