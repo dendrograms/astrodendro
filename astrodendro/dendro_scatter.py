@@ -48,7 +48,7 @@ class DendroScatter(object):
         self.lines2d[selection_id] = self.axes.plot(
             self.xdata[selected_indices], 
             self.ydata[selected_indices], 
-            'o', color=self.hub.colors[selection_id])[0]
+            'o', color=self.hub.colors[selection_id], zorder=struct.height)[0]
 
         self.fig.canvas.draw()
 

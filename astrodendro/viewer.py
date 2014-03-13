@@ -271,6 +271,7 @@ class BasicDendrogramViewer(object):
             structure=structure)
         self.selected_lines[selection_id].set_color(self.hub.colors[selection_id])
         self.selected_lines[selection_id].set_linewidth(2)
+        self.selected_lines[selection_id].set_zorder(structure.height)
 
         # Add to axes
         self.ax2.add_collection(self.selected_lines[selection_id])
@@ -302,4 +303,4 @@ class BasicDendrogramViewer(object):
                 mask = mask[self.slice, :, :]
             self.selected_contour[selection_id] = self.ax1.contour(
                 mask, colors=self.hub.colors[selection_id],
-                linewidths=2, levels=[0.5], alpha=0.75)
+                linewidths=2, levels=[0.5], alpha=0.75, zorder=struct.height)
