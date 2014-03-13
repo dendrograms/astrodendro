@@ -1,16 +1,15 @@
 import matplotlib.pyplot as plt
 
-class Selection(object):
-    def __init__(self):
-        self.selected = {} # selection id -> list of dendrogram structure ids
-        self.colors = {}  # selection id -> a color
-
-
 class DendroScatter(object):
+    def __init__(self, dendrogram, hub, catalog, xaxis, yaxis):
 
-    def __init__(self, dendrogram, catalog, xaxis, yaxis):
+        self.hub = hub
+        self.hub.add_callback(self.update_selection)
+        self.dendrogram = dendrogram
+
         self.fig = plt.figure()
         self.axes = plt.subplot(1,1,1)
+
         self.catalog = catalog
         self.xdata = catalog[xaxis]
         self.ydata = catalog[yaxis]
@@ -18,27 +17,36 @@ class DendroScatter(object):
         self.x_column_name = xaxis
         self.y_column_name = yaxis
 
+        self.lines2d = {} # selection_id -> matplotlib.lines.Line2D
+
+        self._draw_plot()
+        self.hub.add_callback(self.update_selection)
+
     def _draw_plot(self):
 
-        self.axes.plot(self.xdata, self.ydata, 'o', color='w', mec='k')
+        self.axes.plot(self.xdata, self.ydata, 'o', color='w', mec='k', zorder=-5)
 
         self.axes.set_xlabel(self.x_column_name)
         self.axes.set_ylabel(self.y_column_name)
 
         self.fig.canvas.draw()
 
-    def update_selection(self, selection):
+    def update_selection(self, selection_id):
         """Highlight seleted structures"""
         
-        self.fig.cla()
-        self._draw_plot()
+        if selection_id in self.lines2d:
+            self.lines2d[selection_id].remove()
+        self._draw_plot() # is this necessary?
 
-        for key in selection.selected.keys():
-            self.axes.plot(
-                self.xdata[selection.selected[key]], 
-                self.ydata[selection.selected[key]], 
-                'o', color=selection.colors[key])
+        struct = self.hub.selections[selection_id][0]
+        selected_indices = [leaf.idx for leaf in struct.descendants + [struct]]
 
+        self.lines2d[selection_id] = self.axes.plot(
+            self.xdata[selected_indices], 
+            self.ydata[selected_indices], 
+            'o', color=self.hub.colors[selection_id])[0]
+
+        self.fig.canvas.draw()
 
     def select(self, structure, index):
         "Select a given structure and assign it to index-th selection"
