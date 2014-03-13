@@ -294,6 +294,8 @@ class BasicDendrogramViewer(object):
                 raise NotImplemented(
                     "Multiple structures per selection not supported")
             struct = struct[0]
+            if struct is None:
+                return
             mask = struct.get_mask(subtree=True)
             if self.array.ndim == 3:
                 mask = mask[self.slice, :, :]

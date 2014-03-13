@@ -35,10 +35,14 @@ class DendroScatter(object):
         """Highlight seleted structures"""
         
         if selection_id in self.lines2d:
-            self.lines2d[selection_id].remove()
-        self._draw_plot() # is this necessary?
+            if self.lines2d[selection_id] is not None:
+                self.lines2d[selection_id].remove()
+                del self.lines2d[selection_id]
 
         struct = self.hub.selections[selection_id][0]
+        if struct is None:
+            self.fig.canvas.draw()
+            return
         selected_indices = [leaf.idx for leaf in struct.descendants + [struct]]
 
         self.lines2d[selection_id] = self.axes.plot(
