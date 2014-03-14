@@ -53,7 +53,7 @@ that dendrogram, and a catalog (see "Computing Dendrogram Statistics") to
 ```dendro_scatter.DendroScatter```, you can create a scatter plot that is 
 "linked" to the DendrogramViewer such that whenever dendrogram structures are
 highlighted, the data corresponding to those structures are highlighted in
-the scatter plot.
+the scatter plot::
 
     dv = d.viewer()
     catalog = astrodendro.ppv_catalog(d)
