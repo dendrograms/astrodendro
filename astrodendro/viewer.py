@@ -200,6 +200,8 @@ class BasicDendrogramViewer(object):
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
+        if event.button not in self.selected_label:
+            return
 
         if event.inaxes is self.ax1:
 
@@ -225,6 +227,8 @@ class BasicDendrogramViewer(object):
 
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
+            return
+        if event.mouseevent.button not in self.selected_label:
             return
 
         input_key = event.mouseevent.button
