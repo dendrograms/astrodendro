@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-class DendroScatter(object):
+class Scatter(object):
     def __init__(self, dendrogram, hub, catalog, xaxis, yaxis):
 
         self.hub = hub

@@ -155,6 +155,9 @@ class BasicDendrogramViewer(object):
         self.fig.canvas.mpl_connect('pick_event', self.line_picker)
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
 
+
+    def show(self):
+        import matplotlib.pyplot as plt
         plt.show()
 
     def update_slice(self, pos=None):

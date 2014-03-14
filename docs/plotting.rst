@@ -11,7 +11,8 @@ One you have computed your dendrogram, the easiest way to view it interactively
 is to use the :meth:`~astrodendro.dendrogram.Dendrogram.viewer` method::
 
     d = Dendrogram.compute(...)
-    d.viewer()
+    v = d.viewer()
+    v.show()
 
 This will launch an interactive window showing the original data, and the
 dendrogram itself. Note that the viewer is only available for 2 or 3-d
@@ -47,18 +48,20 @@ has a unique integer ID (the ``.idx`` attribute) that can be used to recognize
 the identify the structure when computing catalogs or making plots manually
 (see below).
 
-**Linked scatter plots:** 
-By providing a dendrogram, a DendrogramViewer.SelectionHub associated with 
-that dendrogram, and a catalog (see "Computing Dendrogram Statistics") to 
-```dendro_scatter.DendroScatter```, you can create a scatter plot that is 
+**Linked scatter plots:**
+By providing a dendrogram, a DendrogramViewer.SelectionHub associated with
+that dendrogram, and a catalog (see "Computing Dendrogram Statistics") to
+```scatter.Scatter```, you can create a scatter plot that is
 "linked" to the DendrogramViewer such that whenever dendrogram structures are
 highlighted, the data corresponding to those structures are highlighted in
 the scatter plot::
 
+    from astrodendro.scatter import Scatter
     dv = d.viewer()
     catalog = astrodendro.ppv_catalog(d)
-    import astrodendro.dendro_scatter
-    ds = astrodendro.dendro_scatter.DendroScatter(d, dv.hub, catalog, 'radius', 'v_rms')
+    ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
+    dv.show()
+
 
 
 Making plots for publications
