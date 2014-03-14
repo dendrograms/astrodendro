@@ -28,6 +28,12 @@ click on pixels in the image and have the corresponding structure be
 highlighted in the dendrogram plot. Clicking on a branch in the dendrogram plot
 or in the image will highlight that branch and all sub-structures.
 
+Multiple structures can be highlighted in different colors using the three 
+mouse buttons: Mouse button 1 (Left-click or "regular" click), button 2 
+(Middle-click or "alt+click"), and button 3 (Right-click/"ctrl+click").
+Each selection is independent of the other two; any of the three can be 
+selected either by clicking on the image or the dendrogram.
+
 **Change the image stretch:** use the ``vmin`` and ``vmax`` sliders above the
 image to change the lower and upper level of the image stretch.
 
@@ -40,6 +46,20 @@ slice manually by using the ``slice`` slider.
 has a unique integer ID (the ``.idx`` attribute) that can be used to recognize
 the identify the structure when computing catalogs or making plots manually
 (see below).
+
+**Linked scatter plots:** 
+By providing a dendrogram, a DendrogramViewer.SelectionHub associated with 
+that dendrogram, and a catalog (see "Computing Dendrogram Statistics") to 
+```dendro_scatter.DendroScatter```, you can create a scatter plot that is 
+"linked" to the DendrogramViewer such that whenever dendrogram structures are
+highlighted, the data corresponding to those structures are highlighted in
+the scatter plot.
+
+    dv = d.viewer()
+    catalog = astrodendro.ppv_catalog(d)
+    import astrodendro.dendro_scatter
+    ds = astrodendro.dendro_scatter.DendroScatter(d, dv.hub, catalog, 'radius', 'v_rms')
+
 
 Making plots for publications
 -----------------------------
