@@ -147,6 +147,7 @@ class BasicDendrogramViewer(object):
         ymin = np.min(y)
         ymax = np.max(y)
         self.lines.set_picker(2.)
+        self.lines.set_zorder(0)
         dx = xmax - xmin
         self.ax2.set_xlim(xmin - dx * 0.1, xmax + dx * 0.1)
         self.ax2.set_ylim(ymin * 0.5, ymax * 2.0)
