@@ -1,7 +1,56 @@
 # Licensed under an MIT open source license - see LICENSE
 
+from collections import defaultdict
+
 import numpy as np
 from .plot import DendrogramPlotter
+
+
+class SelectionHub(object):
+
+    """
+    The SelectionHub manages a set of selected Dendrogram structures.
+    Callback functions can be registered to the Hub, to be notified
+    when a selection changes.
+    """
+
+    def __init__(self):
+        # map selection IDs -> list of selected dendrogram IDs
+        self.selections = {}
+        self.colors = defaultdict(lambda: 'red')
+        self.colors[1] = '#e41a1c' 
+        self.colors[2] = '#377eb8'
+        self.colors[3] = '#4daf4a'
+        # someday we may provide a UI to update what goes in colordict.
+
+        self._callbacks = []
+
+    def add_callback(self, method):
+        """
+        Register a new callback function to be invoked
+        whenever the selection changes
+
+        The callback will be called as method(id),
+        where id is the modified selection id
+        """
+        self._callbacks.append(method)
+
+    def select(self, id, structure):
+        """
+        Select a new structure, and associate
+        them with a selection ID
+
+        Parameters
+        -----------
+        id : int
+        structures : list of Dendrogram Structures to select
+        """
+        if not isinstance(structure, list):
+            structure = [structure]
+
+        self.selections[id] = structure
+        for cb in self._callbacks:
+            cb(id)
 
 
 class BasicDendrogramViewer(object):
@@ -9,7 +58,11 @@ class BasicDendrogramViewer(object):
     def __init__(self, dendrogram):
 
         if dendrogram.data.ndim not in [2, 3]:
-            raise ValueError("Only 2- and 3-dimensional arrays are supported at this time")
+            raise ValueError(
+                "Only 2- and 3-dimensional arrays are supported at this time")
+
+        self.hub = SelectionHub()
+        self._connect_to_hub()
 
         self.array = dendrogram.data
         self.dendrogram = dendrogram
@@ -17,12 +70,13 @@ class BasicDendrogramViewer(object):
         self.plotter.sort(reverse=True)
 
         # Get the lines as individual elements, and the mapping from line to structure
-        self.lines = self.plotter.get_lines()
+        self.lines = self.plotter.get_lines(edgecolor='k')
 
         # Define the currently selected subtree
-        self.selected = None
-        self.selected_lines = None
-        self.selected_contour = None
+        self.selected_lines = {}
+        self.selected_contour = {}
+        # The keys in these dictionaries are event button IDs.        
+
 
         # Initiate plot
         import matplotlib.pyplot as plt
@@ -79,7 +133,13 @@ class BasicDendrogramViewer(object):
         self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax2.add_collection(self.lines)
 
-        self.selected_label = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18)
+        self.selected_label = {} # map selection IDs -> text objects
+        self.selected_label[1] = self.fig.text(0.6, 0.85, "No structure selected", fontsize=18, 
+            color=self.hub.colors[1])
+        self.selected_label[2] = self.fig.text(0.6, 0.8, "No structure selected", fontsize=18,
+            color=self.hub.colors[2])
+        self.selected_label[3] = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18,
+            color=self.hub.colors[3])
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
         y = [p.vertices[:, 1] for p in self.lines.get_paths()]
         xmin = np.min(x)
@@ -87,6 +147,7 @@ class BasicDendrogramViewer(object):
         ymin = np.min(y)
         ymax = np.max(y)
         self.lines.set_picker(2.)
+        self.lines.set_zorder(0)
         dx = xmax - xmin
         self.ax2.set_xlim(xmin - dx * 0.1, xmax + dx * 0.1)
         self.ax2.set_ylim(ymin * 0.5, ymax * 2.0)
@@ -95,6 +156,9 @@ class BasicDendrogramViewer(object):
         self.fig.canvas.mpl_connect('pick_event', self.line_picker)
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
 
+
+    def show(self):
+        import matplotlib.pyplot as plt
         plt.show()
 
     def update_slice(self, pos=None):
@@ -102,12 +166,18 @@ class BasicDendrogramViewer(object):
             self.image.set_array(self.array)
         else:
             self.slice = int(round(pos))
-            self.image.set_array(self.array[self.slice, :,:])
+            self.image.set_array(self.array[self.slice, :, :])
 
-        self.remove_contour()
-        self.update_contour()
+        self.update_contours()
 
         self.fig.canvas.draw()
+
+    def _connect_to_hub(self):
+        self.hub.add_callback(self._on_selection_change)
+
+    def _on_selection_change(self, selection_id):
+        self._update_lines(selection_id)
+        self.update_contours()
 
     def update_vmin(self, vmin):
         if vmin > self._clim[1]:
@@ -130,8 +200,12 @@ class BasicDendrogramViewer(object):
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
+        if event.button not in self.selected_label:
+            return
 
         if event.inaxes is self.ax1:
+
+            input_key = event.button
 
             # Find pixel co-ordinates of click
             ix = int(round(event.xdata))
@@ -144,7 +218,7 @@ class BasicDendrogramViewer(object):
 
             # Select the structure
             structure = self.dendrogram.structure_at(indices)
-            self.select(structure)
+            self.hub.select(input_key, structure)
 
             # Re-draw
             event.canvas.draw()
@@ -154,6 +228,10 @@ class BasicDendrogramViewer(object):
         # Only do this if no tools are currently selected
         if event.canvas.toolbar.mode != '':
             return
+        if event.mouseevent.button not in self.selected_label:
+            return
+
+        input_key = event.mouseevent.button
 
         # event.ind gives the indices of the paths that have been selected
 
@@ -172,51 +250,70 @@ class BasicDendrogramViewer(object):
             self.slice_slider.set_val(peak_index[0][0])
 
         # Select the structure
-        self.select(structure)
+        self.hub.select(input_key, structure)
 
         # Re-draw
         event.canvas.draw()
 
-    def select(self, structure):
+    def _update_lines(self, selection_id):
+        structure = self.hub.selections[selection_id]
+        if len(structure) > 1:
+            raise NotImplemented(
+                "Multiple structures per selection not supported")
+        structure = structure[0]
 
         # Remove previously selected collection
-        if self.selected_lines is not None:
-            self.ax2.collections.remove(self.selected_lines)
-            self.selected_lines = None
-
-        self.remove_contour()
+        if selection_id in self.selected_lines:
+            self.ax2.collections.remove(self.selected_lines[selection_id])
+            del self.selected_lines[selection_id]
 
         if structure is None:
-            self.selected_label.set_text("No structure selected")
+            self.selected_label[selection_id].set_text("No structure selected")
+            self.remove_contour(selection_id)
             self.fig.canvas.draw()
             return
 
-        self.selected = structure
+        self.remove_all_contours()
 
-        self.selected_label.set_text("Selected structure: {0}".format(structure.idx))
+        self.selected_label[selection_id].set_text(
+            "Selected structure: {0}".format(structure.idx))
 
         # Get collection for this substructure
-        self.selected_lines = self.plotter.get_lines(structure=structure)
-        self.selected_lines.set_color('red')
-        self.selected_lines.set_linewidth(2)
-        self.selected_lines.set_alpha(0.5)
+        self.selected_lines[selection_id] = self.plotter.get_lines(
+            structure=structure)
+        self.selected_lines[selection_id].set_color(self.hub.colors[selection_id])
+        self.selected_lines[selection_id].set_linewidth(2)
+        self.selected_lines[selection_id].set_zorder(structure.height)
 
         # Add to axes
-        self.ax2.add_collection(self.selected_lines)
+        self.ax2.add_collection(self.selected_lines[selection_id])
 
-        self.update_contour()
+    def remove_contour(self, selection_id):
 
-    def remove_contour(self):
-
-        if self.selected_contour is not None:
-            for collection in self.selected_contour.collections:
+        if selection_id in self.selected_contour:
+            for collection in self.selected_contour[selection_id].collections:
                 self.ax1.collections.remove(collection)
-            self.selected_contour = None
+            del self.selected_contour[selection_id]
 
-    def update_contour(self):
+    def remove_all_contours(self):
+        """ Remove all selected contours. """
+        for key in self.selected_contour.keys():
+            self.remove_contour(key)
 
-        if self.selected is not None:
-            mask = self.selected.get_mask(subtree=True)
+    def update_contours(self):
+        self.remove_all_contours()
+
+        for selection_id in self.hub.selections.keys():
+            struct = self.hub.selections[selection_id]
+            if len(struct) != 1:
+                raise NotImplemented(
+                    "Multiple structures per selection not supported")
+            struct = struct[0]
+            if struct is None:
+                continue
+            mask = struct.get_mask(subtree=True)
             if self.array.ndim == 3:
-                mask = mask[self.slice, :,:]
-            self.selected_contour = self.ax1.contour(mask, colors='red', linewidths=2, levels=[0.5], alpha=0.5)
+                mask = mask[self.slice, :, :]
+            self.selected_contour[selection_id] = self.ax1.contour(
+                mask, colors=self.hub.colors[selection_id],
+                linewidths=2, levels=[0.5], alpha=0.75, zorder=struct.height)

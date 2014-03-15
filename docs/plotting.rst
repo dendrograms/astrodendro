@@ -11,7 +11,8 @@ One you have computed your dendrogram, the easiest way to view it interactively
 is to use the :meth:`~astrodendro.dendrogram.Dendrogram.viewer` method::
 
     d = Dendrogram.compute(...)
-    d.viewer()
+    v = d.viewer()
+    v.show()
 
 This will launch an interactive window showing the original data, and the
 dendrogram itself. Note that the viewer is only available for 2 or 3-d
@@ -28,6 +29,12 @@ click on pixels in the image and have the corresponding structure be
 highlighted in the dendrogram plot. Clicking on a branch in the dendrogram plot
 or in the image will highlight that branch and all sub-structures.
 
+Multiple structures can be highlighted in different colors using the three
+mouse buttons: Mouse button 1 (Left-click or "regular" click), button 2
+(Middle-click or "alt+click"), and button 3 (Right-click/"ctrl+click").
+Each selection is independent of the other two; any of the three can be
+selected either by clicking on the image or the dendrogram.
+
 **Change the image stretch:** use the ``vmin`` and ``vmax`` sliders above the
 image to change the lower and upper level of the image stretch.
 
@@ -40,6 +47,19 @@ slice manually by using the ``slice`` slider.
 has a unique integer ID (the ``.idx`` attribute) that can be used to recognize
 the identify the structure when computing catalogs or making plots manually
 (see below).
+
+**Linked scatter plots:**
+If you have built a catalog (see :doc:`catalog`), you can also
+display a scatterplot of two catalog columns, linked to the viewer. Selections
+in the main viewer update the colors of the points in this plot::
+
+    from astrodendro.scatter import Scatter
+    ... code to create a dendrogram (d) and catalog ...
+    dv = d.viewer()
+    ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
+    dv.show()
+
+
 
 Making plots for publications
 -----------------------------
