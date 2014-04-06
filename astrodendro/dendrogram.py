@@ -19,13 +19,13 @@ def _sorted_by_idx(d):
 # utility dict to offsets of adjacent pixel list
 _offsets = dict((ndim, np.concatenate((
                 np.identity(ndim),
-                np.identity(ndim) * -1
-                )).astype(np.int)) for ndim in range(1, 6))
+                np.identity(ndim) * -1)).astype(np.int))
+                for ndim in range(1, 8))
 
 # the formula above generalizes this special case
-_offsets[3] = np.array([(0, 0, -1), (0, 0, 1),
-                        (0, -1, 0), (0, 1, 0),
-                        (-1, 0, 0), (1, 0, 0)])
+#_offsets[3] = np.array([(0, 0, -1), (0, 0, 1),
+#                        (0, -1, 0), (0, 1, 0),
+#                        (-1, 0, 0), (1, 0, 0)])
 
 
 class Dendrogram(object):
