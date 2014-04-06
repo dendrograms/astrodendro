@@ -1,3 +1,5 @@
+.. currentmodule:: astrodendro.dendrogram
+
 Advanced topics
 ===============
 
@@ -95,3 +97,17 @@ contains a pixel whose value >=20, and whose pixels sum to >= 100::
 
     custom_independent = all_true((min_peak(20), min_sum(100)))
     Dendrogram.compute(image, is_independent=custom_independent)
+
+
+Handling custom adjacency logic
+-------------------------------
+By default, neighbours to a given pixel are considered to be the adjacent
+pixels in the array. However, not all data are like this. For example,
+all-sky cartesian maps are periodic along the X axis.
+
+You can specify custom neighbour logic by providing a ``neighbours`` function
+to :meth:`Dendrogram.compute`. For example, the :func:`periodic_neighbours`
+utility will wrap neighbours across array edges. To correctly compute dendrograms for all-sky Cartesian maps::
+
+    periodic_axis = 1  # data wraps along longitude axis
+    Dendrogram.compute(data, neighbours=periodic_neighbours(periodic_axis))

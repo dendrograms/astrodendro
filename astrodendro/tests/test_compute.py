@@ -3,8 +3,7 @@
 import numpy as np
 import pytest
 
-from .. import Dendrogram
-from ..structure import Structure
+from .. import Dendrogram, periodic_neighbours, Structure
 
 
 class Test2DimensionalData(object):
@@ -180,7 +179,20 @@ class TestNDimensionalData(object):
         assert (list(zip(*branches[0].indices(subtree=False))), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
 
 
+def test_periodic():
+    x = np.array([[0, 0, 0, 0, 0, ],
+                 [1, 1, 0, 1, 1],
+                 [0, 0, 0, 0, 0]])
+
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, -1],
+                        [0, 0, -1, 0, 0],
+                        [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
 from .build_benchmark import BENCHMARKS
+
 
 @pytest.mark.parametrize(('filename'), BENCHMARKS.keys())
 def test_benchmark(filename):
