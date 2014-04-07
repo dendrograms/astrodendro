@@ -85,7 +85,7 @@ class Dendrogram(object):
 
     @staticmethod
     def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
-                is_independent=None, verbose=False):
+                is_independent=None, verbose=False, neighbours=None):
         """
         Compute a dendrogram from a Numpy array.
 
