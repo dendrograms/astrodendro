@@ -1,4 +1,8 @@
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Lasso
+from matplotlib import path
+import matplotlib
+import numpy as np
 
 class Scatter(object):
     def __init__(self, dendrogram, hub, catalog, xaxis, yaxis):
@@ -6,6 +10,7 @@ class Scatter(object):
         self.hub = hub
         self.hub.add_callback(self.update_selection)
         self.dendrogram = dendrogram
+        self.structures = [x for x in self.dendrogram.all_structures]
 
         self.fig = plt.figure()
         self.axes = plt.subplot(1,1,1)
@@ -14,13 +19,21 @@ class Scatter(object):
         self.xdata = catalog[xaxis]
         self.ydata = catalog[yaxis]
 
+        self.xys = [(x, y) for x, y in zip(self.xdata, self.ydata)]
+
         self.x_column_name = xaxis
         self.y_column_name = yaxis
 
         self.lines2d = {} # selection_id -> matplotlib.lines.Line2D
 
+        # This is a workaround for a (likely) bug in matplotlib.widgets. Lasso crashes without this fix.
+        if matplotlib.get_backend() == 'MacOSX':
+            self.fig.canvas.supports_blit = False
+
         self._draw_plot()
         self.hub.add_callback(self.update_selection)
+
+        self.cid = self.fig.canvas.mpl_connect('button_press_event', self.onpress)
 
     def _draw_plot(self):
 
@@ -30,6 +43,36 @@ class Scatter(object):
         self.axes.set_ylabel(self.y_column_name)
 
         self.fig.canvas.draw()
+
+    # This might be what they call a 'closure'? (We have to pass the input key to callback somehow.)
+    def callback_generator(self, event):
+
+        input_key = event.button
+
+        def callback(verts):
+            p = path.Path(verts)
+            bool_array = p.contains_points(self.xys)
+
+            indices = np.arange(len(bool_array))[bool_array]
+
+            selected_structures = [structure for structure in self.structures if structure.idx in indices]
+
+            # This doesn't technically work as desired yet, because you'll end up implicitly selecting all of this structure's children.
+            # Also if you lasso more than one point you'll hit a NotImplementedError in BasicDendrogramViewer.
+            self.hub.select(input_key, selected_structures)
+
+            self.fig.canvas.draw_idle()
+            self.fig.canvas.widgetlock.release(self.lasso)
+            del self.lasso
+
+        return callback
+
+    def onpress(self, event):
+        if self.fig.canvas.widgetlock.locked(): return
+        if event.inaxes is None: return
+        self.lasso = Lasso(event.inaxes, (event.xdata, event.ydata), self.callback_generator(event))
+        # acquire a lock on the widget drawing
+        self.fig.canvas.widgetlock(self.lasso)
 
     def update_selection(self, selection_id):
         """Highlight seleted structures"""
@@ -51,7 +94,3 @@ class Scatter(object):
             'o', color=self.hub.colors[selection_id], zorder=struct.height)[0]
 
         self.fig.canvas.draw()
-
-    def select(self, structure, index):
-        "Select a given structure and assign it to index-th selection"
-        raise NotImplementedError()

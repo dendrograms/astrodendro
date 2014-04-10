@@ -178,6 +178,7 @@ class BasicDendrogramViewer(object):
     def _on_selection_change(self, selection_id):
         self._update_lines(selection_id)
         self.update_contours()
+        self.fig.canvas.draw()
 
     def update_vmin(self, vmin):
         if vmin > self._clim[1]:
@@ -258,7 +259,7 @@ class BasicDendrogramViewer(object):
     def _update_lines(self, selection_id):
         structure = self.hub.selections[selection_id]
         if len(structure) > 1:
-            raise NotImplemented(
+            raise NotImplementedError(
                 "Multiple structures per selection not supported")
         structure = structure[0]
 
@@ -306,7 +307,7 @@ class BasicDendrogramViewer(object):
         for selection_id in self.hub.selections.keys():
             struct = self.hub.selections[selection_id]
             if len(struct) != 1:
-                raise NotImplemented(
+                raise NotImplementedError(
                     "Multiple structures per selection not supported")
             struct = struct[0]
             if struct is None:
