@@ -312,12 +312,17 @@ class BasicDendrogramViewer(object):
         self.remove_all_contours()
 
         for selection_id in self.hub.selections.keys():
-            struct = self.hub.selections[selection_id]
+            structures = self.hub.selections[selection_id]
+            select_subtree = self.hub.select_subtree[selection_id]
 
-            struct = struct[0]
+            struct = structures[0]
             if struct is None:
                 continue
-            mask = struct.get_mask(subtree=True)
+
+            if select_subtree:
+                mask = struct.get_mask(subtree=True)
+            else:
+                mask = reduce(np.add, [structure.get_mask(subtree=True) for structure in structures])
             if self.array.ndim == 3:
                 mask = mask[self.slice, :, :]
             self.selected_contour[selection_id] = self.ax1.contour(
