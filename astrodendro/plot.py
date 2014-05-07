@@ -158,14 +158,17 @@ class DendrogramPlotter(object):
 
         ax.contour(mask, levels=[0.5], **kwargs)
 
-    def get_lines(self, structure=None, **kwargs):
+    def get_lines(self, structures=None, subtree=True, **kwargs):
         """
         Get a collection of lines to draw the dendrogram.
 
         Parameters
         ----------
-        structure : :class:`~astrodendro.structure.Structure`
-            The structure to plot. If not set, the whole tree will be plotted.
+        structures : :class:`~astrodendro.structure.Structure`
+            The structures to plot. If not set, the whole tree will be plotted.
+        subtree : bool, optional
+            If a structure is specified, by default the whole subtree will be
+            retrieved, but this can be disabled with this option.
 
         Returns
         -------
@@ -181,12 +184,18 @@ class DendrogramPlotter(object):
         if self._cached_positions is None:
             raise Exception("Leaves have not yet been sorted")
 
-        if structure is None:
+        # Case 1: no structures are selected
+        if structures is None:
             structures = list(self.dendrogram.all_structures)
+        # Case 2: one structure is selected, and subtree is True
         else:
-            if type(structure) is int:
-                structure = self.dendrogram[structure]
-            structures = structure.descendants + [structure]
+            if subtree:
+                if type(structures[0]) is int:
+                    structure = self.dendrogram[structures[0]]
+                else: 
+                    structure = structures[0]
+                structures = structure.descendants + [structure]
+        # Case 3: subtree is False (do nothing special to `structures`)
 
         lines = []
         mapping = []

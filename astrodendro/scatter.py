@@ -57,9 +57,7 @@ class Scatter(object):
 
             selected_structures = [structure for structure in self.structures if structure.idx in indices]
 
-            # This doesn't technically work as desired yet, because you'll end up implicitly selecting all of this structure's children.
-            # Also if you lasso more than one point you'll hit a NotImplementedError in BasicDendrogramViewer.
-            self.hub.select(input_key, selected_structures)
+            self.hub.select(input_key, selected_structures, subtree=False)
 
             self.fig.canvas.draw_idle()
             self.fig.canvas.widgetlock.release(self.lasso)
@@ -82,11 +80,16 @@ class Scatter(object):
                 self.lines2d[selection_id].remove()
                 del self.lines2d[selection_id]
 
-        struct = self.hub.selections[selection_id][0]
+        structures = self.hub.selections[selection_id]
+        struct = structures[0]
+
         if struct is None:
             self.fig.canvas.draw()
             return
-        selected_indices = [leaf.idx for leaf in struct.descendants + [struct]]
+        if self.hub.select_subtree[selection_id]:
+            selected_indices = [leaf.idx for leaf in struct.descendants + [struct]]
+        else:
+            selected_indices = [leaf.idx for leaf in structures]
 
         self.lines2d[selection_id] = self.axes.plot(
             self.xdata[selected_indices], 

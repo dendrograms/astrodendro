@@ -17,6 +17,7 @@ class SelectionHub(object):
     def __init__(self):
         # map selection IDs -> list of selected dendrogram IDs
         self.selections = {}
+        self.select_subtree = {} # map selection IDs -> bool
         self.colors = defaultdict(lambda: 'red')
         self.colors[1] = '#e41a1c' 
         self.colors[2] = '#377eb8'
@@ -35,9 +36,9 @@ class SelectionHub(object):
         """
         self._callbacks.append(method)
 
-    def select(self, id, structure):
+    def select(self, id, structures, subtree=True):
         """
-        Select a new structure, and associate
+        Select new structures, and associate
         them with a selection ID
 
         Parameters
@@ -45,10 +46,11 @@ class SelectionHub(object):
         id : int
         structures : list of Dendrogram Structures to select
         """
-        if not isinstance(structure, list):
-            structure = [structure]
+        if not isinstance(structures, list):
+            structures = [structures]
 
-        self.selections[id] = structure
+        self.selections[id] = structures
+        self.select_subtree[id] = subtree
         for cb in self._callbacks:
             cb(id)
 
@@ -257,11 +259,10 @@ class BasicDendrogramViewer(object):
         event.canvas.draw()
 
     def _update_lines(self, selection_id):
-        structure = self.hub.selections[selection_id]
-        if len(structure) > 1:
-            raise NotImplementedError(
-                "Multiple structures per selection not supported")
-        structure = structure[0]
+        structures = self.hub.selections[selection_id]
+        select_subtree = self.hub.select_subtree[selection_id]
+
+        structure = structures[0]
 
         # Remove previously selected collection
         if selection_id in self.selected_lines:
@@ -276,12 +277,18 @@ class BasicDendrogramViewer(object):
 
         self.remove_all_contours()
 
-        self.selected_label[selection_id].set_text(
-            "Selected structure: {0}".format(structure.idx))
+        if len(structures) <= 1:
+            label_text = "Selected structure: {0}".format(structure.idx)
+        elif len(structures) <=3:
+            label_text = "Selected structures: {0}".format(', '.join([str(structure.idx) for structure in structures]))
+        else:
+            label_text = "Selected structures: {0}...".format(', '.join([str(structure.idx) for structure in structures[:3]]))
+
+        self.selected_label[selection_id].set_text(label_text)
 
         # Get collection for this substructure
         self.selected_lines[selection_id] = self.plotter.get_lines(
-            structure=structure)
+            structures=structures, subtree=select_subtree)
         self.selected_lines[selection_id].set_color(self.hub.colors[selection_id])
         self.selected_lines[selection_id].set_linewidth(2)
         self.selected_lines[selection_id].set_zorder(structure.height)
@@ -306,9 +313,7 @@ class BasicDendrogramViewer(object):
 
         for selection_id in self.hub.selections.keys():
             struct = self.hub.selections[selection_id]
-            if len(struct) != 1:
-                raise NotImplementedError(
-                    "Multiple structures per selection not supported")
+
             struct = struct[0]
             if struct is None:
                 continue
