@@ -100,7 +100,7 @@ class DendrogramPlotter(object):
         """
 
         # Get the lines for the dendrogram
-        lines = self.get_lines(structure=structure, **kwargs)
+        lines = self.get_lines(structures=structure, **kwargs)
 
         # Add the lines to the axes
         ax.add_collection(lines)
