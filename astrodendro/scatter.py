@@ -10,7 +10,7 @@ class Scatter(object):
         self.hub = hub
         self.hub.add_callback(self.update_selection)
         self.dendrogram = dendrogram
-        self.structures = [x for x in self.dendrogram.all_structures]
+        self.structures = list(self.dendrogram.all_structures)
 
         self.fig = plt.figure()
         self.axes = plt.subplot(1,1,1)
