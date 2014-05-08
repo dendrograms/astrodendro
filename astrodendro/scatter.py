@@ -83,17 +83,16 @@ class Scatter(object):
             self.hub.select(input_key, selected_structures, subtree=False)
 
             self.fig.canvas.draw_idle()
-            self.fig.canvas.widgetlock.release(self.lasso)
             del self.lasso
 
         return callback
 
     def onpress(self, event):
-        if self.fig.canvas.widgetlock.locked(): return
-        if event.inaxes is None: return
+        if event.canvas.toolbar.mode != '':
+            return
+        if event.inaxes is None: 
+            return
         self.lasso = Lasso(event.inaxes, (event.xdata, event.ydata), self.callback_generator(event))
-        # acquire a lock on the widget drawing
-        self.fig.canvas.widgetlock(self.lasso)
 
     def update_selection(self, selection_id):
         """Highlight seleted structures"""
