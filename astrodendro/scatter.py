@@ -5,6 +5,29 @@ import matplotlib
 import numpy as np
 
 class Scatter(object):
+
+    """
+    Scatter is an optional viewer that 'plugs into' a SelectionHub.
+    It displays catalog properties in a scatter plot. The scatter 
+    points become highlighted when the Hub triggers a callback, and 
+    users can select scatter points directly by clicking and dragging
+    a "lasso" around points of interest. These selected points' 
+    corresponding structures will then be highlighted in all other 
+    viewers that are registered with the SelectionHub.
+
+    Example use:
+
+        >>> from astrodendro.scatter import Scatter
+        # ... code to create a dendrogram (d) and catalog ...
+        >>> dv = d.viewer()
+        >>> ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
+        >>> dv.show()
+
+    For more information on using Scatter, see the online
+    documentation.
+
+    """
+
     def __init__(self, dendrogram, hub, catalog, xaxis, yaxis):
 
         self.hub = hub
@@ -44,7 +67,7 @@ class Scatter(object):
 
         self.fig.canvas.draw()
 
-    # This might be what they call a 'closure'? (We have to pass the input key to callback somehow.)
+    # This is a closure - we have to pass the input key to callback somehow.
     def callback_generator(self, event):
 
         input_key = event.button
