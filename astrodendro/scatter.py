@@ -7,13 +7,12 @@ import numpy as np
 class Scatter(object):
 
     """
-    Scatter is an optional viewer that 'plugs into' a SelectionHub.
-    It displays catalog properties in a scatter plot. The scatter 
-    points become highlighted when the Hub triggers a callback, and 
-    users can select scatter points directly by clicking and dragging
-    a "lasso" around points of interest. These selected points' 
+    Scatter is an optional viewer that plugs into a SelectionHub.
+    It displays catalog properties in a scatter plot. 
+    Users can select scatter points directly by clicking and dragging
+    a lasso around points of interest. These selected points' 
     corresponding structures will then be highlighted in all other 
-    viewers that are registered with the SelectionHub.
+    viewers.
 
     Example use:
 
@@ -42,7 +41,7 @@ class Scatter(object):
         self.xdata = catalog[xaxis]
         self.ydata = catalog[yaxis]
 
-        self.xys = [(x, y) for x, y in zip(self.xdata, self.ydata)]
+        self.xys = np.column_stack((self.xdata, self.ydata))
 
         self.x_column_name = xaxis
         self.y_column_name = yaxis
@@ -74,11 +73,9 @@ class Scatter(object):
 
         def callback(verts):
             p = path.Path(verts)
-            bool_array = p.contains_points(self.xys)
 
-            indices = np.arange(len(bool_array))[bool_array]
-
-            selected_structures = [structure for structure in self.structures if structure.idx in indices]
+            indices = np.where(p.contains_points(self.xys))[0]
+            selected_structures = [self.dendrogram[i] for i in indices]
 
             self.hub.select(input_key, selected_structures, subtree=False)
 

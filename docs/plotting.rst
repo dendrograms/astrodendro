@@ -61,7 +61,7 @@ in the main viewer update the colors of the points in this plot::
 
 The catalog properties of dendrogram structures will be plotted here. You can 
 select structures directly from the scatter plot by clicking and dragging a 
-"lasso", and the selected structures will be highlighted in the linked viewer:
+lasso, and the selected structures will be highlighted in other plots:
 
 .. image:: scatter_screenshot.png
    :width: 50%
