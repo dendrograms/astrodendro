@@ -77,6 +77,9 @@ class Scatter(object):
             indices = np.where(p.contains_points(self.xys))[0]
             selected_structures = [self.dendrogram[i] for i in indices]
 
+            if len(selected_structures) == 0:
+                selected_structures = [None]
+
             self.hub.select(input_key, selected_structures, subtree=False)
 
             self.fig.canvas.draw_idle()
