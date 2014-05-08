@@ -59,6 +59,15 @@ in the main viewer update the colors of the points in this plot::
     ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
     dv.show()
 
+The catalog properties of dendrogram structures will be plotted here. You can 
+select structures directly from the scatter plot by clicking and dragging a 
+"lasso", and the selected structures will be highlighted in the linked viewer:
+
+.. image:: scatter_screenshot.png
+   :width: 50%
+
+.. image:: scatter_selected_viewer_screenshot.png
+   :width: 80%
 
 
 Making plots for publications
