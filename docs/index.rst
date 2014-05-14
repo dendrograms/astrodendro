@@ -96,6 +96,7 @@ Public API
    :maxdepth: 1
 
    api/astrodendro.dendrogram.Dendrogram
+   api/astrodendro.dendrogram.periodic_neighbours
    api/astrodendro.structure.Structure
    api/astrodendro.plot.DendrogramPlotter
    api/astrodendro.analysis

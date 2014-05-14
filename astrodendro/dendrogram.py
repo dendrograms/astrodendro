@@ -16,8 +16,20 @@ from . import six
 def _sorted_by_idx(d):
     return sorted(d, key=lambda s: s.idx)
 
+# utility dict to offsets of adjacent pixel list
+_offsets = dict((ndim, np.concatenate((
+                np.identity(ndim),
+                np.identity(ndim) * -1)).astype(np.int))
+                for ndim in range(1, 8))
+
+# the formula above generalizes this special case
+#_offsets[3] = np.array([(0, 0, -1), (0, 0, 1),
+#                        (0, -1, 0), (0, 1, 0),
+#                        (-1, 0, 0), (1, 0, 0)])
+
 
 class Dendrogram(object):
+
     """
     This class is used to compute and represent a dendrogram for a given dataset.
 
@@ -73,7 +85,7 @@ class Dendrogram(object):
 
     @staticmethod
     def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
-                is_independent=None, verbose=False):
+                is_independent=None, verbose=False, neighbours=None):
         """
         Compute a dendrogram from a Numpy array.
 
@@ -102,6 +114,16 @@ class Dendrogram(object):
             If multiple functions are provided as a list, they
             are all applied when testing for independence.
 
+        neighbours : function, optional
+            A function that returns the list of neighbours to a given
+            location. Neighbours is called as ``neighbours(dendrogram, idx)``,
+            where ``idx`` is a tuple describing the n-dimensional location
+            of a pixel. It returns a list of N-dimensional locations of
+            neighbours. This function can implement optional adjacency logic.
+
+            .. note:: ``idx`` refers to location in a copy of the input data
+                       that has been padded with one element along each edge.
+
         Examples
         --------
 
@@ -126,6 +148,7 @@ class Dendrogram(object):
             else:
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
+        neighbours = neighbours or Dendrogram.neighbours
 
         self = Dendrogram()
         self.data = data
@@ -152,23 +175,8 @@ class Dendrogram(object):
         # Dictionary of currently-defined structures:
         structures = {}
 
-        # Define a list of offsets we add to any coordinate to get the indices
-        # of all neighbouring pixels
-        if self.n_dim == 3:
-            neighbour_offsets = np.array([(0, 0, -1), (0, 0, 1), (0, -1, 0), (0, 1, 0), (-1, 0, 0), (1, 0, 0)])
-        elif self.n_dim == 2:
-            neighbour_offsets = np.array([(0, -1), (0, 1), (-1, 0), (1, 0)])
-        elif self.n_dim == 1:
-            neighbour_offsets = np.array([(-1, ), (1, ), ])
-        else:  # N-dimensional case. Analogous to the above.
-            neighbour_offsets = np.concatenate((
-                np.identity(self.n_dim, dtype=int),
-                np.identity(self.n_dim, dtype=int) * -1
-            ))
-
         # Loop from largest to smallest data_value value. Each time, check if
         # the pixel connects to any existing leaf. Otherwise, create new leaf.
-
         count = 0
 
         for i in np.argsort(data_values)[::-1]:
@@ -190,8 +198,10 @@ class Dendrogram(object):
             # We don't worry about the edges, because overflow or underflow in
             # any one dimension will always land on an extra "padding" cell
             # with value zero added above when index_map was created
-            indices_adjacent = [tuple(c) for c in np.add(neighbour_offsets, indices[i])]
-            adjacent = [self.index_map[c] for c in indices_adjacent if self.index_map[c] > -1]
+
+            indices_adjacent = neighbours(self, indices[i])
+            adjacent = [self.index_map[c] for c in indices_adjacent
+                        if self.index_map[c] > -1]
 
             # Replace adjacent elements by its ancestor
             adjacent = [structures[a].ancestor for a in adjacent]
@@ -235,7 +245,7 @@ class Dendrogram(object):
                          if structure.is_leaf and
                          (structure.vmax == data_value or
                           not is_independent(structure, index=coord,
-                                            value=data_value))]
+                                             value=data_value))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -316,7 +326,6 @@ class Dendrogram(object):
         # Return the newly-created dendrogram:
         return self
 
-
     def _index(self):
         # add dendrogram index
         ti = TreeIndex(self)
@@ -324,6 +333,23 @@ class Dendrogram(object):
         for s in six.itervalues(self._structures_dict):
             s._tree_index = ti
 
+    def neighbours(self, idx):
+        """
+        Return a list of indices to the neighbours of a given pixel.
+
+        This method can be overridden to handle custom layouts
+        (e.g., healpix maps, periodic boundaries, etc.)
+
+        Parameters
+        ----------
+        idx : tuple
+            The N-dimensional location of a pixel in the data
+
+        Returns
+        -------
+        List of N-dimensional locations of each neighbour
+        """
+        return [tuple(c) for c in np.add(_offsets[self.n_dim], idx)]
 
     @property
     def trunk(self):
@@ -570,3 +596,44 @@ class TreeIndex(object):
 
     def values(self, sid, subtree=True):
         return self._data[self.indices(sid, subtree=subtree)]
+
+
+def periodic_neighbours(axes):
+    """
+    Utility for computing neighbours on datasets with periodic boundaries.
+
+    This can be passed to the neighbours keyword of :meth:`Dendrogram.compute`
+
+    Parameters
+    ----------
+    axes : integer, or list of integers
+        Which axes of the data are periodic
+
+
+    Example
+    -------
+    Build a dendrogram where the 0th axis wraps from top-to-bottom::
+
+        Dendrogram.compute(data, neighbours=periodic_neighbours(0))
+
+    """
+    try:
+        axes[0]
+    except TypeError:
+        axes = [axes]
+
+    def _wrap(c, shp):
+        # note: shp is padded along each dimension,
+        #      so values to wrap occur 0, len-1
+        for a in axes:
+            if c[a] == 0:
+                c[a] = shp[a] - 2
+            elif c[a] == shp[a] - 1:
+                c[a] = 0
+        return tuple(c)
+
+    def result(dendrogram, idx):
+        return [_wrap(c, dendrogram.index_map.shape)
+                for c in np.add(_offsets[dendrogram.n_dim], idx)]
+
+    return result
