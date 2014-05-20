@@ -110,3 +110,18 @@ class TestIO(object):
 
         # recognize from signature
         d2 = Dendrogram.load_from('astrodendro-test')
+
+    @pytest.mark.parametrize('ext', ('fits', 'hdf5'))
+    def test_reload_retains_dendro_reference(self, ext):
+        # regression test for issue 106
+
+        d1 = Dendrogram.compute(self.data, verbose=False)
+
+        self.test_filename = 'astrodendro-test.%s' % ext
+
+        d1.save_to(self.test_filename)
+        d2 = Dendrogram.load_from(self.test_filename)
+
+        for s in d1:
+            np.testing.assert_array_equal(d2[s.idx].get_mask(subtree=True),
+                                          d1[s.idx].get_mask(subtree=True))
