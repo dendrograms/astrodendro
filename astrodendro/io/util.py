@@ -90,7 +90,7 @@ def parse_dendrogram(newick, data, index_map):
                 sub_structures = _construct_tree(sub_structures_repr)
                 for i in sub_structures:
                     d._structures_dict[i.idx] = i
-                b = Structure(structure_indices, f, children=sub_structures, idx=idx)
+                b = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=d)
                 # Correct merge levels - complicated because of the
                 # order in which we are building the tree.
                 # What we do is look at the heights of this branch's
@@ -104,7 +104,7 @@ def parse_dendrogram(newick, data, index_map):
                 d._structures_dict[idx] = b
                 structures.append(b)
             else:
-                l = Structure(structure_indices, f, idx=idx)
+                l = Structure(structure_indices, f, idx=idx, dendrogram=d)
                 structures.append(l)
                 d._structures_dict[idx] = l
         return structures
