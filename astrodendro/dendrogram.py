@@ -489,6 +489,88 @@ class Dendrogram(object):
         from .viewer import BasicDendrogramViewer
         return BasicDendrogramViewer(self)
 
+    def post_pruning(self, min_value=-np.inf, min_delta=0, min_npix=0,
+                    is_independent=None):
+        '''
+        Prune a dendrogram after it has been computed.
+
+        Parameters
+        ----------
+        d : Dendrogram
+            Computed dendrogram object.
+        min_value : float, optional
+            The minimum data value to go down to when computing the
+            dendrogram. Values below this threshold will be ignored.
+        min_delta : float, optional
+            The minimum height a leaf has to have in order to be considered an
+            independent entity.
+        min_npix : int, optional
+            The minimum number of pixels/values needed for a leaf to be considered
+            an independent entity.
+        is_independent : function or list of functions, optional
+            A custom function that can be specified that will determine if a
+            leaf can be treated as an independent entity. The signature of the
+            function should be ``func(structure, index=None, value=None)``
+            where ``structure`` is the structure under consideration, and
+            ``index`` and ``value`` are optionally the pixel that is causing
+            the structure to be considered for merging into/attaching to the
+            tree.
+
+            If multiple functions are provided as a list, they
+            are all applied when testing for independence.
+        '''
+
+        tests = [pruning.min_delta(min_delta),
+                 pruning.min_npix(min_npix)]
+        if is_independent is not None:
+            if hasattr(is_independent, '__iter__'):
+                tests.extend(is_independent)
+            else:
+                tests.append(is_independent)
+        is_independent = pruning.all_true(tests)
+
+        keep_structures = {}
+        from copy import copy
+        structures = copy([struct for struct in self.all_structures])
+        for struct in structures:
+            if not is_independent(struct) and struct.is_leaf and struct.parent is not None:
+                parent = struct.parent
+                parent.children.remove(struct)
+                del self._structures_dict[struct.idx]
+            elif is_independent(struct) and struct.is_leaf:
+                keep_structures[struct.idx] = struct
+            elif struct.is_branch:
+                keep_structures[struct.idx] = struct
+
+        # Create trunk from objects with no ancestors
+        self.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
+
+        # Remove orphan leaves that aren't large enough
+        leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
+        for leaf in leaves_in_trunk:
+            if not is_independent(leaf):
+                # This leaf is an orphan, so remove all references to it:
+                keep_structures.pop(leaf.idx)
+                self.trunk.remove(leaf)
+                leaf._fill_footprint(self.index_map, -1)
+
+        # To make the structure.level property fast, we ensure all the structures in the
+        # trunk have their level cached as "0"
+        for structure in self.trunk:
+            structure._level = 0  # See the definition of level() in structure.py
+
+        # Save a list of all structures accessible by ID
+        self._structures_dict = {}
+
+        # Re-assign idx and update index map
+        sorted_structures = sorted(self, key=lambda s: s.smallest_index)
+        print len(sorted_structures)
+        for idx, s in enumerate(sorted_structures):
+            s.idx = idx
+            s._fill_footprint(self.index_map, idx, recursive=False)
+            self._structures_dict[idx] = s
+
+        return self
 
 class TreeIndex(object):
     def __init__(self, dendrogram):
