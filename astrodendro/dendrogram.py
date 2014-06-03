@@ -537,10 +537,51 @@ class Dendrogram(object):
                 parent = struct.parent
                 parent.children.remove(struct)
                 del self._structures_dict[struct.idx]
+                self.index_map[np.where(self.index_map==struct.idx)] = parent.idx
             elif is_independent(struct) and struct.is_leaf:
                 keep_structures[struct.idx] = struct
             elif struct.is_branch:
                 keep_structures[struct.idx] = struct
+
+        branches_idx = [key for key in keep_structures.keys() if keep_structures[key].is_branch]
+        posn = 0
+        while branches_idx != []:  # continue until all have been removed
+            # Get key in keep_structures
+            key = branches_idx[posn]
+
+            branch = keep_structures[key]
+            children = branch.children
+            parent = branch.parent
+
+            #  Needs merging if branch has only one child.
+            if len(children) == 1:
+
+                if parent is not None:
+                    # Change branches coordinates to parent's
+                    coord = np.where(self.index_map == branch.idx)
+                    self.index_map[coord] = parent.idx
+                    # Extend parent's indices with branch's
+                    keep_structures[parent.idx]._indices.extend(branch._indices)
+                    # Extend parent's value with the branch's
+                    keep_structures[parent.idx]._values.extend(branch._values)
+                    # Add branch's children to the parent's
+                    keep_structures[parent.idx].children.extend(children)
+                    # Remove branch as a child of the parent
+                    keep_structures[parent.idx].children.remove(branch)
+                # Change branch's children's parent to branch's parent
+                for child in children:
+                    keep_structures[child.idx].parent = parent
+                # Now remove the branch
+                branches_idx.remove(key)
+                del keep_structures[key]
+
+            # Good branch has at least two children, remove index and continue
+            else:
+                branches_idx.remove(branch.idx)
+
+            # Increase posn in branches_idx
+            if branches_idx != []:
+                posn = (posn + 1) % len(branches_idx)
 
         # Create trunk from objects with no ancestors
         self.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
@@ -564,7 +605,6 @@ class Dendrogram(object):
 
         # Re-assign idx and update index map
         sorted_structures = sorted(self, key=lambda s: s.smallest_index)
-        print len(sorted_structures)
         for idx, s in enumerate(sorted_structures):
             s.idx = idx
             s._fill_footprint(self.index_map, idx, recursive=False)
