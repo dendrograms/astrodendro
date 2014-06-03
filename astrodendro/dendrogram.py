@@ -530,14 +530,12 @@ class Dendrogram(object):
         is_independent = pruning.all_true(tests)
 
         keep_structures = {}
-        from copy import copy
-        structures = copy([struct for struct in self.all_structures])
-        for struct in structures:
-            if not is_independent(struct) and struct.is_leaf and struct.parent is not None:
-                parent = struct.parent
-                parent.children.remove(struct)
-                del self._structures_dict[struct.idx]
-                self.index_map[np.where(self.index_map==struct.idx)] = parent.idx
+        for struct in self.all_structures:
+            if not is_independent(struct) and struct.is_leaf:# and struct.parent is not None:
+                    parent = struct.parent
+                    if parent is not None:  # else removed in trunk check for orphan leaves
+                        parent.children.remove(struct)
+                        self.index_map[np.where(self.index_map==struct.idx)] = parent.idx
             elif is_independent(struct) and struct.is_leaf:
                 keep_structures[struct.idx] = struct
             elif struct.is_branch:
