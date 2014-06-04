@@ -5,6 +5,7 @@
 # - An ancestor is the largest structure that a structure is part of
 
 import numpy as np
+from collections import Iterable
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
@@ -523,7 +524,7 @@ class Dendrogram(object):
         tests = [pruning.min_delta(min_delta),
                  pruning.min_npix(min_npix)]
         if is_independent is not None:
-            if hasattr(is_independent, '__iter__'):
+            if isinstance(is_independent, Iterable):
                 tests.extend(is_independent)
             else:
                 tests.append(is_independent)
