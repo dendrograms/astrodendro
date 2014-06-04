@@ -6,6 +6,7 @@
 
 import numpy as np
 from collections import Iterable
+import copy
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
@@ -530,57 +531,65 @@ class Dendrogram(object):
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
 
-        keep_structures = {}
+        keep_structures = {struct.idx : struct for struct in self.all_structures}
+
         for struct in self.all_structures:
-            if not is_independent(struct) and struct.is_leaf:# and struct.parent is not None:
-                    parent = struct.parent
-                    if parent is not None:  # else removed in trunk check for orphan leaves
-                        parent.children.remove(struct)
-                        self.index_map[np.where(self.index_map==struct.idx)] = parent.idx
-            elif is_independent(struct) and struct.is_leaf:
-                keep_structures[struct.idx] = struct
-            elif struct.is_branch:
-                keep_structures[struct.idx] = struct
-
-        branches_idx = [key for key in keep_structures.keys() if keep_structures[key].is_branch]
-        posn = 0
-        while branches_idx != []:  # continue until all have been removed
             # Get key in keep_structures
-            key = branches_idx[posn]
+            parent = struct.parent
+            if parent is not None:
+                siblings = copy.copy(parent.children)
+                siblings.remove(struct)
+                if not siblings:
+                    belongs_to = parent
+                else:
+                    belongs_to = siblings[0]
 
-            branch = keep_structures[key]
-            children = branch.children
-            parent = branch.parent
+                if struct.is_leaf and not is_independent(struct):
+                    # Change branches coordinates to parent's
+                    coord = np.where(self.index_map == struct.idx)
+                    self.index_map[coord] = belongs_to.idx
+                    # Merge branch into belongs_to
+                    keep_structures[belongs_to.idx]._merge(struct)
+                    keep_structures[parent.idx].children.remove(struct)
 
+                    del keep_structures[struct.idx]
+
+
+        all_idx = [key for key in keep_structures.keys() if keep_structures[key].is_branch]
+        posn = 0
+        while all_idx != []:  # continue until all have been removed
+
+            key = all_idx[posn]
+            struct = keep_structures[key]
+
+            parent = struct.parent
+            children = struct.children
             #  Needs merging if branch has only one child.
             if len(children) == 1:
-
                 if parent is not None:
                     # Change branches coordinates to parent's
-                    coord = np.where(self.index_map == branch.idx)
+                    coord = np.where(self.index_map == struct.idx)
                     self.index_map[coord] = parent.idx
-                    # Extend parent's indices with branch's
-                    keep_structures[parent.idx]._indices.extend(branch._indices)
-                    # Extend parent's value with the branch's
-                    keep_structures[parent.idx]._values.extend(branch._values)
+                    # Merge branch into parent
+                    keep_structures[parent.idx]._merge(struct)
                     # Add branch's children to the parent's
                     keep_structures[parent.idx].children.extend(children)
                     # Remove branch as a child of the parent
-                    keep_structures[parent.idx].children.remove(branch)
+                    keep_structures[parent.idx].children.remove(struct)
                 # Change branch's children's parent to branch's parent
                 for child in children:
                     keep_structures[child.idx].parent = parent
                 # Now remove the branch
-                branches_idx.remove(key)
+                all_idx.remove(key)
                 del keep_structures[key]
 
             # Good branch has at least two children, remove index and continue
             else:
-                branches_idx.remove(branch.idx)
+                all_idx.remove(struct.idx)
 
-            # Increase posn in branches_idx
-            if branches_idx != []:
-                posn = (posn + 1) % len(branches_idx)
+            # Increase posn in all_idx
+            if all_idx != []:
+                posn = (posn + 1) % len(all_idx)
 
         # Create trunk from objects with no ancestors
         self.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
