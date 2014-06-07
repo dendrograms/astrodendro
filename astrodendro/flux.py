@@ -108,6 +108,40 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         # Find total flux in Jy
         total_flux = quantity_sum(q)
 
+    elif input_quantities.unit.is_equivalent(u.K):
+
+        if beam_major is not None and not beam_major.unit.is_equivalent(u.degree):
+            raise ValueError("beam_major should be an angle")
+
+        if beam_major is None:
+            raise ValueError("beam_major is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        if beam_minor is not None and not beam_minor.unit.is_equivalent(u.degree):
+            raise ValueError("beam_minor should be an angle")
+
+        if beam_minor is None:
+            raise ValueError("beam_minor is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        if wavelength is not None and not wavelength.unit.is_equivalent(u.m):
+            raise ValueError("wavelength should be a physical length")
+
+        # Find the frequency
+        if wavelength is None:
+            raise ValueError("wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        # Find frequency
+        nu = si.c / wavelength
+
+        # Angular area of beam. Major and minor axes are each divided by two for the semimajor & semiminor axes.
+        omega_beam = np.pi * (0.5)**2 * beam_major*beam_minor
+
+        # Convert input quantity to Fnu in Jy
+        q = input_quantities.to(u.Jy, 
+            equivalencies=u.brightness_temperature(omega_beam, nu))
+
+        # Find total flux in Jy
+        total_flux = quantity_sum(q)
+
     else:
 
         raise ValueError("Flux units {0} not yet supported".format(input_quantities.unit))
