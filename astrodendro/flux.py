@@ -135,7 +135,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         if wavelength is None:
             raise ValueError("wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
 
-        print "Warning: 'Kelvin' units interpreted as main beam brightness temperature."
+        print("Warning: 'Kelvin' units interpreted as main beam brightness temperature.")
 
         # Find frequency
         nu = si.c / wavelength
