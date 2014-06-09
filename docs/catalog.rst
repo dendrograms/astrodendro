@@ -181,7 +181,7 @@ u.arcsec``):
   `Brightness Temperature / Flux Density equivalency <http://docs.astropy.org/en/stable/units/equivalencies.html#brightness-temperature-flux-density-equivalency>`_ .
 
 * ``spatial_scale`` is **required** if the data are in units of surface
-  brightness (e.g. ``MJy/sr`` or ``Jy/beam``) so as to be able to convert the
+  brightness (e.g. ``MJy/sr``, ``Jy/beam``, or ``K``) so as to be able to convert the
   surface brightness to the flux in each pixel. Even if the data are not in
   units of surface brightness, the ``spatial_scale`` can **optionally** be
   specified, causing any derived size (e.g. ``major_sigma``) to be in the
