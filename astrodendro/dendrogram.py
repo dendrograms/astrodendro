@@ -529,7 +529,7 @@ class Dendrogram(object):
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
 
-        keep_structures = {struct.idx : struct for struct in self.all_structures}
+        keep_structures = copy.copy(self._structures_dict)
 
         # Set delete counter to initial non-zero value
         deleted = 1
