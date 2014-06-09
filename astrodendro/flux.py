@@ -132,21 +132,21 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         if beam_minor is None:
             raise ValueError("beam_minor is needed to convert from {0} to Jy".format(input_quantities.unit))
 
-        if wavelength is not None and not wavelength.unit.is_equivalent(u.m):
+        if wavelength is not None and not wavelength.unit.is_equivalent(u.m, equivalencies=u.spectral()):
             raise ValueError("wavelength should be a physical length")
 
         # Find the frequency
         if wavelength is None:
             raise ValueError("wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
 
-        warnings.warn("Warning: 'Kelvin' units interpreted as main beam brightness temperature.",
+        warnings.warn("'Kelvin' units interpreted as main beam brightness temperature.",
                       UnitMetadataWarning)
 
         # Find frequency
-        nu = si.c / wavelength
+        nu = wavelength.to(u.Hz, equivalencies=u.spectral())
 
-        # Angular area of beam. Major and minor axes are each divided by two for the semimajor & semiminor axes.
-        omega_beam = np.pi * (0.5)**2 * beam_major*beam_minor
+        # Angular area of beam. Conversion between 2D Gaussian FWHM and effective area comes from https://github.com/radio-astro-tools/radio_beam/blob/master/radio_beam/beam.py#L8
+        omega_beam = np.pi * 2 / (8*np.log(2)) * beam_major * beam_minor
 
         # Find the beam area
         beams_per_pixel = spatial_scale ** 2 / (beam_minor * beam_major * 1.1331) * u.beam
