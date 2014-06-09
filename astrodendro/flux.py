@@ -149,7 +149,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         omega_beam = np.pi * 2 / (8*np.log(2)) * beam_major * beam_minor
 
         # Find the beam area
-        beams_per_pixel = spatial_scale ** 2 / (beam_minor * beam_major * 1.1331) * u.beam
+        beams_per_pixel = spatial_scale ** 2 / omega_beam * u.beam
 
         # Convert input quantity to Fnu in Jy
         # Implicitly, this equivalency gives the Janskys in a single beam, so we make this explicit by dividing out a beam
