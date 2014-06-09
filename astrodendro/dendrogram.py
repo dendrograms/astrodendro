@@ -557,8 +557,7 @@ class Dendrogram(object):
                         # Merge structures into the parent
                         for m in merge:
                             # Change branches coordinates to parent's
-                            coord = np.where(self.index_map == m.idx)
-                            self.index_map[coord] = parent.idx
+                            m._fill_footprint(self.index_map, parent.idx)
                             # Merge branch into parent
                             keep_structures[parent.idx]._merge(m)
                             keep_structures[parent.idx].children.remove(m)
@@ -592,14 +591,7 @@ class Dendrogram(object):
             structure._level = 0  # See the definition of level() in structure.py
 
         # Save a list of all structures accessible by ID
-        self._structures_dict = {}
-
-        # Re-assign idx and update index map
-        sorted_structures = sorted(self, key=lambda s: s.smallest_index)
-        for idx, s in enumerate(sorted_structures):
-            s.idx = idx
-            s._fill_footprint(self.index_map, idx, recursive=False)
-            self._structures_dict[idx] = s
+        self._structures_dict = keep_structures
 
         return self
 
