@@ -110,6 +110,12 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
 
     elif input_quantities.unit.is_equivalent(u.K):
 
+        if spatial_scale is not None and not spatial_scale.unit.is_equivalent(u.degree):
+            raise ValueError("spatial_scale should be an angle")
+
+        if spatial_scale is None:
+            raise ValueError("spatial_scale is needed to convert from {0} to Jy".format(input_quantities.unit))
+
         if beam_major is not None and not beam_major.unit.is_equivalent(u.degree):
             raise ValueError("beam_major should be an angle")
 
@@ -137,9 +143,15 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         # Angular area of beam. Major and minor axes are each divided by two for the semimajor & semiminor axes.
         omega_beam = np.pi * (0.5)**2 * beam_major*beam_minor
 
+        # Find the beam area
+        beams_per_pixel = spatial_scale ** 2 / (beam_minor * beam_major * 1.1331) * u.beam
+
         # Convert input quantity to Fnu in Jy
-        q = input_quantities.to(u.Jy, 
-            equivalencies=u.brightness_temperature(omega_beam, nu))
+        # Implicitly, this equivalency gives the Janskys in a single beam, so we make this explicit by dividing out a beam
+        jansky_per_beam = input_quantities.to(u.Jy, 
+            equivalencies=u.brightness_temperature(omega_beam, nu)) / u.beam
+
+        q = jansky_per_beam * beams_per_pixel
 
         # Find total flux in Jy
         total_flux = quantity_sum(q)
