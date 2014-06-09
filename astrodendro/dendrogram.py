@@ -498,8 +498,6 @@ class Dendrogram(object):
 
         Parameters
         ----------
-        d : Dendrogram
-            Computed dendrogram object.
         min_value : float, optional
             The minimum data value to go down to when computing the
             dendrogram. Values below this threshold will be ignored.
@@ -533,63 +531,48 @@ class Dendrogram(object):
 
         keep_structures = {struct.idx : struct for struct in self.all_structures}
 
-        for struct in self.all_structures:
-            # Get key in keep_structures
-            parent = struct.parent
-            if parent is not None:
-                siblings = copy.copy(parent.children)
-                siblings.remove(struct)
-                if not siblings:
-                    belongs_to = parent
-                else:
-                    belongs_to = siblings[0]
+        # Set delete counter to initial non-zero value
+        deleted = 1
 
-                if struct.is_leaf and not is_independent(struct):
-                    # Change branches coordinates to parent's
-                    coord = np.where(self.index_map == struct.idx)
-                    self.index_map[coord] = belongs_to.idx
-                    # Merge branch into belongs_to
-                    keep_structures[belongs_to.idx]._merge(struct)
-                    keep_structures[parent.idx].children.remove(struct)
+        # Continue until there are no more leaves to prune.
+        while deleted != 0:
+            leaf_idx = [struct.idx for struct in self.all_structures if struct.is_leaf]
+            deleted = 0 # reset counter to zero
+            for key in leaf_idx:
+                # Check if structure hasn't been deleted already
+                if key in keep_structures.keys():
+                    struct = keep_structures[key]
 
-                    del keep_structures[struct.idx]
+                    parent = struct.parent
+                    # Test if leaf is independent. This is checked later is parent is None.
+                    if not is_independent(struct) and parent is not None:
+                        siblings = parent.children
+                        # If leaf has one other sibling, merge both into the parent
+                        if len(siblings) == 2:
+                            merge = copy.copy(siblings)
+                        # If leaf has multiple siblings, merge leaf into parent
+                        elif len(siblings) > 2:
+                            merge = [struct]
 
+                        # Merge structures into the parent
+                        for m in merge:
+                            # Change branches coordinates to parent's
+                            coord = np.where(self.index_map == m.idx)
+                            self.index_map[coord] = parent.idx
+                            # Merge branch into parent
+                            keep_structures[parent.idx]._merge(m)
+                            keep_structures[parent.idx].children.remove(m)
+                            # If the sibling is a branch, append on its children to the parent
+                            # and update the children's parent.
+                            if m.is_branch:
+                                keep_structures[parent.idx].children.extend(m.children)
+                                for child in m.children:
+                                    child.parent = parent
+                            # Remove this structure
+                            del keep_structures[m.idx]
 
-        all_idx = [key for key in keep_structures.keys() if keep_structures[key].is_branch]
-        posn = 0
-        while all_idx != []:  # continue until all have been removed
-
-            key = all_idx[posn]
-            struct = keep_structures[key]
-
-            parent = struct.parent
-            children = struct.children
-            #  Needs merging if branch has only one child.
-            if len(children) == 1:
-                if parent is not None:
-                    # Change branches coordinates to parent's
-                    coord = np.where(self.index_map == struct.idx)
-                    self.index_map[coord] = parent.idx
-                    # Merge branch into parent
-                    keep_structures[parent.idx]._merge(struct)
-                    # Add branch's children to the parent's
-                    keep_structures[parent.idx].children.extend(children)
-                    # Remove branch as a child of the parent
-                    keep_structures[parent.idx].children.remove(struct)
-                # Change branch's children's parent to branch's parent
-                for child in children:
-                    keep_structures[child.idx].parent = parent
-                # Now remove the branch
-                all_idx.remove(key)
-                del keep_structures[key]
-
-            # Good branch has at least two children, remove index and continue
-            else:
-                all_idx.remove(struct.idx)
-
-            # Increase posn in all_idx
-            if all_idx != []:
-                posn = (posn + 1) % len(all_idx)
+                        # Add to delete counter
+                        deleted += 1
 
         # Create trunk from objects with no ancestors
         self.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
