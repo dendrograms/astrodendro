@@ -12,6 +12,7 @@ from astropy.wcs import WCS
 
 from . import six
 from .structure import Structure
+from .flux import UnitMetadataWarning
 
 __all__ = ['ppv_catalog', 'pp_catalog']
 
@@ -652,6 +653,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
                         'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
+        warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)        
         return _make_catalog(structures, fields, metadata, PPVStatistic)
 
 

@@ -1,8 +1,12 @@
+import warnings
+
 import numpy as np
 
 from astropy import units as u
 from astropy.constants import si
 
+class UnitMetadataWarning(UserWarning):
+   pass
 
 def quantity_sum(quantities):
     """
@@ -135,7 +139,8 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         if wavelength is None:
             raise ValueError("wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
 
-        print("Warning: 'Kelvin' units interpreted as main beam brightness temperature.")
+        warnings.warn("Warning: 'Kelvin' units interpreted as main beam brightness temperature.",
+                      UnitMetadataWarning)
 
         # Find frequency
         nu = si.c / wavelength
