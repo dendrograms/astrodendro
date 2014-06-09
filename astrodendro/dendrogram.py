@@ -557,7 +557,7 @@ class Dendrogram(object):
                         # Merge structures into the parent
                         for m in merge:
                             # Change branches coordinates to parent's
-                            m._fill_footprint(self.index_map, parent.idx)
+                            m._fill_footprint(self.index_map, parent.idx, recursive=False)
                             # Merge branch into parent
                             keep_structures[parent.idx]._merge(m)
                             keep_structures[parent.idx].children.remove(m)
