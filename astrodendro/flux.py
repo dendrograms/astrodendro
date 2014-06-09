@@ -145,7 +145,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         # Find frequency
         nu = wavelength.to(u.Hz, equivalencies=u.spectral())
 
-        # Angular area of beam. Conversion between 2D Gaussian FWHM and effective area comes from https://github.com/radio-astro-tools/radio_beam/blob/master/radio_beam/beam.py#L8
+        # Angular area of beam. Conversion between 2D Gaussian FWHM and effective area comes from https://github.com/radio-astro-tools/radio_beam/blob/bc906c38a65e85c6a894ee81519a642665e50f7c/radio_beam/beam.py#L8
         omega_beam = np.pi * 2 / (8*np.log(2)) * beam_major * beam_minor
 
         # Find the beam area
