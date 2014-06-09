@@ -17,7 +17,7 @@ COMBINATIONS = \
 (np.array([1, 2, 3]) * u.erg / u.cm ** 2 / u.s / u.micron, u.Jy, {'wavelength': 2 * u.micron}, 8005538284.75565 * u.Jy),
 (np.array([1, 2, 3]) * u.Jy / u.arcsec ** 2, u.Jy, {'spatial_scale': 2 * u.arcsec}, 24. * u.Jy),
 (np.array([1, 2, 3]) * u.Jy / u.beam, u.Jy, {'spatial_scale': 2 * u.arcsec, 'beam_major': 1 * u.arcsec, 'beam_minor': 0.5 * u.arcsec}, 42.36166269526079 * u.Jy),
-(np.array([1, 2, 3]) * u.K, u.Jy, {'beam_major': 1 * u.arcsec, 'beam_minor': 0.5 * u.arcsec, 'wavelength': 2 * u.mm}, 0.03823086231417533 * u.Jy),
+(np.array([1, 2, 3]) * u.K, u.Jy, {'spatial_scale': 2 * u.arcsec, 'beam_major': 1 * u.arcsec, 'beam_minor': 0.5 * u.arcsec, 'wavelength': 2 * u.mm}, 0.26992048231700877 * u.Jy),
     ]
 
 
