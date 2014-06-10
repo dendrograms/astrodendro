@@ -2,6 +2,7 @@ import numpy as np
 
 from ..pruning import *
 from ..structure import Structure
+from ..dendrogram import Dendrogram
 
 data = np.array([[0, 0, 0, 0],
                  [0, 2, 1, 0],
@@ -54,3 +55,31 @@ def test_multi_ravel():
 
     x = _ravel_multi_index([[0], [9]], [5, 3], mode='wrap')
     np.testing.assert_array_equal(x, [0])
+
+def compare_dendrograms(d1, d2):
+
+    assert d1.__len__() == d2.__len__()
+    assert (np.sort([leaf.vmax for leaf in d1.all_structures]) == np.sort([leaf.vmax for leaf in d2.all_structures]))
+    assert (np.sort([leaf.vmin for leaf in d1.all_structures]) == np.sort([leaf.vmin for leaf in d2.all_structures]))
+
+class TestPostPruning(object):
+
+    def setup_class(self):
+        from ._testdata import data
+        self.data = data
+
+    def test_min_delta(self):
+        d1 = Dendrogram.compute(self.data, min_delta=1.0, min_npix=8, min_value=1.4)
+
+        d2 = Dendrogram.compute(self.data, min_npix=8, min_value=1.4)
+        d2.post_pruning(min_delta=1.0)
+
+        compare_dendrograms(d1, d2)
+
+    def test_min_npix(self):
+        d1 = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_value=1.4)
+
+        d2 = Dendrogram.compute(self.data, min_delta=0.3, min_value=1.4)
+        d2.post_pruning(min_npix=8)
+
+        compare_dendrograms(d1, d2)
