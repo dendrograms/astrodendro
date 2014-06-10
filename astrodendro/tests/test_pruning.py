@@ -59,8 +59,8 @@ def test_multi_ravel():
 def compare_dendrograms(d1, d2):
 
     assert d1.__len__() == d2.__len__()
-    assert (np.sort([leaf.vmax for leaf in d1.all_structures]) == np.sort([leaf.vmax for leaf in d2.all_structures]))
-    assert (np.sort([leaf.vmin for leaf in d1.all_structures]) == np.sort([leaf.vmin for leaf in d2.all_structures]))
+    assert (np.sort([leaf.vmax for leaf in d1.all_structures]) == np.sort([leaf.vmax for leaf in d2.all_structures])).all()
+    assert (np.sort([leaf.vmin for leaf in d1.all_structures]) == np.sort([leaf.vmin for leaf in d2.all_structures])).all()
 
 class TestPostPruning(object):
 
