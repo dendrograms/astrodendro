@@ -83,6 +83,9 @@ def min_delta(delta):
     """
     def result(structure, index=None, value=None):
         if value is None:
+            if structure.parent is not None:
+                return (structure.height - structure.parent.height) >= delta
+
             return (structure.vmax - structure.vmin) >= delta
         return (structure.vmax - value) >= delta
     return result
