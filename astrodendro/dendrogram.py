@@ -492,7 +492,7 @@ class Dendrogram(object):
         return BasicDendrogramViewer(self)
 
     def post_pruning(self, min_value=-np.inf, min_delta=0, min_npix=0,
-                    is_independent=None):
+                     is_independent=None):
         '''
         Prune a dendrogram after it has been computed.
 
@@ -529,49 +529,60 @@ class Dendrogram(object):
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
 
-        keep_structures = copy.copy(self._structures_dict)
-
-        # Set delete counter to initial non-zero value
-        deleted = 1
+        keep_structures = self._structures_dict.copy()
 
         # Continue until there are no more leaves to prune.
-        while deleted != 0:
-            leaf_idx = [struct.idx for struct in self.all_structures if struct.is_leaf]
-            deleted = 0 # reset counter to zero
-            for key in leaf_idx:
-                # Check if structure hasn't been deleted already
-                if key in keep_structures.keys():
-                    struct = keep_structures[key]
+        while True:
+            for struct in self.all_structures:
+                if not struct.is_leaf:
+                    continue
 
-                    parent = struct.parent
-                    # Test if leaf is independent. This is checked later is parent is None.
-                    if not is_independent(struct) and parent is not None:
-                        siblings = parent.children
-                        # If leaf has one other sibling, merge both into the parent
-                        if len(siblings) == 2:
-                            merge = copy.copy(siblings)
-                        # If leaf has multiple siblings, merge leaf into parent
-                        elif len(siblings) > 2:
-                            merge = [struct]
+                if struct.idx not in keep_structures:
+                    # structure already deleted
+                    continue
 
-                        # Merge structures into the parent
-                        for m in merge:
-                            # Change branches coordinates to parent's
-                            m._fill_footprint(self.index_map, parent.idx, recursive=False)
-                            # Merge branch into parent
-                            keep_structures[parent.idx]._merge(m)
-                            keep_structures[parent.idx].children.remove(m)
-                            # If the sibling is a branch, append on its children to the parent
-                            # and update the children's parent.
-                            if m.is_branch:
-                                keep_structures[parent.idx].children.extend(m.children)
-                                for child in m.children:
-                                    child.parent = parent
-                            # Remove this structure
-                            del keep_structures[m.idx]
+                if is_independent(struct):
+                    # passes prune test
+                    continue
 
-                        # Add to delete counter
-                        deleted += 1
+                parent = struct.parent
+                # deal with trunks later
+                if parent is None:
+                    continue
+
+                # merge struct
+
+                siblings = parent.children
+                # If leaf has one other sibling, merge both into the parent
+                if len(siblings) == 2:
+                    merge = copy.copy(siblings)
+
+                # If leaf has multiple siblings, merge leaf into parent
+                elif len(siblings) > 2:
+                    merge = [struct]
+
+                # Merge structures into the parent
+                for m in merge:
+                    # XXX extract into a helper function?
+
+                    # Change branches coordinates to parent's
+                    m._fill_footprint(self.index_map, parent.idx, recursive=False)
+                    # Merge branch into parent
+                    keep_structures[parent.idx]._merge(m)
+                    keep_structures[parent.idx].children.remove(m)
+                    # If the sibling is a branch, append on its children to the parent
+                    # and update the children's parent.
+                    if m.is_branch:
+                        keep_structures[parent.idx].children.extend(m.children)
+                        for child in m.children:
+                            child.parent = parent
+                    # Remove this structure
+                    del keep_structures[m.idx]
+
+                break
+            else:
+                # no leaves left to delete
+                break
 
         # Create trunk from objects with no ancestors
         self.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
@@ -593,9 +604,13 @@ class Dendrogram(object):
         # Save a list of all structures accessible by ID
         self._structures_dict = keep_structures
 
+        self._index()  # XXX check if this is OK with non-packed idx values
+
         return self
 
+
 class TreeIndex(object):
+
     def __init__(self, dendrogram):
         """
         Object that efficiently extracts the locations of Structures in an
