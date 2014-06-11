@@ -292,21 +292,7 @@ class Dendrogram(object):
             print("")  # newline
 
         # Create trunk from objects with no ancestors
-        self.trunk = _sorted_by_idx([structure for structure in six.itervalues(structures) if structure.parent is None])
-
-        # Remove orphan leaves that aren't large enough
-        leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
-        for leaf in leaves_in_trunk:
-            if not is_independent(leaf):
-                # This leaf is an orphan, so remove all references to it:
-                structures.pop(leaf.idx)
-                self.trunk.remove(leaf)
-                leaf._fill_footprint(self.index_map, -1)
-
-        # To make the structure.level property fast, we ensure all the structures in the
-        # trunk have their level cached as "0"
-        for structure in self.trunk:
-            structure._level = 0  # See the definition of level() in structure.py
+        _make_trunk(self, structures, is_independent)
 
         # Save a list of all structures accessible by ID
         self._structures_dict = {}
@@ -532,26 +518,9 @@ class Dendrogram(object):
         keep_structures = self._structures_dict.copy()
 
         # Continue until there are no more leaves to prune.
-        while True:
-            for struct in self.all_structures:
-                if not struct.is_leaf:
-                    continue
-
-                if struct.idx not in keep_structures:
-                    # structure already deleted
-                    continue
-
-                if is_independent(struct):
-                    # passes prune test
-                    continue
-
-                parent = struct.parent
-                # deal with trunks later
-                if parent is None:
-                    continue
-
+        for struct in _to_prune(self, keep_structures, is_independent):
                 # merge struct
-
+                parent = struct.parent
                 siblings = parent.children
                 # If leaf has one other sibling, merge both into the parent
                 if len(siblings) == 2:
@@ -563,43 +532,13 @@ class Dendrogram(object):
 
                 # Merge structures into the parent
                 for m in merge:
-                    # XXX extract into a helper function?
+                    _merge_with_parent(m, parent, self.index_map)
 
-                    # Change branches coordinates to parent's
-                    m._fill_footprint(self.index_map, parent.idx, recursive=False)
-                    # Merge branch into parent
-                    keep_structures[parent.idx]._merge(m)
-                    keep_structures[parent.idx].children.remove(m)
-                    # If the sibling is a branch, append on its children to the parent
-                    # and update the children's parent.
-                    if m.is_branch:
-                        keep_structures[parent.idx].children.extend(m.children)
-                        for child in m.children:
-                            child.parent = parent
                     # Remove this structure
                     del keep_structures[m.idx]
 
-                break
-            else:
-                # no leaves left to delete
-                break
-
         # Create trunk from objects with no ancestors
-        self.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
-
-        # Remove orphan leaves that aren't large enough
-        leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
-        for leaf in leaves_in_trunk:
-            if not is_independent(leaf):
-                # This leaf is an orphan, so remove all references to it:
-                keep_structures.pop(leaf.idx)
-                self.trunk.remove(leaf)
-                leaf._fill_footprint(self.index_map, -1)
-
-        # To make the structure.level property fast, we ensure all the structures in the
-        # trunk have their level cached as "0"
-        for structure in self.trunk:
-            structure._level = 0  # See the definition of level() in structure.py
+        _make_trunk(self, keep_structures, is_independent)
 
         # Save a list of all structures accessible by ID
         self._structures_dict = keep_structures
@@ -757,3 +696,63 @@ def periodic_neighbours(axes):
                 for c in np.add(_offsets[dendrogram.n_dim], idx)]
 
     return result
+
+def _to_prune(dendrogram, keep_structures, is_independent):
+    while True:
+        for struct in dendrogram.all_structures:
+            if not struct.is_leaf:
+                continue
+
+            if struct.idx not in keep_structures:
+                # structure already deleted
+                continue
+
+            if is_independent(struct):
+                # passes prune test
+                continue
+
+            parent = struct.parent
+            # deal with trunks later
+            if parent is None:
+                continue
+
+            yield struct
+            break
+        else:
+            return
+
+def _merge_with_parent(m, parent, index_map):
+    '''
+    Merge a given a list of structures into the parent.
+    '''
+    # Change branches coordinates to parent's
+    m._fill_footprint(index_map, parent.idx, recursive=False)
+    # Merge branch into parent
+    parent._merge(m)
+    parent.children.remove(m)
+    # If the sibling is a branch, append on its children to the parent
+    # and update the children's parent.
+    if m.is_branch:
+        parent.children.extend(m.children)
+        for child in m.children:
+            child.parent = parent
+
+def _make_trunk(dendrogram, keep_structures, is_independent):
+    '''
+    Create the trunk and prune off orphan leaves.
+    '''
+    dendrogram.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
+
+    # Remove orphan leaves that aren't large enough
+    leaves_in_trunk = [structure for structure in dendrogram.trunk if structure.is_leaf]
+    for leaf in leaves_in_trunk:
+        if not is_independent(leaf):
+            # This leaf is an orphan, so remove all references to it:
+            keep_structures.pop(leaf.idx)
+            dendrogram.trunk.remove(leaf)
+            leaf._fill_footprint(dendrogram.index_map, -1)
+
+    # To make the structure.level property fast, we ensure all the structures in the
+    # trunk have their level cached as "0"
+    for structure in dendrogram.trunk:
+        structure._level = 0  # See the definition of level() in structure.py
