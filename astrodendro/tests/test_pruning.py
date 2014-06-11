@@ -80,7 +80,7 @@ class TestPostPruning(object):
         d1 = Dendrogram.compute(self.data, min_delta=1.0, min_npix=8, min_value=1.4)
 
         d2 = Dendrogram.compute(self.data, min_npix=8, min_value=1.4)
-        d2.post_pruning(min_delta=1.0)
+        d2.prune(min_delta=1.0)
 
         compare_dendrograms(d1, d2)
 
@@ -88,6 +88,6 @@ class TestPostPruning(object):
         d1 = Dendrogram.compute(self.data, min_npix=8, min_delta=0.3, min_value=1.4)
 
         d2 = Dendrogram.compute(self.data, min_delta=0.3, min_value=1.4)
-        d2.post_pruning(min_npix=8)
+        d2.prune(min_npix=8)
 
         compare_dendrograms(d1, d2)
