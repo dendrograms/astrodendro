@@ -477,7 +477,7 @@ class Dendrogram(object):
         from .viewer import BasicDendrogramViewer
         return BasicDendrogramViewer(self)
 
-    def post_pruning(self, min_value=-np.inf, min_delta=0, min_npix=0,
+    def prune(self, min_value=-np.inf, min_delta=0, min_npix=0,
                      is_independent=None):
         '''
         Prune a dendrogram after it has been computed.
