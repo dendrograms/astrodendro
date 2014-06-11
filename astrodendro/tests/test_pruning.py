@@ -3,6 +3,8 @@ import numpy as np
 from ..pruning import *
 from ..structure import Structure
 from ..dendrogram import Dendrogram
+from .test_index import assert_permuted_fancyindex
+
 
 data = np.array([[0, 0, 0, 0],
                  [0, 2, 1, 0],
@@ -58,9 +60,15 @@ def test_multi_ravel():
 
 def compare_dendrograms(d1, d2):
 
-    assert d1.__len__() == d2.__len__()
+    assert len(d1) == len(d2)
     assert (np.sort([leaf.vmax for leaf in d1.all_structures]) == np.sort([leaf.vmax for leaf in d2.all_structures])).all()
     assert (np.sort([leaf.vmin for leaf in d1.all_structures]) == np.sort([leaf.vmin for leaf in d2.all_structures])).all()
+
+    for s in d1.all_structures:
+         ind1 = np.where(d1.index_map == s.idx)
+         idx2 = d2.index_map[ind1][0]
+         ind2 = np.where(d2.index_map == idx2)
+         assert_permuted_fancyindex(ind1, ind2)
 
 class TestPostPruning(object):
 
