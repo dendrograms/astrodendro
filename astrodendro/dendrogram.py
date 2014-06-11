@@ -698,6 +698,23 @@ def periodic_neighbours(axes):
     return result
 
 def _to_prune(dendrogram, keep_structures, is_independent):
+    '''
+    Yields an iterator which returns leaves which need to be pruned.
+
+    Parameters
+    ----------
+
+    dendrogram : Dendrogram
+        Computed dendrogram.
+
+    keep_structures : dict
+        Contains all structures in the dendrogram.
+
+    is_independent : function or list of functions, optional
+        A custom function that can be specified that will determine if a
+        leaf can be treated as an independent entity.
+
+    '''
     while True:
         for struct in dendrogram.all_structures:
             if not struct.is_leaf:
@@ -724,6 +741,19 @@ def _to_prune(dendrogram, keep_structures, is_independent):
 def _merge_with_parent(m, parent, index_map):
     '''
     Merge a given a list of structures into the parent.
+
+    Parameters
+    ----------
+
+    m : list
+        Contains structures to be merged.
+
+    parent : structure
+        Parent structure of structures in m.
+
+    index_map : numpy.ndarray
+        Index map from the dendrogram.
+
     '''
     # Change branches coordinates to parent's
     m._fill_footprint(index_map, parent.idx, recursive=False)
@@ -739,7 +769,21 @@ def _merge_with_parent(m, parent, index_map):
 
 def _make_trunk(dendrogram, keep_structures, is_independent):
     '''
-    Create the trunk and prune off orphan leaves.
+    Creates the trunk and prunes off orphan leaves.
+
+    Parameters
+    ----------
+
+    dendrogram : Dendrogram
+        Computed dendrogram.
+
+    keep_structures : dict
+        Contains all structures in the dendrogram.
+
+    is_independent : function or list of functions, optional
+        A custom function that can be specified that will determine if a
+        leaf can be treated as an independent entity.
+
     '''
     dendrogram.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
 
