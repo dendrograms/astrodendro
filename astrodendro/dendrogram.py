@@ -7,6 +7,7 @@
 import numpy as np
 from collections import Iterable
 import copy
+import warnings
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
@@ -477,16 +478,12 @@ class Dendrogram(object):
         from .viewer import BasicDendrogramViewer
         return BasicDendrogramViewer(self)
 
-    def prune(self, min_value=-np.inf, min_delta=0, min_npix=0,
-                     is_independent=None):
+    def prune(self, min_delta=0, min_npix=0, is_independent=None):
         '''
         Prune a dendrogram after it has been computed.
 
         Parameters
         ----------
-        min_value : float, optional
-            The minimum data value to go down to when computing the
-            dendrogram. Values below this threshold will be ignored.
         min_delta : float, optional
             The minimum height a leaf has to have in order to be considered an
             independent entity.
@@ -505,6 +502,21 @@ class Dendrogram(object):
             If multiple functions are provided as a list, they
             are all applied when testing for independence.
         '''
+
+        # Check if params are too restrictive.
+        if min_delta < self.params["min_delta"]:
+            warnings.warn("New min_delta (%s) is less than the current min_delta \
+                           (%s). No leaves can be pruned." \
+                           % (min_delta, self.params["min_delta"]))
+        else:  # Update params
+            self.params["min_delta"] = min_delta
+
+        if min_npix < self.params["min_npix"]:
+            warnings.warn("New min_npix (%s) is less than the current min_npix \
+                           (%s). No leaves can be pruned." \
+                           % (min_npix, self.params["min_npix"]))
+        else:  # Updates params
+            self.params["min_npix"] = min_npix
 
         tests = [pruning.min_delta(min_delta),
                  pruning.min_npix(min_npix)]
@@ -699,7 +711,7 @@ def periodic_neighbours(axes):
 
 def _to_prune(dendrogram, keep_structures, is_independent):
     '''
-    Yields an iterator which returns leaves which need to be pruned.
+    Yields a sequence of leaves which need to be pruned.
 
     Parameters
     ----------
@@ -738,23 +750,21 @@ def _to_prune(dendrogram, keep_structures, is_independent):
         else:
             return
 
-def _merge_with_parent(m, parent, index_map):
+def _merge_with_parent(m, index_map):
     '''
-    Merge a given a list of structures into the parent.
+    Merge a given structure into the parent.
 
     Parameters
     ----------
 
-    m : list
-        Contains structures to be merged.
-
-    parent : structure
-        Parent structure of structures in m.
+    m : Structure
+        The structure to be merged.
 
     index_map : numpy.ndarray
         Index map from the dendrogram.
 
     '''
+    parent = m.parent
     # Change branches coordinates to parent's
     m._fill_footprint(index_map, parent.idx, recursive=False)
     # Merge branch into parent
