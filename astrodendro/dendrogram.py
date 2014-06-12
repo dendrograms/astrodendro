@@ -544,7 +544,7 @@ class Dendrogram(object):
 
                 # Merge structures into the parent
                 for m in merge:
-                    _merge_with_parent(m, parent, self.index_map)
+                    _merge_with_parent(m, self.index_map)
 
                     # Remove this structure
                     del keep_structures[m.idx]
