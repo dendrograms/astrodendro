@@ -511,7 +511,7 @@ class Dendrogram(object):
 
         # Check if params are too restrictive.
         if min_delta < self.params["min_delta"]:
-            warnings.warn("New min_delta (%s) is less than or equal to the current min_delta \
+            warnings.warn("New min_delta (%s) is less than the current min_delta \
                            (%s). No leaves can be pruned." \
                            % (min_delta, self.params["min_delta"]))
         else:  # Update params
