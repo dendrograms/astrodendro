@@ -503,9 +503,15 @@ class Dendrogram(object):
             are all applied when testing for independence.
         '''
 
+        # If params set to zero, set equal to value form self.params
+        if min_delta == 0:
+            min_delta = self.params["min_delta"]
+        if min_npix == 0:
+            min_npix = self.params["min_npix"]
+
         # Check if params are too restrictive.
         if min_delta < self.params["min_delta"]:
-            warnings.warn("New min_delta (%s) is less than the current min_delta \
+            warnings.warn("New min_delta (%s) is less than or equal to the current min_delta \
                            (%s). No leaves can be pruned." \
                            % (min_delta, self.params["min_delta"]))
         else:  # Update params
