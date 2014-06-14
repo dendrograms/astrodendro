@@ -5,6 +5,9 @@
 # - An ancestor is the largest structure that a structure is part of
 
 import numpy as np
+from collections import Iterable
+import copy
+import warnings
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
@@ -290,21 +293,7 @@ class Dendrogram(object):
             print("")  # newline
 
         # Create trunk from objects with no ancestors
-        self.trunk = _sorted_by_idx([structure for structure in six.itervalues(structures) if structure.parent is None])
-
-        # Remove orphan leaves that aren't large enough
-        leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
-        for leaf in leaves_in_trunk:
-            if not is_independent(leaf):
-                # This leaf is an orphan, so remove all references to it:
-                structures.pop(leaf.idx)
-                self.trunk.remove(leaf)
-                leaf._fill_footprint(self.index_map, -1)
-
-        # To make the structure.level property fast, we ensure all the structures in the
-        # trunk have their level cached as "0"
-        for structure in self.trunk:
-            structure._level = 0  # See the definition of level() in structure.py
+        _make_trunk(self, structures, is_independent)
 
         # Save a list of all structures accessible by ID
         self._structures_dict = {}
@@ -489,8 +478,96 @@ class Dendrogram(object):
         from .viewer import BasicDendrogramViewer
         return BasicDendrogramViewer(self)
 
+    def prune(self, min_delta=0, min_npix=0, is_independent=None):
+        '''
+        Prune a dendrogram after it has been computed.
+
+        Parameters
+        ----------
+        min_delta : float, optional
+            The minimum height a leaf has to have in order to be considered an
+            independent entity.
+        min_npix : int, optional
+            The minimum number of pixels/values needed for a leaf to be considered
+            an independent entity.
+        is_independent : function or list of functions, optional
+            A custom function that can be specified that will determine if a
+            leaf can be treated as an independent entity. The signature of the
+            function should be ``func(structure, index=None, value=None)``
+            where ``structure`` is the structure under consideration, and
+            ``index`` and ``value`` are optionally the pixel that is causing
+            the structure to be considered for merging into/attaching to the
+            tree.
+
+            If multiple functions are provided as a list, they
+            are all applied when testing for independence.
+        '''
+
+        # If params set to zero, set equal to value form self.params
+        if min_delta == 0:
+            min_delta = self.params["min_delta"]
+        if min_npix == 0:
+            min_npix = self.params["min_npix"]
+
+        # Check if params are too restrictive.
+        if min_delta < self.params["min_delta"]:
+            warnings.warn("New min_delta (%s) is less than the current min_delta \
+                           (%s). No leaves can be pruned." \
+                           % (min_delta, self.params["min_delta"]))
+        else:  # Update params
+            self.params["min_delta"] = min_delta
+
+        if min_npix < self.params["min_npix"]:
+            warnings.warn("New min_npix (%s) is less than the current min_npix \
+                           (%s). No leaves can be pruned." \
+                           % (min_npix, self.params["min_npix"]))
+        else:  # Updates params
+            self.params["min_npix"] = min_npix
+
+        tests = [pruning.min_delta(min_delta),
+                 pruning.min_npix(min_npix)]
+        if is_independent is not None:
+            if isinstance(is_independent, Iterable):
+                tests.extend(is_independent)
+            else:
+                tests.append(is_independent)
+        is_independent = pruning.all_true(tests)
+
+        keep_structures = self._structures_dict.copy()
+
+        # Continue until there are no more leaves to prune.
+        for struct in _to_prune(self, keep_structures, is_independent):
+                # merge struct
+                parent = struct.parent
+                siblings = parent.children
+                # If leaf has one other sibling, merge both into the parent
+                if len(siblings) == 2:
+                    merge = copy.copy(siblings)
+
+                # If leaf has multiple siblings, merge leaf into parent
+                elif len(siblings) > 2:
+                    merge = [struct]
+
+                # Merge structures into the parent
+                for m in merge:
+                    _merge_with_parent(m, self.index_map)
+
+                    # Remove this structure
+                    del keep_structures[m.idx]
+
+        # Create trunk from objects with no ancestors
+        _make_trunk(self, keep_structures, is_independent)
+
+        # Save a list of all structures accessible by ID
+        self._structures_dict = keep_structures
+
+        self._index()  # XXX check if this is OK with non-packed idx values
+
+        return self
+
 
 class TreeIndex(object):
+
     def __init__(self, dendrogram):
         """
         Object that efficiently extracts the locations of Structures in an
@@ -637,3 +714,105 @@ def periodic_neighbours(axes):
                 for c in np.add(_offsets[dendrogram.n_dim], idx)]
 
     return result
+
+def _to_prune(dendrogram, keep_structures, is_independent):
+    '''
+    Yields a sequence of leaves which need to be pruned.
+
+    Parameters
+    ----------
+
+    dendrogram : Dendrogram
+        Computed dendrogram.
+
+    keep_structures : dict
+        Contains all structures in the dendrogram.
+
+    is_independent : function or list of functions, optional
+        A custom function that can be specified that will determine if a
+        leaf can be treated as an independent entity.
+
+    '''
+    while True:
+        for struct in dendrogram.all_structures:
+            if not struct.is_leaf:
+                continue
+
+            if struct.idx not in keep_structures:
+                # structure already deleted
+                continue
+
+            if is_independent(struct):
+                # passes prune test
+                continue
+
+            parent = struct.parent
+            # deal with trunks later
+            if parent is None:
+                continue
+
+            yield struct
+            break
+        else:
+            return
+
+def _merge_with_parent(m, index_map):
+    '''
+    Merge a given structure into the parent.
+
+    Parameters
+    ----------
+
+    m : Structure
+        The structure to be merged.
+
+    index_map : numpy.ndarray
+        Index map from the dendrogram.
+
+    '''
+    parent = m.parent
+    # Change branches coordinates to parent's
+    m._fill_footprint(index_map, parent.idx, recursive=False)
+    # Merge branch into parent
+    parent._merge(m)
+    parent.children.remove(m)
+    # If the sibling is a branch, append on its children to the parent
+    # and update the children's parent.
+    if m.is_branch:
+        parent.children.extend(m.children)
+        for child in m.children:
+            child.parent = parent
+
+def _make_trunk(dendrogram, keep_structures, is_independent):
+    '''
+    Creates the trunk and prunes off orphan leaves.
+
+    Parameters
+    ----------
+
+    dendrogram : Dendrogram
+        Computed dendrogram.
+
+    keep_structures : dict
+        Contains all structures in the dendrogram.
+
+    is_independent : function or list of functions, optional
+        A custom function that can be specified that will determine if a
+        leaf can be treated as an independent entity.
+
+    '''
+    dendrogram.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
+
+    # Remove orphan leaves that aren't large enough
+    leaves_in_trunk = [structure for structure in dendrogram.trunk if structure.is_leaf]
+    for leaf in leaves_in_trunk:
+        if not is_independent(leaf):
+            # This leaf is an orphan, so remove all references to it:
+            keep_structures.pop(leaf.idx)
+            dendrogram.trunk.remove(leaf)
+            leaf._fill_footprint(dendrogram.index_map, -1)
+
+    # To make the structure.level property fast, we ensure all the structures in the
+    # trunk have their level cached as "0"
+    for structure in dendrogram.trunk:
+        structure._level = 0  # See the definition of level() in structure.py
