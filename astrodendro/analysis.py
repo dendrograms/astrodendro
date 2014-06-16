@@ -3,6 +3,7 @@
 import abc
 import warnings
 from functools import wraps
+from weakref import WeakKeyDictionary
 
 import numpy as np
 
@@ -18,13 +19,22 @@ __all__ = ['ppv_catalog', 'pp_catalog']
 
 
 def memoize(func):
-    cache = {}
+
+    # cache[instance][method args] -> method result
+    # hold weakrefs to instances,
+    # to stay out of the way of the garbage collector
+    cache = WeakKeyDictionary()
 
     @wraps(func)
-    def wrapper(*args):
-        if args not in cache:
-            cache[args] = func(*args)
-        return cache[args]
+    def wrapper(self, *args):
+        try:
+            return cache[self][args]
+        except KeyError:
+            cache.setdefault(self, {})[args] = func(self, *args)
+            return cache[self][args]
+        except TypeError:
+            warnings.warn("Cannot memoize inputs to %s" % func)
+            return func(self, *args)
 
     return wrapper
 
@@ -50,7 +60,8 @@ def _unit(q):
 
 
 class ScalarStatistic(object):
-    #This class does all of the heavy computation
+    # This class does all of the heavy computation
+
     def __init__(self, values, indices):
         """
         Compute pixel-level statistics from a scalar field, sampled at specific
@@ -185,6 +196,7 @@ class ScalarStatistic(object):
 
 
 class VectorStatistic(object):
+
     def __init__(self, values_tuple, indices):
         raise NotImplementedError
 
@@ -196,6 +208,7 @@ class VectorStatistic(object):
 
 
 class Metadata(object):
+
     """
     A descriptor to wrap around metadata dictionaries.
 
@@ -312,7 +325,7 @@ class SpatialBase(object):
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
-        return dx * np.sqrt(self.stat.mom2_along(a))
+        return dx * np.sqrt(self.stat.mom2_along(tuple(a)))
 
     @property
     def minor_sigma(self):
@@ -325,7 +338,7 @@ class SpatialBase(object):
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
-        return dx * np.sqrt(self.stat.mom2_along(b))
+        return dx * np.sqrt(self.stat.mom2_along(tuple(b)))
 
     @property
     def radius(self):
@@ -354,12 +367,14 @@ class SpatialBase(object):
         """
         from matplotlib.patches import Ellipse
         return Ellipse((self.x_cen.value, self.y_cen.value),
-                        self.major_sigma.value * 2.3548,
-                        self.minor_sigma.value * 2.3548,
-                        angle=self.position_angle.value,
-                        **kwargs)
+                       self.major_sigma.value * 2.3548,
+                       self.minor_sigma.value * 2.3548,
+                       angle=self.position_angle.value,
+                       **kwargs)
+
 
 class PPVStatistic(SpatialBase):
+
     """
     Compute properties of structures in a position-position-velocity (PPV)
     cube.
@@ -470,10 +485,11 @@ class PPVStatistic(SpatialBase):
         """
         dx = self.spatial_scale or u.pixel
         indices = zip(*tuple(self.stat.indices[i] for i in range(3) if i != self.vaxis))
-        return len(set(indices)) * dx**2
+        return len(set(indices)) * dx ** 2
 
 
 class PPStatistic(SpatialBase):
+
     """
     Compute properties of structures in a position-position (PP) cube.
 
@@ -546,7 +562,7 @@ class PPStatistic(SpatialBase):
         The exact area of the structure on the sky.
         """
         dx = self.spatial_scale or u.pixel
-        return self.stat.count() * dx**2
+        return self.stat.count() * dx ** 2
 
 
 class PPPStatistic(object):
