@@ -176,9 +176,12 @@ u.arcsec``):
   :func:`~astrodendro.analysis.ppv_catalog` functions, as well as for the
   ``flux`` attribute of the :class:`~astrodendro.analysis.PPStatistic` and
   :class:`~astrodendro.analysis.PPVStatistic` classes.
+  Note: if ``data_unit`` is given as ``K``, it is interpreted as units of 
+  main beam brightness temperature, following the conventions in the astropy 
+  `Brightness Temperature / Flux Density equivalency <http://docs.astropy.org/en/stable/units/equivalencies.html#brightness-temperature-flux-density-equivalency>`_ .
 
 * ``spatial_scale`` is **required** if the data are in units of surface
-  brightness (e.g. ``MJy/sr`` or ``Jy/beam``) so as to be able to convert the
+  brightness (e.g. ``MJy/sr``, ``Jy/beam``, or ``K``) so as to be able to convert the
   surface brightness to the flux in each pixel. Even if the data are not in
   units of surface brightness, the ``spatial_scale`` can **optionally** be
   specified, causing any derived size (e.g. ``major_sigma``) to be in the
@@ -188,7 +191,7 @@ u.arcsec``):
   ``v_rms`` to be in the correct units instead of in pixels.
 
 * ``beam_major`` and ``beam_minor`` are **required** if the data units depend
-  on the beam (e.g. ``Jy/beam``).
+  on the beam (e.g. ``Jy/beam`` or ``K``).
 
 * ``vaxis`` can **optionally** be specified when using 3-dimensional data to
   indicate which dimension corresponds to the velocity. By default, this is
@@ -197,7 +200,8 @@ u.arcsec``):
 
 * ``wavelength`` is **required** if the data are in monochromatic flux
   densities per unit wavelength because the fluxes need to be converted to
-  monochromatic flux densities per unit frequency.
+  monochromatic flux densities per unit frequency. It is also required if
+  the data are in brightness temperature units of ``K``.
 
 * ``wcs`` can **optionally** be specified and should be a
   :class:`~astropy.wcs.WCS` instance. If specified, it allows ``x_cen``,

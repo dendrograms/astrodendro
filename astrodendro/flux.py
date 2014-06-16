@@ -1,8 +1,12 @@
+import warnings
+
 import numpy as np
 
 from astropy import units as u
 from astropy.constants import si
 
+class UnitMetadataWarning(UserWarning):
+   pass
 
 def quantity_sum(quantities):
     """
@@ -104,6 +108,55 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
 
         # Convert input quantity to Fnu in Jy
         q = (input_quantities * beams_per_pixel).to(u.Jy)
+
+        # Find total flux in Jy
+        total_flux = quantity_sum(q)
+
+    elif input_quantities.unit.is_equivalent(u.K):
+
+        if spatial_scale is not None and not spatial_scale.unit.is_equivalent(u.degree):
+            raise ValueError("spatial_scale should be an angle")
+
+        if spatial_scale is None:
+            raise ValueError("spatial_scale is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        if beam_major is not None and not beam_major.unit.is_equivalent(u.degree):
+            raise ValueError("beam_major should be an angle")
+
+        if beam_major is None:
+            raise ValueError("beam_major is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        if beam_minor is not None and not beam_minor.unit.is_equivalent(u.degree):
+            raise ValueError("beam_minor should be an angle")
+
+        if beam_minor is None:
+            raise ValueError("beam_minor is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        if wavelength is not None and not wavelength.unit.is_equivalent(u.m, equivalencies=u.spectral()):
+            raise ValueError("wavelength should be a physical length")
+
+        # Find the frequency
+        if wavelength is None:
+            raise ValueError("wavelength is needed to convert from {0} to Jy".format(input_quantities.unit))
+
+        warnings.warn("'Kelvin' units interpreted as main beam brightness temperature.",
+                      UnitMetadataWarning)
+
+        # Find frequency
+        nu = wavelength.to(u.Hz, equivalencies=u.spectral())
+
+        # Angular area of beam. Conversion between 2D Gaussian FWHM and effective area comes from https://github.com/radio-astro-tools/radio_beam/blob/bc906c38a65e85c6a894ee81519a642665e50f7c/radio_beam/beam.py#L8
+        omega_beam = np.pi * 2 / (8*np.log(2)) * beam_major * beam_minor
+
+        # Find the beam area
+        beams_per_pixel = spatial_scale ** 2 / omega_beam * u.beam
+
+        # Convert input quantity to Fnu in Jy
+        # Implicitly, this equivalency gives the Janskys in a single beam, so we make this explicit by dividing out a beam
+        jansky_per_beam = input_quantities.to(u.Jy, 
+            equivalencies=u.brightness_temperature(omega_beam, nu)) / u.beam
+
+        q = jansky_per_beam * beams_per_pixel
 
         # Find total flux in Jy
         total_flux = quantity_sum(q)
