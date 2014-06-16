@@ -2,6 +2,7 @@ import numpy as np
 
 from .. import six
 
+
 def parse_newick(string):
 
     items = {}
