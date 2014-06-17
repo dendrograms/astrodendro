@@ -30,6 +30,7 @@ wcs_3d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                          cdelt2=2, crval2=0, crpix2=1,
                          cdelt3=3, crval3=0, crpix3=1))
 
+
 def benchmark_stat():
     x = np.array([216, 216, 216, 216, 216, 217, 216,
                   216, 216, 217, 216, 217, 218, 216,
@@ -91,10 +92,10 @@ class TestScalarStatistic(object):
     def test_mom2_along(self):
         stat = self.stat
         v = benchmark_values()
-        assert_allclose(stat.mom2_along([1, 0, 0]), v['mom2_100'])
-        assert_allclose(stat.mom2_along([2, 0, 0]), v['mom2_100'])
-        assert_allclose(stat.mom2_along([0, 1, 0]), v['mom2_010'])
-        assert_allclose(stat.mom2_along([0, 1, 1]), v['mom2_011'])
+        assert_allclose(stat.mom2_along((1, 0, 0)), v['mom2_100'])
+        assert_allclose(stat.mom2_along((2, 0, 0)), v['mom2_100'])
+        assert_allclose(stat.mom2_along((0, 1, 0)), v['mom2_010'])
+        assert_allclose(stat.mom2_along((0, 1, 1)), v['mom2_011'])
 
     def test_count(self):
         stat = self.stat
@@ -105,7 +106,7 @@ class TestScalarStatistic(object):
         v1, v2, v3 = stat.paxes()
         v = benchmark_values()
 
-        #doesn't matter if v = vex * -1.
+        # doesn't matter if v = vex * -1.
         assert_allclose(np.abs(np.dot(v1, v['paxis1'])), 1)
         assert_allclose(np.abs(np.dot(v2, v['paxis2'])), 1)
         assert_allclose(np.abs(np.dot(v3, v['paxis3'])), 1)
@@ -113,10 +114,10 @@ class TestScalarStatistic(object):
     def test_projected_paxes(self):
         stat = self.stat
         v = benchmark_values()
-        v1, v2 = stat.projected_paxes([[0, 1, 0], [0, 0, 1]])
+        v1, v2 = stat.projected_paxes(((0, 1, 0), (0, 0, 1)))
 
-        assert_allclose(stat.mom2_along([0, v1[0], v1[1]]), v['sig_maj'] ** 2)
-        assert_allclose(stat.mom2_along([0, v2[0], v2[1]]), v['sig_min'] ** 2)
+        assert_allclose(stat.mom2_along((0, v1[0], v1[1])), v['sig_maj'] ** 2)
+        assert_allclose(stat.mom2_along((0, v2[0], v2[1])), v['sig_min'] ** 2)
 
     def test_projected_paxes_int(self):
         ind = (np.array([0, 1, 2]),
@@ -124,7 +125,7 @@ class TestScalarStatistic(object):
                np.array([0, 1, 2]))
         v = np.array([1, 1, 1])
         stat = ScalarStatistic(v, ind)
-        a, b = stat.projected_paxes([[0, 1, 0], [0, 0, 1]])
+        a, b = stat.projected_paxes(((0, 1, 0), (0, 0, 1)))
         assert_allclose(a, [1 / np.sqrt(2), 1 / np.sqrt(2)])
 
 
@@ -154,7 +155,7 @@ class TestScalar2D(object):
                         [0.3604276691031663, 1.0435691076146387]])
 
     def test_mom2_along(self):
-        assert_allclose(self.stat.mom2_along([0, 1]), 1.0435691076146387)
+        assert_allclose(self.stat.mom2_along((0, 1)), 1.0435691076146387)
 
     def test_count(self):
         assert_allclose(self.stat.count(), 6)
@@ -178,8 +179,8 @@ class TestScalarNan(TestScalar2D):
         ind = (z, y, x)
         val = data[ind].copy()
         ind = (z, x)
-        #all tests should be the same as superclass,
-        #since nan should = 0 weight
+        # all tests should be the same as superclass,
+        # since nan should = 0 weight
         val[0] = np.nan
 
         self.stat = ScalarStatistic(val, ind)
@@ -232,11 +233,11 @@ class TestPPVStatistic(object):
 
     def test_area_exact(self):
         p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
-        assert_allclose_quantity(p.area_exact,  (4 * u.arcsec)**2 * self.v['area_exact_ppv'])
+        assert_allclose_quantity(p.area_exact, (4 * u.arcsec) ** 2 * self.v['area_exact_ppv'])
 
     def test_area_ellipse(self):
         p = PPVStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
-        assert_allclose_quantity(p.area_ellipse,  (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5)**2)
+        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec) ** 2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5) ** 2)
 
     def test_v_rms(self):
         p = PPVStatistic(self.stat, self.metadata())
@@ -276,8 +277,8 @@ class TestPPStatistic(object):
 
     def setup_method(self, method):
         self.stat = benchmark_stat()
-        #this trick essentially collapses along the 0th axis
-        #should preserve sky_maj, sky_min
+        # this trick essentially collapses along the 0th axis
+        # should preserve sky_maj, sky_min
         self.stat.indices = (self.stat.indices[1], self.stat.indices[2])
         self.v = benchmark_values()
 
@@ -301,11 +302,11 @@ class TestPPStatistic(object):
 
     def test_area_exact(self):
         p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
-        assert_allclose_quantity(p.area_exact, (4 * u.arcsec)**2 * self.v['area_exact_pp'])
+        assert_allclose_quantity(p.area_exact, (4 * u.arcsec) ** 2 * self.v['area_exact_pp'])
 
     def test_area_ellipse(self):
         p = PPStatistic(self.stat, self.metadata(spatial_scale=4 * u.arcsec))
-        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec)**2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5) ** 2)
+        assert_allclose_quantity(p.area_ellipse, (4 * u.arcsec) ** 2 * self.v['sig_min'] * self.v['sig_maj'] * np.pi * (2.3548 * 0.5) ** 2)
 
     def test_position_angle(self):
         x = np.array([0, 1, 2])
@@ -325,7 +326,7 @@ class TestPPStatistic(object):
 
 def test_statistic_dimensionality():
 
-    d = Dendrogram.compute(np.ones((10,10)))
+    d = Dendrogram.compute(np.ones((10, 10)))
 
     with pytest.raises(ValueError) as exc:
         PPVStatistic(d.trunk[0])
@@ -333,7 +334,7 @@ def test_statistic_dimensionality():
 
     PPStatistic(d.trunk[0])
 
-    d = Dendrogram.compute(np.ones((10,10,10)))
+    d = Dendrogram.compute(np.ones((10, 10, 10)))
 
     with pytest.raises(ValueError) as exc:
         PPStatistic(d.trunk[0])
@@ -401,7 +402,7 @@ class TestPPCataloger(TestCataloger):
         return dict(data_unit=u.Jy, wcs=wcs_2d)
 
 
-#don't let pytest test abstract class
+# don't let pytest test abstract class
 del TestCataloger
 
 

@@ -2,6 +2,8 @@
 
 import abc
 import warnings
+from functools import wraps
+from weakref import WeakKeyDictionary
 
 import numpy as np
 
@@ -15,6 +17,27 @@ from .structure import Structure
 from .flux import UnitMetadataWarning
 
 __all__ = ['ppv_catalog', 'pp_catalog']
+
+
+def memoize(func):
+
+    # cache[instance][method args] -> method result
+    # hold weakrefs to instances,
+    # to stay out of the way of the garbage collector
+    cache = WeakKeyDictionary()
+
+    @wraps(func)
+    def wrapper(self, *args):
+        try:
+            return cache[self][args]
+        except KeyError:
+            cache.setdefault(self, {})[args] = func(self, *args)
+            return cache[self][args]
+        except TypeError:
+            warnings.warn("Cannot memoize inputs to %s" % func)
+            return func(self, *args)
+
+    return wrapper
 
 
 class MissingMetadataWarning(UserWarning):
@@ -38,7 +61,8 @@ def _unit(q):
 
 
 class ScalarStatistic(object):
-    #This class does all of the heavy computation
+    # This class does all of the heavy computation
+
     def __init__(self, values, indices):
         """
         Compute pixel-level statistics from a scalar field, sampled at specific
@@ -55,15 +79,18 @@ class ScalarStatistic(object):
         self.values = values.astype(np.float)
         self.indices = indices
 
+    @memoize
     def mom0(self):
         """The sum of the values"""
         return np.nansum(self.values)
 
+    @memoize
     def mom1(self):
         """The intensity-weighted mean position"""
         m0 = self.mom0()
         return [np.nansum(i * self.values) / m0 for i in self.indices]
 
+    @memoize
     def mom2(self):
         """The intensity-weighted covariance matrix"""
         mom1 = self.mom1()
@@ -82,6 +109,7 @@ class ScalarStatistic(object):
 
         return result
 
+    @memoize
     def mom2_along(self, direction):
         """
         Intensity-weighted variance/covariance along 1 or more directions.
@@ -106,6 +134,7 @@ class ScalarStatistic(object):
             result = np.asscalar(result)
         return result
 
+    @memoize
     def paxes(self):
         """
         The principal axes of the data (direction of greatest elongation)
@@ -126,6 +155,7 @@ class ScalarStatistic(object):
 
         return tuple(v[:, o] for o in order[::-1])
 
+    @memoize
     def projected_paxes(self, axes):
         """
         The principal axes of a projection of the data onto a subspace
@@ -145,12 +175,14 @@ class ScalarStatistic(object):
         -----
         The ordered principal axes in the new space
         """
+        axes = tuple(axes)
         mom2 = self.mom2_along(axes)
         w, v = np.linalg.eig(mom2)
         order = np.argsort(w)
 
         return tuple(v[:, o] for o in order[::-1])
 
+    @memoize
     def count(self):
         """
         Number of elements in the dataset.
@@ -165,6 +197,7 @@ class ScalarStatistic(object):
 
 
 class VectorStatistic(object):
+
     def __init__(self, values_tuple, indices):
         raise NotImplementedError
 
@@ -176,6 +209,7 @@ class VectorStatistic(object):
 
 
 class Metadata(object):
+
     """
     A descriptor to wrap around metadata dictionaries.
 
@@ -292,7 +326,7 @@ class SpatialBase(object):
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
-        return dx * np.sqrt(self.stat.mom2_along(a))
+        return dx * np.sqrt(self.stat.mom2_along(tuple(a)))
 
     @property
     def minor_sigma(self):
@@ -305,7 +339,7 @@ class SpatialBase(object):
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
-        return dx * np.sqrt(self.stat.mom2_along(b))
+        return dx * np.sqrt(self.stat.mom2_along(tuple(b)))
 
     @property
     def radius(self):
@@ -334,12 +368,14 @@ class SpatialBase(object):
         """
         from matplotlib.patches import Ellipse
         return Ellipse((self.x_cen.value, self.y_cen.value),
-                        self.major_sigma.value * 2.3548,
-                        self.minor_sigma.value * 2.3548,
-                        angle=self.position_angle.value,
-                        **kwargs)
+                       self.major_sigma.value * 2.3548,
+                       self.minor_sigma.value * 2.3548,
+                       angle=self.position_angle.value,
+                       **kwargs)
+
 
 class PPVStatistic(SpatialBase):
+
     """
     Compute properties of structures in a position-position-velocity (PPV)
     cube.
@@ -367,14 +403,14 @@ class PPVStatistic(SpatialBase):
 
     def _sky_paxes(self):
         vaxis = self.vaxis
-        ax = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        ax = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
         ax.pop(vaxis)
-        a, b = self.stat.projected_paxes(ax)
+        a, b = self.stat.projected_paxes(tuple(ax))
         a = list(a)
         a.insert(0, vaxis)
         b = list(b)
         b.insert(0, vaxis)
-        return a, b
+        return tuple(a), tuple(b)
 
     @property
     def x_cen(self):
@@ -429,7 +465,7 @@ class PPVStatistic(SpatialBase):
         dv = self.velocity_scale or u.pixel
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
-        return dv * np.sqrt(self.stat.mom2_along(ax))
+        return dv * np.sqrt(self.stat.mom2_along(tuple(ax)))
 
     @property
     def position_angle(self):
@@ -439,6 +475,7 @@ class PPVStatistic(SpatialBase):
         which is the ``-x`` axis for conventional astronomy images).
         """
         a, b = self._sky_paxes()
+        a = list(a)
         a.pop(self.vaxis)
         return np.degrees(np.arctan2(a[0], a[1])) * u.degree
 
@@ -449,10 +486,11 @@ class PPVStatistic(SpatialBase):
         """
         dx = self.spatial_scale or u.pixel
         indices = zip(*tuple(self.stat.indices[i] for i in range(3) if i != self.vaxis))
-        return len(set(indices)) * dx**2
+        return len(set(indices)) * dx ** 2
 
 
 class PPStatistic(SpatialBase):
+
     """
     Compute properties of structures in a position-position (PP) cube.
 
@@ -525,7 +563,7 @@ class PPStatistic(SpatialBase):
         The exact area of the structure on the sky.
         """
         dx = self.spatial_scale or u.pixel
-        return self.stat.count() * dx**2
+        return self.stat.count() * dx ** 2
 
 
 class PPPStatistic(object):
@@ -603,7 +641,7 @@ def _make_catalog(structures, fields, metadata, statistic):
                                dtype=[int if x == '_idx' else float for x in sorted_row_keys])
             except TypeError:  # dtype was called dtypes in older versions of Astropy
                 result = Table(names=sorted_row_keys,
-                               dtypes=[int if x == '_idx' else float for x in sorted_row_keys])            
+                               dtypes=[int if x == '_idx' else float for x in sorted_row_keys])
             for k, v in row.items():
                 try:  # Astropy API change
                     result[k].unit = _unit(v)

@@ -21,9 +21,9 @@ import numpy as np
 
 
 def _ravel_multi_index(multi_index, dims, mode='raise'):
-    #partial implementation of ravel_multi_index,
-    #for compatibility with numpy <= 1.5
-    #does not implement order kwarg
+    # partial implementation of ravel_multi_index,
+    # for compatibility with numpy <= 1.5
+    # does not implement order kwarg
     ndim = len(dims)
 
     if len(multi_index) != len(dims):
