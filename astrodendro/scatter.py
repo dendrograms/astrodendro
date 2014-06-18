@@ -22,6 +22,15 @@ class Scatter(object):
         >>> ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
         >>> dv.show()
 
+    To set logarithmic scaling on the x, y axes or both, the following
+    convenience methods are defined:
+
+        >>> ds.set_loglog()
+        >>> ds.set_semilogx()
+        >>> ds.set_semilogy()
+        # These can be unset by passing a `log=False` keyword, i.e.
+        >>> ds.set_loglog(False)
+
     For more information on using Scatter, see the online
     documentation.
 
