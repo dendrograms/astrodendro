@@ -70,6 +70,15 @@ lasso, and the selected structures will be highlighted in other plots:
 .. image:: scatter_selected_viewer_screenshot.png
    :width: 80%
 
+To set logarithmic scaling on either the x axis, the y axis, or both,
+the following convenience methods are defined::
+
+    ds.set_semilogx()
+    ds.set_semilogy()
+    ds.set_loglog()
+
+    # To unset logarithmic scaling, pass `log=False` to the above methods, i.e.
+    ds.set_loglog(False)
 
 Making plots for publications
 -----------------------------

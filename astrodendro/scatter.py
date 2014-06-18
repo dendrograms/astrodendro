@@ -123,3 +123,28 @@ class Scatter(object):
             'o', color=self.hub.colors[selection_id], zorder=struct.height)[0]
 
         self.fig.canvas.draw()
+
+    def set_loglog(self, log=True):
+        """ Convenience function to make the plot logarithmic """
+
+        if log:
+            self.axes.set_xscale('log')
+            self.axes.set_yscale('log')
+        else:
+            self.axes.set_xscale('linear')
+            self.axes.set_yscale('linear')            
+        self.fig.canvas.draw()
+
+    def set_semilogx(self, log=True):
+        if log:
+            self.axes.set_xscale('log')
+        else:
+            self.axes.set_xscale('linear')            
+        self.fig.canvas.draw()
+
+    def set_semilogy(self, log=True):
+        if log:
+            self.axes.set_yscale('log')
+        else:
+            self.axes.set_yscale('linear')            
+        self.fig.canvas.draw()
