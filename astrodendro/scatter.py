@@ -56,6 +56,11 @@ class Scatter(object):
 
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self.onpress)
 
+        # If things are already selected in the hub, go select them!
+        for selection_id in self.hub.selections:
+            self.update_selection(selection_id)
+        
+
     def _draw_plot(self):
 
         self.axes.plot(self.xdata, self.ydata, 'o', color='w', mec='k', zorder=-5)
