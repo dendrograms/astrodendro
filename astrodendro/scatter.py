@@ -30,7 +30,6 @@ class Scatter(object):
     def __init__(self, dendrogram, hub, catalog, xaxis, yaxis):
 
         self.hub = hub
-        self.hub.add_callback(self.update_selection)
         self.dendrogram = dendrogram
         self.structures = list(self.dendrogram.all_structures)
 
