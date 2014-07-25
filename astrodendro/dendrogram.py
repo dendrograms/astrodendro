@@ -151,7 +151,6 @@ class Dendrogram(object):
             else:
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
-        neighbours = neighbours or Dendrogram.neighbours
 
         self = Dendrogram()
         self.data = data
@@ -164,6 +163,8 @@ class Dendrogram(object):
         keep = self.data > min_value
         data_values = self.data[keep]
         indices = np.vstack(np.where(keep)).transpose()
+
+        self.neighbours = neighbours or Dendrogram.neighbours
 
         if verbose:
             print("Generating dendrogram using {:,} of {:,} pixels ({}% of data)".format(data_values.size, self.data.size, (100 * data_values.size / self.data.size)))
@@ -202,7 +203,7 @@ class Dendrogram(object):
             # any one dimension will always land on an extra "padding" cell
             # with value zero added above when index_map was created
 
-            indices_adjacent = neighbours(self, indices[i])
+            indices_adjacent = self.neighbours(self, indices[i])
             adjacent = [self.index_map[c] for c in indices_adjacent
                         if self.index_map[c] > -1]
 
