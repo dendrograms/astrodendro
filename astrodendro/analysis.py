@@ -15,7 +15,6 @@ from astropy.wcs import WCS
 from . import six
 from .structure import Structure
 from .flux import UnitMetadataWarning
-from .dendrogram import Dendrogram
 
 __all__ = ['ppv_catalog', 'pp_catalog']
 
@@ -64,7 +63,7 @@ def _unit(q):
 class ScalarStatistic(object):
     # This class does all of the heavy computation
 
-    def __init__(self, values, indices, wrap_longitude=None):
+    def __init__(self, values, indices):
         """
         Compute pixel-level statistics from a scalar field, sampled at specific
         locations.
@@ -79,12 +78,6 @@ class ScalarStatistic(object):
         """
         self.values = values.astype(np.float)
         self.indices = indices
-
-        if wrap_longitude is not None:
-            # For a wrapped structure, take the near-zero indices and shift them up to be above the "max"
-            if min(self.indices[2]) <= 1 and max(self.indices[2]) >= wrap_longitude-1:
-                print "Wrapping structure!"
-                self.indices[2][self.indices < wrap_longitude/2.] += wrap_longitude
 
     @memoize
     def mom0(self):
@@ -621,16 +614,31 @@ class PPPStatistic(object):
         pass
 
 
-def _make_catalog(structures, fields, metadata, statistic, wrap_longitude=None):
+def _make_catalog(structures, fields, metadata, statistic):
     """
     Make a catalog from a list of structures
     """
 
     result = None
 
+    try:
+        shape_tuple = structures.data.shape
+    except:
+        shape_tuple = None
+
     for struct in structures:
-        stat = ScalarStatistic(struct.values(subtree=True),
-                               struct.indices(subtree=True), wrap_longitude)
+
+        values = struct.values(subtree=True)
+        indices = struct.indices(subtree=True)
+
+        if shape_tuple is not None:
+            for index_array, shape in zip(indices, shape_tuple):
+                # catch simple cases where a structure straddles a 0/360 boundary
+                i2 = np.where(index_array > shape/2, index_array-shape, index_array)
+                if i2.ptp() < index_array.ptp():  # more compact with wrapping. Use this
+                    index_array[:] = i2
+
+        stat = ScalarStatistic(values, indices)
         stat = statistic(stat, metadata)
         row = {}
         for lbl in fields:
@@ -697,17 +705,10 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     fields = fields or ['major_sigma', 'minor_sigma', 'radius', 'area_ellipse', 'area_exact',
                         'position_angle', 'v_rms', 'x_cen', 'y_cen', 'v_cen', 'flux']
 
-    if structures.neighbours is not Dendrogram.neighbours:
-        wrap_longitude = structures.data.shape[2] - 1
-        print "WRAP LONGITUDE IS NOT NONE -- it is {0}".format(wrap_longitude)
-    else:
-        wrap_longitude = None
-        print "WRAP LONGITUDE IS NONE"
-
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
         warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)        
-        return _make_catalog(structures, fields, metadata, PPVStatistic, wrap_longitude=wrap_longitude)
+        return _make_catalog(structures, fields, metadata, PPVStatistic)
 
 
 def pp_catalog(structures, metadata, fields=None, verbose=True):
