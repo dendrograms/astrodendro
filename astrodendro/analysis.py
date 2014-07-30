@@ -633,7 +633,7 @@ def _make_catalog(structures, fields, metadata, statistic):
 
         if shape_tuple is not None:
             for index_array, shape in zip(indices, shape_tuple):
-                # catch simple cases where a structure straddles a 0/360 boundary
+                # catch simple cases where a structure wraps around the image boundary
                 i2 = np.where(index_array < shape/2, index_array+shape, index_array)
                 if i2.ptp() < index_array.ptp():  # more compact with wrapping. Use this
                     index_array[:] = i2
