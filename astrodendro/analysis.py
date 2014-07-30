@@ -623,7 +623,7 @@ def _make_catalog(structures, fields, metadata, statistic):
 
     try:
         shape_tuple = structures.data.shape
-    except:
+    except AttributeError:
         shape_tuple = None
 
     for struct in structures:
