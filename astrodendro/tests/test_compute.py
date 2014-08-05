@@ -236,6 +236,55 @@ def test_periodic_right_narrow():
     np.testing.assert_array_equal(d.index_map, expected)
 
 
+def test_periodic2():
+    x = np.array([[1, 0, 0, 0, 1],
+                  [1, 0, 0, 0, 1],
+                  [0, 0, 0, 0, 0]])
+
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[0, -1, -1, -1, 0],
+                         [0, -1, -1, -1, 0],
+                         [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic3():
+    x = np.array([[0, 0, 0, 0, 1],
+                  [1, 0, 0, 0, 1],
+                  [1, 0, 0, 0, 0]])
+
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, 0],
+                         [0, -1, -1, -1, 0],
+                         [0, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic4():
+    x = np.array([[0, 0, 1, 1, 1],
+                  [1, 0, 1, 1, 1],
+                  [1, 0, 1, 1, 0]])
+
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, 0, 0, 0],
+                         [0, -1, 0, 0, 0],
+                         [0, -1, 0, 0, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+
+def test_periodic5():
+    x = np.array([[1, 1, 0, 1, 1],
+                  [1, 1, 0, 1, 1],
+                  [0, 0, 0, 0, 0]])
+
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[0, 0, -1, 0, 0],
+                        [0, 0, -1, 0, 0],
+                        [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
 
 from .build_benchmark import BENCHMARKS
 
