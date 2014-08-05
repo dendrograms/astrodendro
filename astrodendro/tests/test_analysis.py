@@ -440,6 +440,125 @@ def test_wraparound_catalog():
     d_broken = Dendrogram.compute(x_straddling, min_value=0.5)
     assert len(d_straddling) != len(d_broken)
 
+def test_wraparound_catalog2():
+
+    x_centered = np.array(
+        [[0, 1, 1, 0, 0, 0],
+         [0, 1, 1, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0]]
+        )
+    # same structure as x_centered, but shifted to the boundary
+    x_straddling = np.array(
+        [[1, 0, 0, 0, 0, 1],
+         [1, 0, 0, 0, 0, 1],
+         [0, 0, 0, 0, 0, 0]]
+        )
+
+    d_centered = Dendrogram.compute(x_centered, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+
+    d_straddling = Dendrogram.compute(x_straddling, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+
+    assert len(d_centered) == len(d_straddling)
+
+    metadata = {'data_unit': u.Jy} # dummy unit to get the catalog to compute
+
+    catalog_centered = pp_catalog(d_centered, metadata)
+    catalog_straddling = pp_catalog(d_straddling, metadata)
+
+    assert catalog_centered['major_sigma'][0] == catalog_straddling['major_sigma'][0]
+    assert catalog_centered['position_angle'][0] == catalog_straddling['position_angle'][0]
+    assert catalog_centered['radius'][0] == catalog_straddling['radius'][0]
+    assert catalog_centered['area_exact'][0] == catalog_straddling['area_exact'][0]
+
+    assert catalog_centered['x_cen'][0] == catalog_straddling['x_cen'][0] - 4 # offset by 4 px
+    assert catalog_centered['y_cen'][0] == catalog_straddling['y_cen'][0]
+
+    # default behavior is to NOT join structures on data edges, let's make sure that we aren't fooling ourselves.
+    d_broken = Dendrogram.compute(x_straddling, min_value=0.5)
+    assert len(d_straddling) != len(d_broken)
+
+
+def test_wraparound_catalog3():
+
+    x_centered = np.array(
+        [[0, 1, 1, 1, 0, 0],
+         [0, 1, 1, 1, 0, 0],
+         [0, 0, 1, 1, 0, 0]]
+        )
+    # same structure as x_centered, but shifted to the boundary
+    x_straddling = np.array(
+        [[1, 1, 0, 0, 0, 1],
+         [1, 1, 0, 0, 0, 1],
+         [1, 1, 0, 0, 0, 0]]
+        )
+
+    d_centered = Dendrogram.compute(x_centered, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+
+    d_straddling = Dendrogram.compute(x_straddling, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+
+    assert len(d_centered) == len(d_straddling)
+
+    metadata = {'data_unit': u.Jy} # dummy unit to get the catalog to compute
+
+    catalog_centered = pp_catalog(d_centered, metadata)
+    catalog_straddling = pp_catalog(d_straddling, metadata)
+
+    assert catalog_centered['major_sigma'][0] == catalog_straddling['major_sigma'][0]
+    assert catalog_centered['position_angle'][0] == catalog_straddling['position_angle'][0]
+    assert catalog_centered['radius'][0] == catalog_straddling['radius'][0]
+    assert catalog_centered['area_exact'][0] == catalog_straddling['area_exact'][0]
+
+    assert catalog_centered['x_cen'][0] == catalog_straddling['x_cen'][0] - 4 # offset by 4 px
+    assert catalog_centered['y_cen'][0] == catalog_straddling['y_cen'][0]
+
+    # default behavior is to NOT join structures on data edges, let's make sure that we aren't fooling ourselves.
+    d_broken = Dendrogram.compute(x_straddling, min_value=0.5)
+    assert len(d_straddling) != len(d_broken)
+
+def test_wraparound_catalog4():
+
+    x_centered = np.array(
+        [[1, 1, 0, 0, 0, 0],
+         [1, 1, 1, 1, 0, 0],
+         [0, 0, 0, 0, 0, 0]]
+        )
+    # same structure as x_centered, but shifted to the boundary
+    x_straddling = np.array(
+        [[0, 0, 0, 0, 1, 1],
+         [1, 1, 0, 0, 1, 1],
+         [0, 0, 0, 0, 0, 0]]
+        )
+
+    d_centered = Dendrogram.compute(x_centered, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+
+    d_straddling = Dendrogram.compute(x_straddling, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+
+    assert len(d_centered) == len(d_straddling)
+
+    metadata = {'data_unit': u.Jy} # dummy unit to get the catalog to compute
+
+    catalog_centered = pp_catalog(d_centered, metadata)
+    catalog_straddling = pp_catalog(d_straddling, metadata)
+
+    assert catalog_centered['major_sigma'][0] == catalog_straddling['major_sigma'][0]
+    assert catalog_centered['position_angle'][0] == catalog_straddling['position_angle'][0]
+    assert catalog_centered['radius'][0] == catalog_straddling['radius'][0]
+    assert catalog_centered['area_exact'][0] == catalog_straddling['area_exact'][0]
+
+    np.testing.assert_approx_equal(catalog_centered['x_cen'][0], catalog_straddling['x_cen'][0] - 4) # offset by 4 px
+    assert catalog_centered['y_cen'][0] == catalog_straddling['y_cen'][0]
+
+    # default behavior is to NOT join structures on data edges, let's make sure that we aren't fooling ourselves.
+    d_broken = Dendrogram.compute(x_straddling, min_value=0.5)
+    assert len(d_straddling) != len(d_broken)
+
+
 # don't let pytest test abstract class
 del TestCataloger
 
