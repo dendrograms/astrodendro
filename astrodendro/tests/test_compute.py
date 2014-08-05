@@ -180,9 +180,9 @@ class TestNDimensionalData(object):
 
 
 def test_periodic():
-    x = np.array([[0, 0, 0, 0, 0, ],
-                 [1, 1, 0, 1, 1],
-                 [0, 0, 0, 0, 0]])
+    x = np.array([[0, 0, 0, 0, 0],
+                  [1, 1, 0, 1, 1],
+                  [0, 0, 0, 0, 0]])
 
     d = Dendrogram.compute(x, min_value=0.5,
                            neighbours=periodic_neighbours(1))
