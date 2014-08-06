@@ -292,7 +292,7 @@ class SpatialBase(object):
 
     def _world_pos(self):
         try:
-            xyz = list(np.array(self.stat.mom1()) % np.array(self.metadata['shape_tuple']))[::-1]
+            xyz = list(np.array(self.stat.mom1()) % (np.array(self.metadata['shape_tuple']) - 1))[::-1]
         except (TypeError, AttributeError, KeyError):
             xyz = self.stat.mom1()[::-1]
 
