@@ -433,7 +433,7 @@ def test_wraparound_catalog():
     assert catalog_centered['radius'][0] == catalog_straddling['radius'][0]
     assert catalog_centered['area_exact'][0] == catalog_straddling['area_exact'][0]
 
-    assert catalog_centered['x_cen'][0] == catalog_straddling['x_cen'][0] - 4 # offset by 4 px
+    assert (catalog_centered['x_cen'][0] + 4) % (x_centered.shape[1]-1) == catalog_straddling['x_cen'][0] # offset by 4 px, then wrapped around
     assert catalog_centered['y_cen'][0] == catalog_straddling['y_cen'][0]
 
     # default behavior is to NOT join structures on data edges, let's make sure that we aren't fooling ourselves.
