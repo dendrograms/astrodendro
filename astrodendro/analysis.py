@@ -291,7 +291,11 @@ class SpatialBase(object):
         raise NotImplementedError()
 
     def _world_pos(self):
-        xyz = self.stat.mom1()[::-1]
+        try:
+            xyz = list(np.array(self.stat.mom1()) % np.array(self.metadata['shape_tuple']))[::-1]
+        except (TypeError, AttributeError, KeyError):
+            xyz = self.stat.mom1()[::-1]
+
         if self.wcs is None:
             return xyz[::-1] * u.pixel
         else:
@@ -623,6 +627,7 @@ def _make_catalog(structures, fields, metadata, statistic):
 
     try:
         shape_tuple = structures.data.shape
+        metadata['shape_tuple'] = shape_tuple
     except AttributeError:
         shape_tuple = None
 
