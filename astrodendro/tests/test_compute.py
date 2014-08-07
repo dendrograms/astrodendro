@@ -202,6 +202,17 @@ def test_periodic_left():
                          [0, -1, -1, -1, -1]])
     np.testing.assert_array_equal(d.index_map, expected)
 
+def test_periodic_left_narrow():
+    x = np.array([[0, 0, 0, 0, 0],
+                  [1, 1, 0, 0, 1],
+                  [0, 0, 0, 0, 0]])
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, -1],
+                         [0, 0, -1, -1, 0],
+                         [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
 def test_periodic_right():
     x = np.array([[0, 0, 0, 0, 1],
                   [1, 0, 0, 0, 1],
@@ -212,6 +223,18 @@ def test_periodic_right():
                          [0, -1, -1, -1, 0],
                          [-1, -1, -1, -1, 0]])
     np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic_right_narrow():
+    x = np.array([[0, 0, 0, 0, 0],
+                  [1, 0, 0, 1, 1],
+                  [0, 0, 0, 0, 0]])
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, -1],
+                         [0, -1, -1, 0, 0],
+                         [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
 
 
 from .build_benchmark import BENCHMARKS
