@@ -293,6 +293,10 @@ class SpatialBase(object):
     def _world_pos(self):
         try:
             xyz = list(np.array(self.stat.mom1()) % np.array(self.metadata['shape_tuple']))[::-1]
+            # wcs complains if px exceeds data, so make it negative if it falls between shp-1 and shp
+            for i, shp in zip(range(len(xyz)), self.metadata['shape_tuple'][::-1]):
+                if xyz[i] > shp-1:
+                    xyz[i] -= shp
         except (TypeError, AttributeError, KeyError):
             xyz = self.stat.mom1()[::-1]
 
