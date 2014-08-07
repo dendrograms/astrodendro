@@ -421,7 +421,7 @@ def test_wraparound_catalog():
     d_straddling = Dendrogram.compute(x_straddling, min_value=0.5,
                            neighbours=periodic_neighbours(1))
 
-    assert len(d_centered) == len(d_straddling)
+    assert len(d_centered) == len(d_straddling) == 1
 
     metadata = {'data_unit': u.Jy} # dummy unit to get the catalog to compute
 
