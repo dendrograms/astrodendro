@@ -701,9 +701,9 @@ def periodic_neighbours(axes):
 
     def _wrap(c, shp):
         # note: shp is padded along each dimension,
-        #      so values to wrap occur 0, len-1
+        #      so values to wrap occur -1, len-1
         for a in axes:
-            if c[a] == 0:
+            if c[a] < 0:
                 c[a] = shp[a] - 2
             elif c[a] == shp[a] - 1:
                 c[a] = 0
