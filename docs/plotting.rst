@@ -50,8 +50,9 @@ the identify the structure when computing catalogs or making plots manually
 
 **Linked scatter plots:**
 If you have built a catalog (see :doc:`catalog`), you can also
-display a scatterplot of two catalog columns, linked to the viewer. Selections
-in the main viewer update the colors of the points in this plot::
+display a scatterplot of two catalog columns, linked to the viewer.
+The available catalog columns can be accessed as ```catalog.colnames```.
+Selections in the main viewer update the colors of the points in this plot::
 
     from astrodendro.scatter import Scatter
     ... code to create a dendrogram (d) and catalog ...
@@ -59,7 +60,25 @@ in the main viewer update the colors of the points in this plot::
     ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
     dv.show()
 
+The catalog properties of dendrogram structures will be plotted here. You can 
+select structures directly from the scatter plot by clicking and dragging a 
+lasso, and the selected structures will be highlighted in other plots:
 
+.. image:: scatter_screenshot.png
+   :width: 50%
+
+.. image:: scatter_selected_viewer_screenshot.png
+   :width: 80%
+
+To set logarithmic scaling on either the x axis, the y axis, or both,
+the following convenience methods are defined::
+
+    ds.set_semilogx()
+    ds.set_semilogy()
+    ds.set_loglog()
+
+    # To unset logarithmic scaling, pass `log=False` to the above methods, i.e.
+    ds.set_loglog(False)
 
 Making plots for publications
 -----------------------------
