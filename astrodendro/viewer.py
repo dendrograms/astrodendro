@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 from .plot import DendrogramPlotter
-
+from wcsaxes import WCSAxes
 
 class SelectionHub(object):
 
@@ -84,7 +84,20 @@ class BasicDendrogramViewer(object):
         import matplotlib.pyplot as plt
         self.fig = plt.figure(figsize=(14, 8))
 
-        self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.7])
+        ax_image_limits = [0.1, 0.1, 0.4, 0.7]
+
+        if self.dendrogram.wcs is not None:
+
+            if self.array.ndim == 2:
+                slices = ('x', 'y')
+            else:
+                slices = ('x', 'y', 1)
+
+            ax_image = WCSAxes(self.fig, ax_image_limits, wcs=self.dendrogram.wcs, slices=slices)
+            self.ax_image = self.fig.add_axes(ax_image)
+
+        else:
+            self.ax_image = self.fig.add_axes(ax_image_limits)            
 
         from matplotlib.widgets import Slider
 
@@ -94,7 +107,7 @@ class BasicDendrogramViewer(object):
         if self.array.ndim == 2:
 
             self.slice = None
-            self.image = self.ax1.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+            self.image = self.ax_image.imshow(self.array, origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
             self.slice_slider = None
 
@@ -116,7 +129,7 @@ class BasicDendrogramViewer(object):
                 self.slice = 0
                 self.slice_slider = None
 
-            self.image = self.ax1.imshow(self.array[self.slice, :,:], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+            self.image = self.ax_image.imshow(self.array[self.slice, :,:], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
@@ -206,7 +219,7 @@ class BasicDendrogramViewer(object):
         if event.button not in self.selected_label:
             return
 
-        if event.inaxes is self.ax1:
+        if event.inaxes is self.ax_image:
 
             input_key = event.button
 
@@ -300,7 +313,7 @@ class BasicDendrogramViewer(object):
 
         if selection_id in self.selected_contour:
             for collection in self.selected_contour[selection_id].collections:
-                self.ax1.collections.remove(collection)
+                self.ax_image.collections.remove(collection)
             del self.selected_contour[selection_id]
 
     def remove_all_contours(self):
@@ -325,6 +338,6 @@ class BasicDendrogramViewer(object):
                 mask = reduce(np.add, [structure.get_mask(subtree=True) for structure in structures])
             if self.array.ndim == 3:
                 mask = mask[self.slice, :, :]
-            self.selected_contour[selection_id] = self.ax1.contour(
+            self.selected_contour[selection_id] = self.ax_image.contour(
                 mask, colors=self.hub.colors[selection_id],
                 linewidths=2, levels=[0.5], alpha=0.75, zorder=struct.height)
