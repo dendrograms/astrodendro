@@ -128,7 +128,9 @@ class Dendrogram(object):
                        that has been padded with one element along each edge.
 
         wcs : WCS object, optional
-            A WCS object that describes `data`.
+            A WCS object that describes `data`. This is used in the 
+            interactive viewer to properly display the data's coordinates 
+            on the image axes.
 
 
         Examples
