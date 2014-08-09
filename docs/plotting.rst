@@ -48,6 +48,22 @@ has a unique integer ID (the ``.idx`` attribute) that can be used to recognize
 the identify the structure when computing catalogs or making plots manually
 (see below).
 
+**Display astronomical coordinates:**
+If your data has an associated WCS object (for example, if you loaded your data 
+from a FITS file with astronomical coordinate information), the interactive viewer
+will display the coordinates using ``wcsaxes``::
+
+    from astropy.io.fits import getdata
+    from astropy import wcs
+
+    data, header = getdata('astrodendro/docs/PerA_Extn2MASS_F_Gal.fits', header=True)
+    wcs = wcs.WCS(header)
+    d = astrodendro.Dendrogram.compute(data, wcs=wcs)
+    v = d.viewer()
+    v.show()
+
+.. image:: wcsaxes_docs_screenshot.png
+
 **Linked scatter plots:**
 If you have built a catalog (see :doc:`catalog`), you can also
 display a scatterplot of two catalog columns, linked to the viewer.
