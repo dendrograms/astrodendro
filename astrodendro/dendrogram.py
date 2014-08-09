@@ -88,7 +88,7 @@ class Dendrogram(object):
 
     @staticmethod
     def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
-                is_independent=None, verbose=False, neighbours=None):
+                is_independent=None, verbose=False, neighbours=None, wcs=None):
         """
         Compute a dendrogram from a Numpy array.
 
@@ -127,6 +127,10 @@ class Dendrogram(object):
             .. note:: ``idx`` refers to location in a copy of the input data
                        that has been padded with one element along each edge.
 
+        wcs : WCS object, optional
+            A WCS object that describes `data`.
+
+
         Examples
         --------
 
@@ -156,6 +160,7 @@ class Dendrogram(object):
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
+        self.wcs = wcs
         # For reference, store the parameters used:
         self.params = dict(min_npix=min_npix, min_value=min_value,
                            min_delta=min_delta)
