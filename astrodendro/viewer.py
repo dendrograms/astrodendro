@@ -145,8 +145,8 @@ class BasicDendrogramViewer(object):
         self.vmax_slider.on_changed(self.update_vmax)
         self.vmax_slider.drawon = False
 
-        self.ax2 = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
-        self.ax2.add_collection(self.lines)
+        self.ax_dendrogram = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
+        self.ax_dendrogram.add_collection(self.lines)
 
         self.selected_label = {} # map selection IDs -> text objects
         self.selected_label[1] = self.fig.text(0.6, 0.85, "No structure selected", fontsize=18, 
@@ -164,9 +164,9 @@ class BasicDendrogramViewer(object):
         self.lines.set_picker(2.)
         self.lines.set_zorder(0)
         dx = xmax - xmin
-        self.ax2.set_xlim(xmin - dx * 0.1, xmax + dx * 0.1)
-        self.ax2.set_ylim(ymin * 0.5, ymax * 2.0)
-        self.ax2.set_yscale('log')
+        self.ax_dendrogram.set_xlim(xmin - dx * 0.1, xmax + dx * 0.1)
+        self.ax_dendrogram.set_ylim(ymin * 0.5, ymax * 2.0)
+        self.ax_dendrogram.set_yscale('log')
 
         self.fig.canvas.mpl_connect('pick_event', self.line_picker)
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
@@ -279,7 +279,7 @@ class BasicDendrogramViewer(object):
 
         # Remove previously selected collection
         if selection_id in self.selected_lines:
-            self.ax2.collections.remove(self.selected_lines[selection_id])
+            self.ax_dendrogram.collections.remove(self.selected_lines[selection_id])
             del self.selected_lines[selection_id]
 
         if structure is None:
@@ -307,7 +307,7 @@ class BasicDendrogramViewer(object):
         self.selected_lines[selection_id].set_zorder(structure.height)
 
         # Add to axes
-        self.ax2.add_collection(self.selected_lines[selection_id])
+        self.ax_dendrogram.add_collection(self.selected_lines[selection_id])
 
     def remove_contour(self, selection_id):
 
