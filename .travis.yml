@@ -33,6 +33,7 @@ install:
    - pip -q install h5py
    - pip -q install astropy
    - pip -q install matplotlib
+   - pip -q install wcsaxes
    - if [[ $SETUP_CMD == cov ]]; then pip install pytest -q --use-mirrors; fi
    - if [[ $SETUP_CMD == cov ]]; then pip install pytest-cov -q --use-mirrors; fi
    - if [[ $SETUP_CMD == cov ]]; then pip install coveralls -q --use-mirrors; fi
