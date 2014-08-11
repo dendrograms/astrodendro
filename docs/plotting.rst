@@ -64,6 +64,10 @@ will display the coordinates using ``wcsaxes``::
 
 .. image:: wcsaxes_docs_screenshot.png
 
+Note that this functionality requires that the ``wcsaxes`` package is installed.
+Installation instructions can be found here: 
+http://wcsaxes.readthedocs.org/en/latest/
+
 **Linked scatter plots:**
 If you have built a catalog (see :doc:`catalog`), you can also
 display a scatterplot of two catalog columns, linked to the viewer.
