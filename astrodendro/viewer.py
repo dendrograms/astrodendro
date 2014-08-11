@@ -1,6 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
 from collections import defaultdict
+import warnings
 
 import numpy as np
 from .plot import DendrogramPlotter
@@ -85,11 +86,16 @@ class BasicDendrogramViewer(object):
 
         ax_image_limits = [0.1, 0.1, 0.4, 0.7]
 
-        if self.dendrogram.wcs is not None:
-            try:
-                from wcsaxes import WCSAxes
-            except ImportError:
-                raise ImportError("WCSAxes required for wcs coordinate display")
+        try:
+            from wcsaxes import WCSAxes
+            __wcaxes_imported = True
+        except ImportError:
+            __wcaxes_imported = False
+            if self.dendrogram.wcs is not None:
+                warnings.warn("`WCSAxes` package required for wcs coordinate display.")
+
+
+        if self.dendrogram.wcs is not None and __wcaxes_imported:
 
             if self.array.ndim == 2:
                 slices = ('x', 'y')
