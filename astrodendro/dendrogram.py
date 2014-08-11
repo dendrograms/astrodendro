@@ -130,7 +130,8 @@ class Dendrogram(object):
         wcs : WCS object, optional
             A WCS object that describes `data`. This is used in the 
             interactive viewer to properly display the data's coordinates 
-            on the image axes.
+            on the image axes. (Requires that `wcsaxes` is installed; see 
+            http://wcsaxes.readthedocs.org/ for install instructions.)
 
 
         Examples
