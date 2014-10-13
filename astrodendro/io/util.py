@@ -114,19 +114,6 @@ def parse_dendrogram(newick, data, index_map):
                 d._structures_dict[idx] = l
         return structures
 
-    # Alternative implementation.  Turns out to be slower.
-    #indices = np.unique(d.index_map[d.index_map>-1])
-    #log.debug('[np way] Creating index maps for {0} indices...'.format(len(indices)))
-    #for idx in ProgressBar(indices):
-    #    match = d.index_map == idx # This is probably why it's slower
-    #    whmatch = np.nonzero(match)
-    #    if idx in flux_by_structure:
-    #        flux_by_structure[idx] += d.data[whmatch].tolist()
-    #        indices_by_structure[idx] += zip(*whmatch)
-    #    else:
-    #        flux_by_structure[idx] = d.data[whmatch].tolist()
-    #        indices_by_structure[idx] = zip(*whmatch)
-
     # Do a fast iteration through d.data, adding the indices and data values
     # to the two dictionaries declared above:
     indices = np.array(np.where(d.index_map > -1)).transpose()
