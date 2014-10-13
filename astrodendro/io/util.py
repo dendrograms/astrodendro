@@ -116,7 +116,7 @@ def parse_dendrogram(newick, data, index_map):
 
     # Do a fast iteration through d.data, adding the indices and data values
     # to the two dictionaries declared above:
-    indices = np.array(np.where(d.index_map != -1)).transpose()
+    indices = np.array(np.where(d.index_map > -1)).transpose()
 
     log.debug('Creating index maps for {0} indices...'.format(len(indices)))
     for coord in ProgressBar(indices):
