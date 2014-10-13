@@ -13,7 +13,7 @@ def parse_newick(string):
     current_level = 0
     max_level = 0
     log.debug('String loading...')
-    for i, c in ProgressBar(enumerate(string)):
+    for i, c in enumerate(string):
         if c == '(':
             current_level += 1
         if c == ')':
@@ -22,7 +22,7 @@ def parse_newick(string):
 
     # Loop through levels and construct tree
     log.debug('Tree loading...')
-    for level in ProgressBar(range(max_level, 0, -1)):
+    for level in range(max_level, 0, -1):
 
         pairs = []
 
