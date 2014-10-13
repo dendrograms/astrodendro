@@ -1,6 +1,8 @@
 import numpy as np
 
 from .. import six
+from astropy.utils.console import ProgressBar
+from astropy import log
 
 
 def parse_newick(string):
@@ -10,7 +12,8 @@ def parse_newick(string):
     # Find maximum level
     current_level = 0
     max_level = 0
-    for i, c in enumerate(string):
+    log.debug('String loading...')
+    for i, c in ProgressBar(enumerate(string)):
         if c == '(':
             current_level += 1
         if c == ')':
@@ -18,7 +21,8 @@ def parse_newick(string):
         max_level = max(max_level, current_level)
 
     # Loop through levels and construct tree
-    for level in range(max_level, 0, -1):
+    log.debug('Tree loading...')
+    for level in ProgressBar(range(max_level, 0, -1)):
 
         pairs = []
 
@@ -112,19 +116,20 @@ def parse_dendrogram(newick, data, index_map):
 
     # Do a fast iteration through d.data, adding the indices and data values
     # to the two dictionaries declared above:
-    indices = np.indices(d.data.shape).reshape(d.data.ndim, np.prod(d.data.shape)).transpose()
+    indices = np.array(np.where(d.index_map != -1)).transpose()
 
-    for coord in indices:
+    log.debug('Creating index maps for {0} indices...'.format(len(indices)))
+    for coord in ProgressBar(indices):
         coord = tuple(coord)
         idx = d.index_map[coord]
-        if idx > -1:
-            try:
-                flux_by_structure[idx].append(d.data[coord])
-                indices_by_structure[idx].append(coord)
-            except KeyError:
-                flux_by_structure[idx] = [d.data[coord]]
-                indices_by_structure[idx] = [coord]
+        if idx in flux_by_structure:
+            flux_by_structure[idx].append(d.data[coord])
+            indices_by_structure[idx].append(coord)
+        else:
+            flux_by_structure[idx] = [d.data[coord]]
+            indices_by_structure[idx] = [coord]
 
+    log.debug('Parsing newick and constructing tree...')
     d.trunk = _construct_tree(parse_newick(newick))
     # To make the structure.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
