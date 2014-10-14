@@ -115,9 +115,11 @@ def parse_dendrogram(newick, data, index_map):
         return structures
 
     try:
-        _fast_reader(d.index_map, flux_by_structure, indices_by_structure)
+        _fast_reader(d.index_map, flux_by_structure, indices_by_structure,
+                     data)
     except ImportError:
-        _slow_reader(d.index_map, flux_by_structure, indices_by_structure)
+        _slow_reader(d.index_map, flux_by_structure, indices_by_structure,
+                     data)
 
 
     log.debug('Parsing newick and constructing tree...')
@@ -130,7 +132,7 @@ def parse_dendrogram(newick, data, index_map):
     d._index()
     return d
 
-def _fast_reader(index_map, flux_by_structure, indices_by_structure):
+def _fast_reader(index_map, flux_by_structure, indices_by_structure, data):
     """
     Use scipy.ndimage.find_objects to quickly identify subsets of the data
     to increase speed of dendrogram loading
@@ -154,16 +156,16 @@ def _fast_reader(index_map, flux_by_structure, indices_by_structure):
         sl2 = (slice(None),) + sl
         match_inds = index_cube[sl2][:, match]
         coords = list(zip(*match_inds))
-        data = data[sl][match].tolist()
+        dd = data[sl][match].tolist()
         if idx in flux_by_structure:
-            flux_by_structure[idx] += data
+            flux_by_structure[idx] += dd
             indices_by_structure[idx] += coords
         else:
-            flux_by_structure[idx] = data
+            flux_by_structure[idx] = dd
             indices_by_structure[idx] = coords
 
 
-def _slow_reader(index_map, flux_by_structure, indices_by_structure):
+def _slow_reader(index_map, flux_by_structure, indices_by_structure, data):
     """
     Loop over each valid pixel in the index_map and add its coordinates and
     data to the flux_by_structure and indices_by_structure dicts
