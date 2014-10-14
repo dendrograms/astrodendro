@@ -81,8 +81,10 @@ def parse_dendrogram(newick, data, index_map):
     d.data = data
     d.index_map = index_map
 
-    flux_by_structure = {}
-    indices_by_structure = {}
+    try:
+        flux_by_structure, indices_by_structure = _fast_reader(d.index_map, data)
+    except ImportError:
+        flux_by_structure, indices_by_structure = _slow_reader(d.index_map, data)
 
     def _construct_tree(repr):
         structures = []
@@ -114,14 +116,6 @@ def parse_dendrogram(newick, data, index_map):
                 d._structures_dict[idx] = l
         return structures
 
-    try:
-        _fast_reader(d.index_map, flux_by_structure, indices_by_structure,
-                     data)
-    except ImportError:
-        _slow_reader(d.index_map, flux_by_structure, indices_by_structure,
-                     data)
-
-
     log.debug('Parsing newick and constructing tree...')
     d.trunk = _construct_tree(parse_newick(newick))
     # To make the structure.level property fast, we ensure all the items in the
@@ -132,13 +126,13 @@ def parse_dendrogram(newick, data, index_map):
     d._index()
     return d
 
-def _fast_reader(index_map, flux_by_structure, indices_by_structure, data):
+def _fast_reader(index_map, data):
     """
     Use scipy.ndimage.find_objects to quickly identify subsets of the data
     to increase speed of dendrogram loading
-
-    **Modifies flux_by_structure and indices_by_structure inplace**
     """
+
+    flux_by_structure, indices_by_structure = {},{}
 
     from scipy import ndimage
     idxs = np.unique(index_map[index_map > -1])
@@ -157,15 +151,12 @@ def _fast_reader(index_map, flux_by_structure, indices_by_structure, data):
         match_inds = index_cube[sl2][:, match]
         coords = list(zip(*match_inds))
         dd = data[sl][match].tolist()
-        if idx in flux_by_structure:
-            flux_by_structure[idx] += dd
-            indices_by_structure[idx] += coords
-        else:
-            flux_by_structure[idx] = dd
-            indices_by_structure[idx] = coords
+        flux_by_structure[idx] = dd
+        indices_by_structure[idx] = coords
 
+    return flux_by_structure, indices_by_structure
 
-def _slow_reader(index_map, flux_by_structure, indices_by_structure, data):
+def _slow_reader(index_map, data):
     """
     Loop over each valid pixel in the index_map and add its coordinates and
     data to the flux_by_structure and indices_by_structure dicts
@@ -173,9 +164,8 @@ def _slow_reader(index_map, flux_by_structure, indices_by_structure, data):
     This is slower than _fast_reader but faster than that implementation would
     be without find_objects.  The bottleneck is doing `index_map == idx` N
     times.
-
-    **Modifies flux_by_structure and indices_by_structure inplace**
     """
+    flux_by_structure, indices_by_structure = {},{}
     # Do a fast iteration through d.data, adding the indices and data values
     # to the two dictionaries declared above:
     indices = np.array(np.where(index_map > -1)).transpose()
@@ -190,3 +180,5 @@ def _slow_reader(index_map, flux_by_structure, indices_by_structure, data):
         else:
             flux_by_structure[idx] = [data[coord]]
             indices_by_structure[idx] = [coord]
+
+    return flux_by_structure, indices_by_structure
