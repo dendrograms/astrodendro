@@ -3,6 +3,7 @@ import numpy as np
 from .. import six
 from astropy.utils.console import ProgressBar
 from astropy import log
+import time
 
 
 def parse_newick(string):
@@ -70,9 +71,11 @@ def parse_newick(string):
     return items['trunk']
 
 
-def parse_dendrogram(newick, data, index_map):
+def parse_dendrogram(newick, data, index_map, readmethod=3):
     from ..dendrogram import Dendrogram
     from ..structure import Structure
+
+    t0 = time.time()
 
     d = Dendrogram()
     d.ndim = len(data.shape)
@@ -114,20 +117,78 @@ def parse_dendrogram(newick, data, index_map):
                 d._structures_dict[idx] = l
         return structures
 
-    # Do a fast iteration through d.data, adding the indices and data values
-    # to the two dictionaries declared above:
-    indices = np.array(np.where(d.index_map > -1)).transpose()
+    if readmethod==3:
+        from scipy import ndimage
+        """
+        In [14]: %timeit np.unique(index_map)
+        1 loops, best of 3: 1.81 s per loop
 
-    log.debug('Creating index maps for {0} indices...'.format(len(indices)))
-    for coord in ProgressBar(indices):
-        coord = tuple(coord)
-        idx = d.index_map[coord]
-        if idx in flux_by_structure:
-            flux_by_structure[idx].append(d.data[coord])
-            indices_by_structure[idx].append(coord)
-        else:
-            flux_by_structure[idx] = [d.data[coord]]
-            indices_by_structure[idx] = [coord]
+        In [15]: %timeit np.unique(index_map[index_map>-1])
+        10 loops, best of 3: 105 ms per loop
+        """
+        idxs = np.unique(d.index_map[d.index_map > -1])
+
+        # ndimage ignores 0 and -1, but we want index 0
+        object_slices = ndimage.find_objects(d.index_map+1)
+        index_cube = np.indices(d.index_map.shape)
+
+        # Need to have same length, otherwise assumptions above are wrong
+        assert len(idxs) == len(object_slices)
+
+        for idx,sl in ProgressBar(zip(idxs, object_slices)):
+            match = d.index_map[sl] == idx
+            sl2 = (slice(None),) + sl
+            match_inds = index_cube[sl2][:, match]
+            coords = list(zip(*match_inds))
+            data = d.data[sl][match].tolist()
+            if idx in flux_by_structure:
+                flux_by_structure[idx] += data
+                indices_by_structure[idx] += coords
+            else:
+                flux_by_structure[idx] = data
+                indices_by_structure[idx] = coords
+
+
+    if readmethod==2:
+        # Alternative implementation.  Turns out to be slower.
+        indices = np.unique(d.index_map[d.index_map>-1])
+        log.debug('[np way] Creating index maps for {0} indices...'.format(len(indices)))
+        for idx in ProgressBar(indices):
+            match = d.index_map == idx # This is probably why it's slower
+            whmatch = np.nonzero(match)
+            if idx in flux_by_structure:
+                flux_by_structure[idx] += d.data[whmatch].tolist()
+                indices_by_structure[idx] += zip(*whmatch)
+            else:
+                flux_by_structure[idx] = d.data[whmatch].tolist()
+                indices_by_structure[idx] = zip(*whmatch)
+
+    if readmethod == 1:
+        # Do a fast iteration through d.data, adding the indices and data values
+        # to the two dictionaries declared above:
+        indices = np.array(np.where(d.index_map > -1)).transpose()
+
+        log.debug('Creating index maps for {0} indices...'.format(len(indices)))
+        for coord in ProgressBar(indices):
+            coord = tuple(coord)
+            idx = d.index_map[coord]
+            if idx in flux_by_structure:
+                flux_by_structure[idx].append(d.data[coord])
+                indices_by_structure[idx].append(coord)
+            else:
+                flux_by_structure[idx] = [d.data[coord]]
+                indices_by_structure[idx] = [coord]
+
+    """
+    In [7]: util.parse_dendrogram(newick, data, index_map, readmethod=1)
+    |=========================================================================================================================| 330k/330k (100.00%)        28s
+    Out[7]: <astrodendro.dendrogram.Dendrogram at 0x107678450>
+
+    In [8]: util.parse_dendrogram(newick, data, index_map, readmethod=2)
+    |=========================================================================================================================| 528 /528  (100.00%)      3m15s
+    Out[8]: <astrodendro.dendrogram.Dendrogram at 0x1522e5f90>
+    """
+
             
 
     log.debug('Parsing newick and constructing tree...')
@@ -138,4 +199,16 @@ def parse_dendrogram(newick, data, index_map):
         structure._level = 0  # See the @property level() definition in structure.py
 
     d._index()
+    log.info("Read method {0} completed in {1} seconds.".format(readmethod,
+                                                                time.time()-t0))
     return d
+
+"""
+Performance stats for a 528-element dendrogram:
+INFO: Read method 1 completed in 51.4208781719 seconds. [astrodendro.io.util]
+INFO: Read method 2 completed in 220.598875999 seconds. [astrodendro.io.util]
+INFO: Read method 3 completed in 27.0453000069 seconds. [astrodendro.io.util]
+
+For a 4000 element dendrogram:
+INFO: Read method 3 completed in 30.4590411186 seconds. [astrodendro.io.util]
+"""
