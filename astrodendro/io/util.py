@@ -3,7 +3,6 @@ import numpy as np
 from .. import six
 from astropy.utils.console import ProgressBar
 from astropy import log
-import time
 
 
 def parse_newick(string):
@@ -75,8 +74,6 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
     from ..dendrogram import Dendrogram
     from ..structure import Structure
 
-    t0 = time.time()
-
     d = Dendrogram()
     d.ndim = len(data.shape)
 
@@ -117,15 +114,8 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
                 d._structures_dict[idx] = l
         return structures
 
-    if readmethod==3:
+    try:
         from scipy import ndimage
-        """
-        In [14]: %timeit np.unique(index_map)
-        1 loops, best of 3: 1.81 s per loop
-
-        In [15]: %timeit np.unique(index_map[index_map>-1])
-        10 loops, best of 3: 105 ms per loop
-        """
         idxs = np.unique(d.index_map[d.index_map > -1])
 
         # ndimage ignores 0 and -1, but we want index 0
@@ -134,6 +124,7 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
 
         # Need to have same length, otherwise assumptions above are wrong
         assert len(idxs) == len(object_slices)
+        log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
 
         for idx,sl in ProgressBar(zip(idxs, object_slices)):
             match = d.index_map[sl] == idx
@@ -148,27 +139,12 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
                 flux_by_structure[idx] = data
                 indices_by_structure[idx] = coords
 
-
-    if readmethod==2:
-        # Alternative implementation.  Turns out to be slower.
-        indices = np.unique(d.index_map[d.index_map>-1])
-        log.debug('[np way] Creating index maps for {0} indices...'.format(len(indices)))
-        for idx in ProgressBar(indices):
-            match = d.index_map == idx # This is probably why it's slower
-            whmatch = np.nonzero(match)
-            if idx in flux_by_structure:
-                flux_by_structure[idx] += d.data[whmatch].tolist()
-                indices_by_structure[idx] += zip(*whmatch)
-            else:
-                flux_by_structure[idx] = d.data[whmatch].tolist()
-                indices_by_structure[idx] = zip(*whmatch)
-
-    if readmethod == 1:
+    except ImportError:
         # Do a fast iteration through d.data, adding the indices and data values
         # to the two dictionaries declared above:
         indices = np.array(np.where(d.index_map > -1)).transpose()
 
-        log.debug('Creating index maps for {0} indices...'.format(len(indices)))
+        log.debug('Creating index maps for {0} coordinates...'.format(len(indices)))
         for coord in ProgressBar(indices):
             coord = tuple(coord)
             idx = d.index_map[coord]
@@ -179,17 +155,6 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
                 flux_by_structure[idx] = [d.data[coord]]
                 indices_by_structure[idx] = [coord]
 
-    """
-    In [7]: util.parse_dendrogram(newick, data, index_map, readmethod=1)
-    |=========================================================================================================================| 330k/330k (100.00%)        28s
-    Out[7]: <astrodendro.dendrogram.Dendrogram at 0x107678450>
-
-    In [8]: util.parse_dendrogram(newick, data, index_map, readmethod=2)
-    |=========================================================================================================================| 528 /528  (100.00%)      3m15s
-    Out[8]: <astrodendro.dendrogram.Dendrogram at 0x1522e5f90>
-    """
-
-            
 
     log.debug('Parsing newick and constructing tree...')
     d.trunk = _construct_tree(parse_newick(newick))
@@ -199,8 +164,6 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
         structure._level = 0  # See the @property level() definition in structure.py
 
     d._index()
-    log.info("Read method {0} completed in {1} seconds.".format(readmethod,
-                                                                time.time()-t0))
     return d
 
 """
