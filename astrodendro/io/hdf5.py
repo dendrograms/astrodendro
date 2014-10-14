@@ -3,6 +3,7 @@
 import os
 
 import numpy as np
+from astropy import log
 
 from .util import parse_dendrogram
 from .handler import IOHandler
@@ -47,11 +48,13 @@ def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import h5py
 
+    log.debug('Loading HDF5 file from disk...')
     with h5py.File(filename, 'r') as h5f:
         newick = h5f['newick'].value
         data = h5f['data'].value
         index_map = h5f['index_map'].value
 
+    log.debug('Parsing dendrogram...')
     return parse_dendrogram(newick, data, index_map)
 
 

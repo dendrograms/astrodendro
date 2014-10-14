@@ -1,6 +1,8 @@
 import numpy as np
 
 from .. import six
+from astropy.utils.console import ProgressBar
+from astropy import log
 
 
 def parse_newick(string):
@@ -10,6 +12,7 @@ def parse_newick(string):
     # Find maximum level
     current_level = 0
     max_level = 0
+    log.debug('String loading...')
     for i, c in enumerate(string):
         if c == '(':
             current_level += 1
@@ -18,6 +21,7 @@ def parse_newick(string):
         max_level = max(max_level, current_level)
 
     # Loop through levels and construct tree
+    log.debug('Tree loading...')
     for level in range(max_level, 0, -1):
 
         pairs = []
@@ -77,8 +81,10 @@ def parse_dendrogram(newick, data, index_map):
     d.data = data
     d.index_map = index_map
 
-    flux_by_structure = {}
-    indices_by_structure = {}
+    try:
+        flux_by_structure, indices_by_structure = _fast_reader(d.index_map, data)
+    except ImportError:
+        flux_by_structure, indices_by_structure = _slow_reader(d.index_map, data)
 
     def _construct_tree(repr):
         structures = []
@@ -110,21 +116,7 @@ def parse_dendrogram(newick, data, index_map):
                 d._structures_dict[idx] = l
         return structures
 
-    # Do a fast iteration through d.data, adding the indices and data values
-    # to the two dictionaries declared above:
-    indices = np.indices(d.data.shape).reshape(d.data.ndim, np.prod(d.data.shape)).transpose()
-
-    for coord in indices:
-        coord = tuple(coord)
-        idx = d.index_map[coord]
-        if idx > -1:
-            try:
-                flux_by_structure[idx].append(d.data[coord])
-                indices_by_structure[idx].append(coord)
-            except KeyError:
-                flux_by_structure[idx] = [d.data[coord]]
-                indices_by_structure[idx] = [coord]
-
+    log.debug('Parsing newick and constructing tree...')
     d.trunk = _construct_tree(parse_newick(newick))
     # To make the structure.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
@@ -133,3 +125,60 @@ def parse_dendrogram(newick, data, index_map):
 
     d._index()
     return d
+
+def _fast_reader(index_map, data):
+    """
+    Use scipy.ndimage.find_objects to quickly identify subsets of the data
+    to increase speed of dendrogram loading
+    """
+
+    flux_by_structure, indices_by_structure = {},{}
+
+    from scipy import ndimage
+    idxs = np.unique(index_map[index_map > -1])
+
+    # ndimage ignores 0 and -1, but we want index 0
+    object_slices = ndimage.find_objects(index_map+1)
+    index_cube = np.indices(index_map.shape)
+
+    # Need to have same length, otherwise assumptions above are wrong
+    assert len(idxs) == len(object_slices)
+    log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
+
+    for idx,sl in ProgressBar(zip(idxs, object_slices)):
+        match = index_map[sl] == idx
+        sl2 = (slice(None),) + sl
+        match_inds = index_cube[sl2][:, match]
+        coords = list(zip(*match_inds))
+        dd = data[sl][match].tolist()
+        flux_by_structure[idx] = dd
+        indices_by_structure[idx] = coords
+
+    return flux_by_structure, indices_by_structure
+
+def _slow_reader(index_map, data):
+    """
+    Loop over each valid pixel in the index_map and add its coordinates and
+    data to the flux_by_structure and indices_by_structure dicts
+
+    This is slower than _fast_reader but faster than that implementation would
+    be without find_objects.  The bottleneck is doing `index_map == idx` N
+    times.
+    """
+    flux_by_structure, indices_by_structure = {},{}
+    # Do a fast iteration through d.data, adding the indices and data values
+    # to the two dictionaries declared above:
+    indices = np.array(np.where(index_map > -1)).transpose()
+
+    log.debug('Creating index maps for {0} coordinates...'.format(len(indices)))
+    for coord in ProgressBar(indices):
+        coord = tuple(coord)
+        idx = index_map[coord]
+        if idx in flux_by_structure:
+            flux_by_structure[idx].append(data[coord])
+            indices_by_structure[idx].append(coord)
+        else:
+            flux_by_structure[idx] = [data[coord]]
+            indices_by_structure[idx] = [coord]
+
+    return flux_by_structure, indices_by_structure
