@@ -70,7 +70,7 @@ def parse_newick(string):
     return items['trunk']
 
 
-def parse_dendrogram(newick, data, index_map, readmethod=3):
+def parse_dendrogram(newick, data, index_map):
     from ..dendrogram import Dendrogram
     from ..structure import Structure
 
@@ -115,45 +115,9 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
         return structures
 
     try:
-        from scipy import ndimage
-        idxs = np.unique(d.index_map[d.index_map > -1])
-
-        # ndimage ignores 0 and -1, but we want index 0
-        object_slices = ndimage.find_objects(d.index_map+1)
-        index_cube = np.indices(d.index_map.shape)
-
-        # Need to have same length, otherwise assumptions above are wrong
-        assert len(idxs) == len(object_slices)
-        log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
-
-        for idx,sl in ProgressBar(zip(idxs, object_slices)):
-            match = d.index_map[sl] == idx
-            sl2 = (slice(None),) + sl
-            match_inds = index_cube[sl2][:, match]
-            coords = list(zip(*match_inds))
-            data = d.data[sl][match].tolist()
-            if idx in flux_by_structure:
-                flux_by_structure[idx] += data
-                indices_by_structure[idx] += coords
-            else:
-                flux_by_structure[idx] = data
-                indices_by_structure[idx] = coords
-
+        _fast_reader(d.index_map, flux_by_structure, indices_by_structure)
     except ImportError:
-        # Do a fast iteration through d.data, adding the indices and data values
-        # to the two dictionaries declared above:
-        indices = np.array(np.where(d.index_map > -1)).transpose()
-
-        log.debug('Creating index maps for {0} coordinates...'.format(len(indices)))
-        for coord in ProgressBar(indices):
-            coord = tuple(coord)
-            idx = d.index_map[coord]
-            if idx in flux_by_structure:
-                flux_by_structure[idx].append(d.data[coord])
-                indices_by_structure[idx].append(coord)
-            else:
-                flux_by_structure[idx] = [d.data[coord]]
-                indices_by_structure[idx] = [coord]
+        _slow_reader(d.index_map, flux_by_structure, indices_by_structure)
 
 
     log.debug('Parsing newick and constructing tree...')
@@ -166,14 +130,61 @@ def parse_dendrogram(newick, data, index_map, readmethod=3):
     d._index()
     return d
 
-"""
-Performance stats for a 528-element dendrogram:
-INFO: Read method 1 completed in 51.4208781719 seconds. [astrodendro.io.util]
-INFO: Read method 2 completed in 220.598875999 seconds. [astrodendro.io.util]
-INFO: Read method 3 completed in 27.0453000069 seconds. [astrodendro.io.util]
+def _fast_reader(index_map, flux_by_structure, indices_by_structure):
+    """
+    Use scipy.ndimage.find_objects to quickly identify subsets of the data
+    to increase speed of dendrogram loading
 
-For a 4000 element dendrogram:
-INFO: Read method 1 completed in 222.702140093 seconds. [astrodendro.io.util]
-INFO: Read method 2 completed in 775.576297045 seconds. [astrodendro.io.util]
-INFO: Read method 3 completed in 30.4590411186 seconds. [astrodendro.io.util]
-"""
+    **Modifies flux_by_structure and indices_by_structure inplace**
+    """
+
+    from scipy import ndimage
+    idxs = np.unique(index_map[index_map > -1])
+
+    # ndimage ignores 0 and -1, but we want index 0
+    object_slices = ndimage.find_objects(index_map+1)
+    index_cube = np.indices(index_map.shape)
+
+    # Need to have same length, otherwise assumptions above are wrong
+    assert len(idxs) == len(object_slices)
+    log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
+
+    for idx,sl in ProgressBar(zip(idxs, object_slices)):
+        match = index_map[sl] == idx
+        sl2 = (slice(None),) + sl
+        match_inds = index_cube[sl2][:, match]
+        coords = list(zip(*match_inds))
+        data = data[sl][match].tolist()
+        if idx in flux_by_structure:
+            flux_by_structure[idx] += data
+            indices_by_structure[idx] += coords
+        else:
+            flux_by_structure[idx] = data
+            indices_by_structure[idx] = coords
+
+
+def _slow_reader(index_map, flux_by_structure, indices_by_structure):
+    """
+    Loop over each valid pixel in the index_map and add its coordinates and
+    data to the flux_by_structure and indices_by_structure dicts
+
+    This is slower than _fast_reader but faster than that implementation would
+    be without find_objects.  The bottleneck is doing `index_map == idx` N
+    times.
+
+    **Modifies flux_by_structure and indices_by_structure inplace**
+    """
+    # Do a fast iteration through d.data, adding the indices and data values
+    # to the two dictionaries declared above:
+    indices = np.array(np.where(index_map > -1)).transpose()
+
+    log.debug('Creating index maps for {0} coordinates...'.format(len(indices)))
+    for coord in ProgressBar(indices):
+        coord = tuple(coord)
+        idx = index_map[coord]
+        if idx in flux_by_structure:
+            flux_by_structure[idx].append(data[coord])
+            indices_by_structure[idx].append(coord)
+        else:
+            flux_by_structure[idx] = [data[coord]]
+            indices_by_structure[idx] = [coord]
