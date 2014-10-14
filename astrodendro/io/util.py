@@ -210,5 +210,7 @@ INFO: Read method 2 completed in 220.598875999 seconds. [astrodendro.io.util]
 INFO: Read method 3 completed in 27.0453000069 seconds. [astrodendro.io.util]
 
 For a 4000 element dendrogram:
+INFO: Read method 1 completed in 222.702140093 seconds. [astrodendro.io.util]
+INFO: Read method 2 completed in 775.576297045 seconds. [astrodendro.io.util]
 INFO: Read method 3 completed in 30.4590411186 seconds. [astrodendro.io.util]
 """
