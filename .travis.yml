@@ -3,44 +3,51 @@ language: python
 python:
     - 2.6
     - 2.7
-    - 3.2
-    # 3.3 cannot yet be tested due to incompatibility with h5py
+    - 3.3
+    - 3.4
 
 env:
-    # try all python versions with the latest stable Numpy
-    - NUMPY_VERSION=1.7.1 SETUP_CMD='test'
+    global:
+        # The following versions are the 'default' for tests, unless
+        # overidden underneath. They are defined here in order to save having
+        # to repeat them for all configurations.
+        - CONDA_INSTALL='conda install --yes'
+        - PIP_INSTALL='pip install'
+        - PYTEST_ARGS='--cov astrodendro'
+        - CONDA_BASE='pip setuptools h5py pytest matplotlib cython'
+        - PIP_BASE='pytest-cov coveralls mock'
+    matrix:
+        - NP_VER=1.9 ASTRO_VER=0.4
+        - NP_VER=1.8 ASTRO_VER=0.3
+        - NP_VER=1.9 ASTRO_VER=dev
 
 matrix:
     include:
-        # try alternate Numpy versions
         - python: 2.7
-          env: NUMPY_VERSION=1.6.2 SETUP_CMD='test'
+          env: NP_VER=1.7 ASTRO_VER=0.3
         - python: 2.7
-          env: NUMPY_VERSION=1.5.1 SETUP_CMD='test'
-        - python: 3.2
-          env: NUMPY_VERSION=1.6.2 SETUP_CMD='test'
-        - python: 2.7
-          env: NUMPY_VERSION=1.7.1 SETUP_CMD='cov'
+          env: NP_VER=1.6 ASTRO_VER=0.3
 
 before_install:
-   - sudo apt-get update -qq
-   - sudo apt-get install -qq python-numpy
-   - sudo apt-get install -qq libhdf5-serial-1.8.4 libhdf5-serial-dev
 
-install:
-   - export PYTHONIOENCODING=UTF8 # just in case
-   - pip -q install --upgrade "numpy==$NUMPY_VERSION" --use-mirrors
-   - pip -q install h5py
-   - pip -q install astropy
-   - pip -q install matplotlib
-   - pip -q install wcsaxes
-   - if [[ $SETUP_CMD == cov ]]; then pip install pytest -q --use-mirrors; fi
-   - if [[ $SETUP_CMD == cov ]]; then pip install pytest-cov -q --use-mirrors; fi
-   - if [[ $SETUP_CMD == cov ]]; then pip install coveralls -q --use-mirrors; fi
+    - export PYTHONIOENCODING=UTF8
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - export PATH=/home/travis/miniconda/bin:$PATH
+    - conda update --yes conda
+
+    # CONDA
+    - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+    - source activate test
+
+    # DEPENDENCIES
+    - $CONDA_INSTALL $CONDA_BASE numpy=$NP_VER
+    - $PIP_INSTALL $PIP_BASE
+    - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else $CONDA_INSTALL astropy=$ASTRO_VER numpy=$NP_VER; fi
 
 script:
-   - if [[ $SETUP_CMD == test ]]; then python setup.py test ; fi
-   - if [[ $SETUP_CMD == cov ]]; then py.test --cov astrodendro; fi
+    - py.test $PYTEST_ARGS astrodendro
 
 after_success:
-  - if [[ $SETUP_CMD == cov ]]; then coveralls; fi
+  - coveralls
