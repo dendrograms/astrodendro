@@ -70,7 +70,7 @@ def parse_newick(string):
     return items['trunk']
 
 
-def parse_dendrogram(newick, data, index_map):
+def parse_dendrogram(newick, data, index_map, wcs=None):
     from ..dendrogram import Dendrogram
     from ..structure import Structure
 
@@ -80,6 +80,7 @@ def parse_dendrogram(newick, data, index_map):
     d._structures_dict = {}
     d.data = data
     d.index_map = index_map
+    d.wcs = wcs
 
     try:
         flux_by_structure, indices_by_structure = _fast_reader(d.index_map, data)
