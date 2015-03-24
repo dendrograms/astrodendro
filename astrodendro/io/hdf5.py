@@ -52,7 +52,7 @@ def dendro_export_hdf5(d, filename):
 def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import h5py
-    import astropy.wcs
+    from astropy.wcs.wcs import WCS
 
     log.debug('Loading HDF5 file from disk...')
     with h5py.File(filename, 'r') as h5f:
@@ -60,7 +60,7 @@ def dendro_import_hdf5(filename):
         data = h5f['data'].value
         index_map = h5f['index_map'].value
         try:
-            wcs = astropy.wcs.wcs.WCS(h5f['wcs_header'].value)
+            wcs = WCS(h5f['wcs_header'].value)
         except KeyError:
             wcs = None
 

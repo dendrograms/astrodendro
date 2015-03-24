@@ -48,11 +48,11 @@ def dendro_export_fits(d, filename):
 def dendro_import_fits(filename):
     """Import 'filename' and construct a dendrogram from it"""
     from astropy.io import fits
-    import astropy.wcs
+    from astropy.wcs.wcs import WCS
 
     with fits.open(filename) as hdus:
         try:
-            wcs = astropy.wcs.wcs.WCS(hdus[0].header)
+            wcs = WCS(hdus[0].header)
         except AttributeError:
             wcs = None
         data = hdus[1].data
