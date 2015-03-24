@@ -116,8 +116,8 @@ class TestIO(object):
     def test_hdf5_with_wcs(self):
         self.test_filename = 'astrodendro-test-wcs.hdf5'
         test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
-                                 cdelt2=2, crval2=0, crpix2=1,
-                                 cdelt3=3, crval3=0, crpix3=1))
+                                   cdelt2=2, crval2=0, crpix2=1,
+                                   cdelt3=3, crval3=0, crpix3=1))
 
         d1 = Dendrogram.compute(self.data, verbose=False, wcs=test_wcs)
         d1.save_to(self.test_filename, format='hdf5')
@@ -128,8 +128,8 @@ class TestIO(object):
     def test_fits_with_wcs(self):
         self.test_filename = 'astrodendro-test-wcs.fits'
         test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
-                                 cdelt2=2, crval2=0, crpix2=1,
-                                 cdelt3=3, crval3=0, crpix3=1))
+                                   cdelt2=2, crval2=0, crpix2=1,
+                                   cdelt3=3, crval3=0, crpix3=1))
         d1 = Dendrogram.compute(self.data, verbose=False, wcs=test_wcs)
         d1.save_to(self.test_filename, format='fits')
         d2 = Dendrogram.load_from(self.test_filename, format='fits')
