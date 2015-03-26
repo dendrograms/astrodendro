@@ -30,10 +30,16 @@ def dendro_export_fits(d, filename):
     """Export the dendrogram 'd' to the FITS file 'filename'"""
     from astropy.io import fits
 
-    hdus = [fits.PrimaryHDU(),
+    try:
+        primary_hdu = fits.PrimaryHDU(header=d.wcs.to_header())
+    except AttributeError:
+        primary_hdu = fits.PrimaryHDU()
+
+    hdus = [primary_hdu,
             fits.ImageHDU(d.data),
             fits.ImageHDU(d.index_map),
-            fits.ImageHDU(np.array([ord(x) for x in  d.to_newick()]))]
+            fits.ImageHDU(np.array([ord(x) for x in d.to_newick()]))]
+
     hdulist = fits.HDUList(hdus)
 
     hdulist.writeto(filename, clobber=True)
@@ -42,13 +48,18 @@ def dendro_export_fits(d, filename):
 def dendro_import_fits(filename):
     """Import 'filename' and construct a dendrogram from it"""
     from astropy.io import fits
+    from astropy.wcs.wcs import WCS
 
     with fits.open(filename) as hdus:
+        try:
+            wcs = WCS(hdus[0].header)
+        except AttributeError:
+            wcs = None
         data = hdus[1].data
         index_map = hdus[2].data
         newick = ''.join(chr(x) for x in hdus[3].data.flat)
 
-    return parse_dendrogram(newick, data, index_map)
+    return parse_dendrogram(newick, data, index_map, wcs)
 
 
 FITSHandler = IOHandler(identify=is_fits,

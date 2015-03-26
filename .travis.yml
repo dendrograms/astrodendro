@@ -14,7 +14,7 @@ env:
         - CONDA_INSTALL='conda install --yes'
         - PIP_INSTALL='pip install'
         - PYTEST_ARGS='--cov astrodendro'
-        - CONDA_BASE='pip setuptools h5py pytest matplotlib cython'
+        - CONDA_BASE='pip setuptools h5py pytest matplotlib cython jinja2'
         - PIP_BASE='pytest-cov coveralls mock'
     matrix:
         - NP_VER=1.9 ASTRO_VER=0.4
