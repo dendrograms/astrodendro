@@ -191,7 +191,7 @@ class DendrogramPlotter(object):
         # Case 2: one structure is selected, and subtree is True
         else:
             if subtree:
-                if isinstance(strucutres, int):
+                if isinstance(structures, int):
                     structure = self.dendrogram[structures]
                 elif isinstance(structures, Structure):
                     structure = structures
