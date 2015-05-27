@@ -1,6 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
 import numpy as np
+from .structure import Structure
 
 
 class DendrogramPlotter(object):
