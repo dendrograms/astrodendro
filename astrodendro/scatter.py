@@ -87,7 +87,10 @@ class Scatter(object):
         def callback(verts):
             p = path.Path(verts)
 
-            indices = np.where(p.contains_points(self.xys))[0]
+            # `p.contains_points` has undesirable behavior that makes it necessary to explicitly exclude `nan` data.
+            indices = np.where(p.contains_points(self.xys) & 
+                               ~np.isnan(self.xdata) & 
+                               ~np.isnan(self.ydata))[0]
             selected_structures = [self.dendrogram[i] for i in indices]
 
             if len(selected_structures) == 0:

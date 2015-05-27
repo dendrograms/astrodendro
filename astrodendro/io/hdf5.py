@@ -41,21 +41,31 @@ def dendro_export_hdf5(d, filename):
     ds.attrs['IMAGE_VERSION'] = '1.2'
     ds.attrs['IMAGE_MINMAXRANGE'] = [d.data.min(), d.data.max()]
 
+    try:
+        f.create_dataset('wcs_header', data=d.wcs.to_header_string())
+    except AttributeError:
+        pass
+
     f.close()
 
 
 def dendro_import_hdf5(filename):
     """Import 'filename' and construct a dendrogram from it"""
     import h5py
+    from astropy.wcs.wcs import WCS
 
     log.debug('Loading HDF5 file from disk...')
     with h5py.File(filename, 'r') as h5f:
         newick = h5f['newick'].value
         data = h5f['data'].value
         index_map = h5f['index_map'].value
+        try:
+            wcs = WCS(h5f['wcs_header'].value)
+        except KeyError:
+            wcs = None
 
     log.debug('Parsing dendrogram...')
-    return parse_dendrogram(newick, data, index_map)
+    return parse_dendrogram(newick, data, index_map, wcs)
 
 
 HDF5Handler = IOHandler(identify=is_hdf5,
