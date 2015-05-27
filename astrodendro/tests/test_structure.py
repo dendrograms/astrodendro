@@ -349,5 +349,18 @@ def test_add_pixel():
     assert s.vmin == 8.
     assert s.vmax == 12.
 
+def test_sorted_leaves():
+    l1 = Structure(1, 10., idx=1)
+    l2 = Structure(2, 8., idx=2)
+    s = Structure(3, 5., children=[l1, l2], idx=3)
+    assert s.sorted_leaves() == [l2, l1]
+    assert s.sorted_leaves(reverse=True) == [l1, l2]
+    def key(x):
+        return x.idx
+    assert s.sorted_leaves(sort_key=key) == [l1, l2]
+
+    s2 = Structure(4, 3., children=[s], idx=4)
+    assert s2.sorted_leaves() == [l2, l1]
+    assert s2.sorted_leaves(subtree=False) == []
 
 # TODO: add newick tests

@@ -41,13 +41,14 @@ class DendroTest(Command):
         raise SystemExit(errno)
 
 
-setup(name='dendro-core',
-      version='0.0.1',
+setup(name='astrodendro',
+      version='0.1.0',
+      url='http://www.dendrograms.org',
       description='Python package for computation of astronomical dendrograms',
-      author='Thomas Robitaille, Chris Beaumont, Braden MacDonald, and Erik Rosolowsky',
-      author_email='braden@bradenmacdonald.com',
-      packages=['astrodendro', 'astrodendro.io', 'astrodendro.test'],
-      package_data={'astrodendro.test':['*.npz', 'benchmark_data/*fits']},
+      author='Thomas Robitaille, Chris Beaumont, Adam Ginsburg, Braden MacDonald, and Erik Rosolowsky',
+      author_email='thomas.robitaille@gmail.com',
+      packages=['astrodendro', 'astrodendro.io', 'astrodendro.tests'],
+      package_data={'astrodendro.tests':['*.npz', 'benchmark_data/*fits']},
       provides=['astrodendro'],
       requires=['numpy'],
       cmdclass={'build_py': build_py, 'test': DendroTest},

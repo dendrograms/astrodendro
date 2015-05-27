@@ -13,6 +13,17 @@ def cached_property(func):
     return property(result)
 
 
+def prefix_visit(s, key=None, reverse=False):
+    todo = [s]
+    while todo:
+        st = todo.pop(0)
+        yield st
+        children = st.children
+        if key is not None:
+            children = sorted(children, key=key, reverse=reverse)
+        todo = children + todo
+
+
 class Structure(object):
     """
     A structure in the dendrogram, for example a leaf or a branch.
@@ -44,8 +55,9 @@ class Structure(object):
     #   for computing the dendrogram and should never be used manually:       #
     ###########################################################################
 
-    def __init__(self, indices, values, children=[], idx=None):
+    def __init__(self, indices, values, children=[], idx=None, dendrogram=None):
 
+        self._dendrogram = dendrogram
         self.parent = None
         self.children = children
 
@@ -66,6 +78,8 @@ class Structure(object):
             self._values = [x for x in values]
             self._vmin, self._vmax = min(values), max(values)
 
+        self._smallest_index = min(self._indices)
+
         self.idx = idx
 
         self._reset_cache()
@@ -76,7 +90,16 @@ class Structure(object):
         self._descendants = None
         self._npix_total = None
         self._peak = None
+        self._peak_subtree = None
         self._tree_index = None
+
+    @property
+    def smallest_index(self):
+        return self._smallest_index
+
+    @smallest_index.setter
+    def smallest_index(self, value):
+        self._smallest_index = value
 
     @property
     def parent(self):
@@ -103,14 +126,14 @@ class Structure(object):
     @property
     def is_leaf(self):
         """
-        Whether the present structure is a leaf
+        Whether the present structure is a leaf.
         """
         return not self.children
 
     @property
     def is_branch(self):
         """
-        Whether the present structure is a branch
+        Whether the present structure is a branch.
         """
         return not self.is_leaf
 
@@ -159,14 +182,14 @@ class Structure(object):
     @property
     def vmin(self):
         """
-        The minimum value of pixels belonging to the branch (excluding sub-structure)
+        The minimum value of pixels belonging to the branch (excluding sub-structure).
         """
         return self._vmin
 
     @property
     def vmax(self):
         """
-        The maximum value of pixels belonging to the branch (excluding sub-structure)
+        The maximum value of pixels belonging to the branch (excluding sub-structure).
         """
         return self._vmax
 
@@ -187,6 +210,7 @@ class Structure(object):
         self._indices.append(index)
         self._values.append(value)
         self._vmin, self._vmax = min(value, self.vmin), max(value, self.vmax)
+        self._smallest_index = min(self._smallest_index, index)
         self._reset_cache()
 
     def _merge(self, structure):
@@ -199,6 +223,7 @@ class Structure(object):
         self._indices.extend(structure._indices)
         self._values.extend(structure._values)
         self._vmin, self._vmax = min(structure.vmin, self.vmin), max(structure.vmax, self.vmax)
+        self._smallest_index = min(structure._smallest_index, self._smallest_index)
         self._reset_cache()
 
     ###########################################################################
@@ -207,6 +232,10 @@ class Structure(object):
 
     @property
     def height(self):
+        """
+        This is defined as the minimum value in the children structures, or the
+        peak value of the present structure if it has no children.
+        """
         return min(c.vmin for c in self.children) if self.children else self.vmax
 
     @property
@@ -254,7 +283,7 @@ class Structure(object):
 
         Parameters
         ----------
-        array : `~numpy.ndarray`
+        array : :class:`~numpy.ndarray`
             The array to write the footprint to
         recursive : bool
             Whether to also add the footprint for the sub-structures
@@ -367,18 +396,26 @@ class Structure(object):
         value : float
             The value of the peak pixel
         """
+        # populate caches without recursion
+        def key(x):
+            return x[1]
+
         if self._peak is None:
-            self._peak = (self._indices[self._values.index(self.vmax)], self.vmax)
-            # Note the above cached value never includes descendants
+            for s in reversed(list(prefix_visit(self))):
+                s._peak = (s._indices[s._values.index(s.vmax)],
+                          s.vmax)
+                if s.is_leaf:
+                    s._peak_subtree = s._peak
+                else:
+                    s._peak_subtree = max((c._peak_subtree
+                                           for c in s.children),
+                                           key=key)
+                    s._peak_subtree = max(s._peak_subtree, s._peak, key=key)
 
         if not subtree:
             return self._peak
-        else:
-            found = self._peak
-            for structure in self.descendants:
-                if found[1] < structure.vmax:
-                    found = structure.get_peak()
-            return found
+
+        return self._peak_subtree
 
     def __repr__(self):
         if self.is_leaf:
@@ -386,7 +423,7 @@ class Structure(object):
         else:
             return "<Structure type=branch idx={0}>".format(self.idx)
 
-    def get_sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
+    def sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
                           reverse=False, subtree=True):
         """
         Return a list of sorted leaves.
@@ -407,34 +444,38 @@ class Structure(object):
         leaves : list
             A list of sorted leaves
         """
-
         if self.is_leaf:
             return [self]
-        leaves = []
-        for structure in sorted(self.children, key=sort_key, reverse=reverse):
-            if structure.is_leaf:
-                leaves.append(structure)
-            elif subtree:
-                leaves += structure.get_sorted_leaves(sort_key=sort_key, reverse=reverse, subtree=subtree)
-        return leaves
+        if not subtree:
+            return [s for s in sorted(self.children, key=sort_key,
+                                      reverse=reverse)
+                    if s.is_leaf]
+        # flip reverse keyword, so that nodes are properly
+        # sorted after reversed()
+        sts = reversed(list(prefix_visit(self, key=sort_key,
+                                         reverse=not reverse)))
+        return [s for s in sts if s.is_leaf]
 
-    def get_mask(self, shape, subtree=True):
+    def get_mask(self, shape=None, subtree=True):
         """
         Return a boolean mask outlining the structure.
 
         Parameters
         ----------
-        shape : tuple
-            The shape of the array upon which to compute the mask.
+        shape : tuple, optional
+            The shape of the array upon which to compute the mask. This is only
+            required if the structure is not attached to a dendrogram.
         subtree : bool, optional
             Whether to recursively include all sub-structures in the mask.
 
         Returns
         -------
-        mask : `~numpy.ndarray`
+        mask : :class:`~numpy.ndarray`
             The mask outlining the structure (``False`` values are used outside
             the structure, and ``True`` values inside).
         """
+        if shape is None:
+            shape = self._dendrogram.data.shape
         indices = self.indices(subtree=True) if subtree else self.indices
         mask = np.zeros(shape, dtype=bool)
         mask[indices] = True

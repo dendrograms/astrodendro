@@ -11,6 +11,8 @@ from .. import Dendrogram
 from ..structure import Structure
 from .test_index import assert_permuted_fancyindex
 
+from astropy.wcs import WCS
+
 
 class TestIO(object):
 
@@ -110,3 +112,41 @@ class TestIO(object):
 
         # recognize from signature
         d2 = Dendrogram.load_from('astrodendro-test')
+
+    def test_hdf5_with_wcs(self):
+        self.test_filename = 'astrodendro-test-wcs.hdf5'
+        test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
+                                   cdelt2=2, crval2=0, crpix2=1,
+                                   cdelt3=3, crval3=0, crpix3=1))
+
+        d1 = Dendrogram.compute(self.data, verbose=False, wcs=test_wcs)
+        d1.save_to(self.test_filename, format='hdf5')
+        d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
+
+        assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
+
+    def test_fits_with_wcs(self):
+        self.test_filename = 'astrodendro-test-wcs.fits'
+        test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
+                                   cdelt2=2, crval2=0, crpix2=1,
+                                   cdelt3=3, crval3=0, crpix3=1))
+        d1 = Dendrogram.compute(self.data, verbose=False, wcs=test_wcs)
+        d1.save_to(self.test_filename, format='fits')
+        d2 = Dendrogram.load_from(self.test_filename, format='fits')
+
+        assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
+
+    @pytest.mark.parametrize('ext', ('fits', 'hdf5'))
+    def test_reload_retains_dendro_reference(self, ext):
+        # regression test for issue 106
+
+        d1 = Dendrogram.compute(self.data, verbose=False)
+
+        self.test_filename = 'astrodendro-test.%s' % ext
+
+        d1.save_to(self.test_filename)
+        d2 = Dendrogram.load_from(self.test_filename)
+
+        for s in d1:
+            np.testing.assert_array_equal(d2[s.idx].get_mask(subtree=True),
+                                          d1[s.idx].get_mask(subtree=True))

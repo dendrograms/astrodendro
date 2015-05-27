@@ -2,10 +2,7 @@ Astronomical Dendrograms in Python
 ==================================
 
 The ``astrodendro`` package provides an easy way to compute dendrograms of
-observed or simulated Astronomical data in Python. This package is still under
-development, although a first release will be available in the near future.
-You can already try out the existing package, but we recommend that you get in
-contect with the developers to be kept up-to-date with changes and bug fixes.
+observed or simulated Astronomical data in Python.
 
 About dendrograms
 -----------------
@@ -21,7 +18,7 @@ two-dimensional map of a hierarchical structure that looks like:
 the equivalent dendrogram/tree representation would look like:
 
 .. image:: schematic_tree.png
-   :width: 350px
+   :width: 400px
    :align: center
 
 A dendrogram is composed of two types of structures: *branches*, which are
@@ -55,11 +52,12 @@ Documentation
    advanced.rst
    migration.rst
 
-Reporting issues
-----------------
+Reporting issues and getting help
+---------------------------------
 
 Please help us improve this package by reporting issues via `GitHub
-<https://github.com/dendrograms/dendro-core/issues>`_.
+<https://github.com/dendrograms/astrodendro/issues>`_. You can also open an
+issue if you need help with using the package.
 
 Developers
 ----------
@@ -68,6 +66,7 @@ This package was developed by:
 
 * Thomas Robitaille
 * Chris Beaumont
+* Adam Ginsburg
 * Braden MacDonald
 * Erik Rosolowsky
 
@@ -79,6 +78,19 @@ providing valuable feedback:
 
 * Katharine Johnston
 
+Citing astrodendro
+------------------
+
+If you make use of this package in a publication, please consider adding the
+following acknowledgment:
+
+*This research made use of astrodendro, a Python package to compute dendrograms
+of Astronomical data (http://www.dendrograms.org/)*
+
+If you make use of the analysis code (:doc:`catalog`) or read/write FITS files,
+please also consider adding an acknowledgment for Astropy (see
+`<http://www.astropy.org>`_ for the latest recommended citation).
+
 Public API
 ----------
 
@@ -86,6 +98,7 @@ Public API
    :maxdepth: 1
 
    api/astrodendro.dendrogram.Dendrogram
+   api/astrodendro.dendrogram.periodic_neighbours
    api/astrodendro.structure.Structure
    api/astrodendro.plot.DendrogramPlotter
    api/astrodendro.analysis

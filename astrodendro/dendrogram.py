@@ -5,6 +5,9 @@
 # - An ancestor is the largest structure that a structure is part of
 
 import numpy as np
+from collections import Iterable
+import copy
+import warnings
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
@@ -12,10 +15,28 @@ from .io import IO_FORMATS
 from . import pruning
 from . import six
 
+
+def _sorted_by_idx(d):
+    return sorted(d, key=lambda s: s.idx)
+
+# utility dict to offsets of adjacent pixel list
+_offsets = dict((ndim, np.concatenate((
+                np.identity(ndim),
+                np.identity(ndim) * -1)).astype(np.int))
+                for ndim in range(1, 8))
+
+# the formula above generalizes this special case
+#_offsets[3] = np.array([(0, 0, -1), (0, 0, 1),
+#                        (0, -1, 0), (0, 1, 0),
+#                        (-1, 0, 0), (1, 0, 0)])
+
+
 class Dendrogram(object):
+
     """
-    This class is used to compute and represent a dendrogram for a given
-    dataset. To create a dendrogram from an array, use the
+    This class is used to compute and represent a dendrogram for a given dataset.
+
+    To create a dendrogram from an array, use the
     :meth:`~astrodendro.dendrogram.Dendrogram.compute` class method::
 
         >>> from astrodendro import Dendrogram
@@ -67,13 +88,13 @@ class Dendrogram(object):
 
     @staticmethod
     def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
-                is_independent=None, verbose=False):
+                is_independent=None, verbose=False, neighbours=None, wcs=None):
         """
         Compute a dendrogram from a Numpy array.
 
         Parameters
         ----------
-        data : `~numpy.ndarray`
+        data : :class:`numpy.ndarray`
             The n-dimensional array to compute the dendrogram for
         min_value : float, optional
             The minimum data value to go down to when computing the
@@ -95,6 +116,23 @@ class Dendrogram(object):
 
             If multiple functions are provided as a list, they
             are all applied when testing for independence.
+
+        neighbours : function, optional
+            A function that returns the list of neighbours to a given
+            location. Neighbours is called as ``neighbours(dendrogram, idx)``,
+            where ``idx`` is a tuple describing the n-dimensional location
+            of a pixel. It returns a list of N-dimensional locations of
+            neighbours. This function can implement optional adjacency logic.
+
+            .. note:: ``idx`` refers to location in a copy of the input data
+                       that has been padded with one element along each edge.
+
+        wcs : WCS object, optional
+            A WCS object that describes `data`. This is used in the 
+            interactive viewer to properly display the data's coordinates 
+            on the image axes. (Requires that `wcsaxes` is installed; see 
+            http://wcsaxes.readthedocs.org/ for install instructions.)
+
 
         Examples
         --------
@@ -120,10 +158,12 @@ class Dendrogram(object):
             else:
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
+        neighbours = neighbours or Dendrogram.neighbours
 
         self = Dendrogram()
         self.data = data
         self.n_dim = len(data.shape)
+        self.wcs = wcs
         # For reference, store the parameters used:
         self.params = dict(min_npix=min_npix, min_value=min_value,
                            min_delta=min_delta)
@@ -141,28 +181,13 @@ class Dendrogram(object):
         # We expand each dimension by one, so the last value of each
         # index (accessed with e.g. [nx,#,#] or [-1,#,#]) is always zero
         # This permits an optimization below when finding adjacent structures
-        self.index_map = np.zeros(np.add(self.data.shape, 1), dtype=np.int32)
+        self.index_map = -np.ones(np.add(self.data.shape, 1), dtype=np.int32)
 
         # Dictionary of currently-defined structures:
         structures = {}
 
-        # Define a list of offsets we add to any coordinate to get the indices
-        # of all neighbouring pixels
-        if self.n_dim == 3:
-            neighbour_offsets = np.array([(0, 0, -1), (0, 0, 1), (0, -1, 0), (0, 1, 0), (-1, 0, 0), (1, 0, 0)])
-        elif self.n_dim == 2:
-            neighbour_offsets = np.array([(0, -1), (0, 1), (-1, 0), (1, 0)])
-        elif self.n_dim == 1:
-            neighbour_offsets = np.array([(-1, ), (1, ), ])
-        else:  # N-dimensional case. Analogous to the above.
-            neighbour_offsets = np.concatenate((
-                np.identity(self.n_dim, dtype=int),
-                np.identity(self.n_dim, dtype=int) * -1
-            ))
-
         # Loop from largest to smallest data_value value. Each time, check if
         # the pixel connects to any existing leaf. Otherwise, create new leaf.
-
         count = 0
 
         for i in np.argsort(data_values)[::-1]:
@@ -184,14 +209,16 @@ class Dendrogram(object):
             # We don't worry about the edges, because overflow or underflow in
             # any one dimension will always land on an extra "padding" cell
             # with value zero added above when index_map was created
-            indices_adjacent = [tuple(c) for c in np.add(neighbour_offsets, indices[i])]
-            adjacent = [self.index_map[c] for c in indices_adjacent if self.index_map[c]]
+
+            indices_adjacent = neighbours(self, indices[i])
+            adjacent = [self.index_map[c] for c in indices_adjacent
+                        if self.index_map[c] > -1]
 
             # Replace adjacent elements by its ancestor
             adjacent = [structures[a].ancestor for a in adjacent]
 
             # Remove duplicates
-            adjacent = list(set(adjacent))
+            adjacent = _sorted_by_idx(set(adjacent))
 
             # What happens next depends on how many unique adjacent structures there are
 
@@ -201,7 +228,7 @@ class Dendrogram(object):
                 idx = next_idx()
 
                 # Create leaf
-                leaf = Structure(coord, data_value, idx=idx)
+                leaf = Structure(coord, data_value, idx=idx, dendrogram=self)
 
                 # Add leaf to overall list
                 structures[idx] = leaf
@@ -229,7 +256,7 @@ class Dendrogram(object):
                          if structure.is_leaf and
                          (structure.vmax == data_value or
                           not is_independent(structure, index=coord,
-                                            value=data_value))]
+                                             value=data_value))]
 
                 # Remove merges from list of adjacent structures
                 for structure in merge:
@@ -249,7 +276,9 @@ class Dendrogram(object):
                     belongs_to._add_pixel(coord, data_value)
                 else:
                     # Create a branch
-                    belongs_to = Structure(coord, data_value, children=adjacent, idx=next_idx())
+                    belongs_to = Structure(coord, data_value,
+                                           children=adjacent, idx=next_idx(),
+                                           dendrogram=self)
                     # Add branch to overall list
                     structures[belongs_to.idx] = belongs_to
 
@@ -272,34 +301,27 @@ class Dendrogram(object):
             print("")  # newline
 
         # Create trunk from objects with no ancestors
-        self.trunk = [structure for structure in six.itervalues(structures) if structure.parent is None]
-
-        # Remove orphan leaves that aren't large enough
-        leaves_in_trunk = [structure for structure in self.trunk if structure.is_leaf]
-        for leaf in leaves_in_trunk:
-            if not is_independent(leaf):
-                # This leaf is an orphan, so remove all references to it:
-                structures.pop(leaf.idx)
-                self.trunk.remove(leaf)
-                leaf._fill_footprint(self.index_map, 0)
-
-        # To make the structure.level property fast, we ensure all the structures in the
-        # trunk have their level cached as "0"
-        for structure in self.trunk:
-            structure._level = 0  # See the definition of level() in structure.py
+        _make_trunk(self, structures, is_independent)
 
         # Save a list of all structures accessible by ID
-        self._structures_dict = structures
+        self._structures_dict = {}
 
-        #remove border from index map
+        # Re-assign idx and update index map
+        sorted_structures = sorted(self, key=lambda s: s.smallest_index)
+        for idx, s in enumerate(sorted_structures):
+            s.idx = idx
+            s._fill_footprint(self.index_map, idx, recursive=False)
+            self._structures_dict[idx] = s
+
+        # Remove border from index map
         s = tuple(slice(0, s, 1) for s in data.shape)
         self.index_map = self.index_map[s]
 
+        # Add dendrogram index
         self._index()
 
         # Return the newly-created dendrogram:
         return self
-
 
     def _index(self):
         # add dendrogram index
@@ -308,6 +330,23 @@ class Dendrogram(object):
         for s in six.itervalues(self._structures_dict):
             s._tree_index = ti
 
+    def neighbours(self, idx):
+        """
+        Return a list of indices to the neighbours of a given pixel.
+
+        This method can be overridden to handle custom layouts
+        (e.g., healpix maps, periodic boundaries, etc.)
+
+        Parameters
+        ----------
+        idx : tuple
+            The N-dimensional location of a pixel in the data
+
+        Returns
+        -------
+        List of N-dimensional locations of each neighbour
+        """
+        return [tuple(c) for c in np.add(_offsets[self.n_dim], idx)]
 
     @property
     def trunk(self):
@@ -363,7 +402,7 @@ class Dendrogram(object):
     @property
     def leaves(self):
         """
-        A flattened list of all leaves in the dendrogram
+        A flattened list of all leaves in the dendrogram.
         """
         return [i for i in six.itervalues(self._structures_dict) if i.is_leaf]
 
@@ -380,9 +419,17 @@ class Dendrogram(object):
 
         This will return None if no structure includes the specified pixel
         coordinates.
+
+        Parameters
+        ----------
+        indices: tuple
+            The pixel coordinates of the structure of interest
         """
-        idx = self.index_map[indices]
-        if idx:
+        if len(indices) != self.index_map.ndim:
+            raise ValueError("Must have {0:d} indices for data with {0:d} dimensions.".format(self.index_map.ndim))
+        # Needs to be a tuple; indexing with a list or array will return multiple
+        idx = self.index_map[tuple(indices)]
+        if idx > -1:
             return self._structures_dict[idx]
         return None
 
@@ -439,12 +486,100 @@ class Dendrogram(object):
         from .viewer import BasicDendrogramViewer
         return BasicDendrogramViewer(self)
 
+    def prune(self, min_delta=0, min_npix=0, is_independent=None):
+        '''
+        Prune a dendrogram after it has been computed.
+
+        Parameters
+        ----------
+        min_delta : float, optional
+            The minimum height a leaf has to have in order to be considered an
+            independent entity.
+        min_npix : int, optional
+            The minimum number of pixels/values needed for a leaf to be considered
+            an independent entity.
+        is_independent : function or list of functions, optional
+            A custom function that can be specified that will determine if a
+            leaf can be treated as an independent entity. The signature of the
+            function should be ``func(structure, index=None, value=None)``
+            where ``structure`` is the structure under consideration, and
+            ``index`` and ``value`` are optionally the pixel that is causing
+            the structure to be considered for merging into/attaching to the
+            tree.
+
+            If multiple functions are provided as a list, they
+            are all applied when testing for independence.
+        '''
+
+        # If params set to zero, set equal to value form self.params
+        if min_delta == 0:
+            min_delta = self.params["min_delta"]
+        if min_npix == 0:
+            min_npix = self.params["min_npix"]
+
+        # Check if params are too restrictive.
+        if min_delta < self.params["min_delta"]:
+            warnings.warn("New min_delta (%s) is less than the current min_delta \
+                           (%s). No leaves can be pruned." \
+                           % (min_delta, self.params["min_delta"]))
+        else:  # Update params
+            self.params["min_delta"] = min_delta
+
+        if min_npix < self.params["min_npix"]:
+            warnings.warn("New min_npix (%s) is less than the current min_npix \
+                           (%s). No leaves can be pruned." \
+                           % (min_npix, self.params["min_npix"]))
+        else:  # Updates params
+            self.params["min_npix"] = min_npix
+
+        tests = [pruning.min_delta(min_delta),
+                 pruning.min_npix(min_npix)]
+        if is_independent is not None:
+            if isinstance(is_independent, Iterable):
+                tests.extend(is_independent)
+            else:
+                tests.append(is_independent)
+        is_independent = pruning.all_true(tests)
+
+        keep_structures = self._structures_dict.copy()
+
+        # Continue until there are no more leaves to prune.
+        for struct in _to_prune(self, keep_structures, is_independent):
+                # merge struct
+                parent = struct.parent
+                siblings = parent.children
+                # If leaf has one other sibling, merge both into the parent
+                if len(siblings) == 2:
+                    merge = copy.copy(siblings)
+
+                # If leaf has multiple siblings, merge leaf into parent
+                elif len(siblings) > 2:
+                    merge = [struct]
+
+                # Merge structures into the parent
+                for m in merge:
+                    _merge_with_parent(m, self.index_map)
+
+                    # Remove this structure
+                    del keep_structures[m.idx]
+
+        # Create trunk from objects with no ancestors
+        _make_trunk(self, keep_structures, is_independent)
+
+        # Save a list of all structures accessible by ID
+        self._structures_dict = keep_structures
+
+        self._index()  # XXX check if this is OK with non-packed idx values
+
+        return self
+
 
 class TreeIndex(object):
+
     def __init__(self, dendrogram):
         """
-        Object that efficiently extracts
-        the locations of Structures in an ndarray
+        Object that efficiently extracts the locations of Structures in an
+        ndarray.
 
         Parameters
         ----------
@@ -458,7 +593,7 @@ class TreeIndex(object):
         nd = len(index_map.shape)
 
         assert sz == dendrogram.data.size
-        assert index_map.min() >= 0
+        assert index_map.min() >= -1
 
         #map ids to [0, 1, ...] for storage efficiency
         uniq, bins = np.unique(index_map, return_inverse=True)
@@ -495,7 +630,7 @@ class TreeIndex(object):
         npix = offset * 0
         npix_subtree = offset * 0
 
-        index = np.zeros(sz, dtype=np.int)
+        index = -np.ones(sz, dtype=np.int)
         order = dendrogram.all_structures
 
         pos = 0
@@ -521,7 +656,7 @@ class TreeIndex(object):
 
     def indices(self, sid, subtree=True):
         """
-        Return pixel indices associated with a dendrogram structure
+        Return pixel indices associated with a dendrogram structure.
 
         Returns the pixels in the original dendrogram array
         which are associated with a particular structure id.
@@ -546,3 +681,146 @@ class TreeIndex(object):
 
     def values(self, sid, subtree=True):
         return self._data[self.indices(sid, subtree=subtree)]
+
+
+def periodic_neighbours(axes):
+    """
+    Utility for computing neighbours on datasets with periodic boundaries.
+
+    This can be passed to the neighbours keyword of :meth:`Dendrogram.compute`
+
+    Parameters
+    ----------
+    axes : integer, or list of integers
+        Which axes of the data are periodic
+
+
+    Example
+    -------
+    Build a dendrogram where the 0th axis wraps from top-to-bottom::
+
+        Dendrogram.compute(data, neighbours=periodic_neighbours(0))
+
+    """
+    try:
+        axes[0]
+    except TypeError:
+        axes = [axes]
+
+    def _wrap(c, shp):
+        # note: shp is padded along each dimension,
+        #      so values to wrap occur -1, len-1
+        for a in axes:
+            if c[a] < 0:
+                c[a] = shp[a] - 2
+            elif c[a] == shp[a] - 1:
+                c[a] = 0
+        return tuple(c)
+
+    def result(dendrogram, idx):
+        return [_wrap(c, dendrogram.index_map.shape)
+                for c in np.add(_offsets[dendrogram.n_dim], idx)]
+
+    return result
+
+def _to_prune(dendrogram, keep_structures, is_independent):
+    '''
+    Yields a sequence of leaves which need to be pruned.
+
+    Parameters
+    ----------
+
+    dendrogram : Dendrogram
+        Computed dendrogram.
+
+    keep_structures : dict
+        Contains all structures in the dendrogram.
+
+    is_independent : function or list of functions, optional
+        A custom function that can be specified that will determine if a
+        leaf can be treated as an independent entity.
+
+    '''
+    while True:
+        for struct in dendrogram.all_structures:
+            if not struct.is_leaf:
+                continue
+
+            if struct.idx not in keep_structures:
+                # structure already deleted
+                continue
+
+            if is_independent(struct):
+                # passes prune test
+                continue
+
+            parent = struct.parent
+            # deal with trunks later
+            if parent is None:
+                continue
+
+            yield struct
+            break
+        else:
+            return
+
+def _merge_with_parent(m, index_map):
+    '''
+    Merge a given structure into the parent.
+
+    Parameters
+    ----------
+
+    m : Structure
+        The structure to be merged.
+
+    index_map : numpy.ndarray
+        Index map from the dendrogram.
+
+    '''
+    parent = m.parent
+    # Change branches coordinates to parent's
+    m._fill_footprint(index_map, parent.idx, recursive=False)
+    # Merge branch into parent
+    parent._merge(m)
+    parent.children.remove(m)
+    # If the sibling is a branch, append on its children to the parent
+    # and update the children's parent.
+    if m.is_branch:
+        parent.children.extend(m.children)
+        for child in m.children:
+            child.parent = parent
+
+def _make_trunk(dendrogram, keep_structures, is_independent):
+    '''
+    Creates the trunk and prunes off orphan leaves.
+
+    Parameters
+    ----------
+
+    dendrogram : Dendrogram
+        Computed dendrogram.
+
+    keep_structures : dict
+        Contains all structures in the dendrogram.
+
+    is_independent : function or list of functions, optional
+        A custom function that can be specified that will determine if a
+        leaf can be treated as an independent entity.
+
+    '''
+    dendrogram.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
+
+    # Remove orphan leaves that aren't large enough
+    leaves_in_trunk = [structure for structure in dendrogram.trunk if structure.is_leaf]
+    for leaf in leaves_in_trunk:
+        if not is_independent(leaf):
+            # This leaf is an orphan, so remove all references to it:
+            keep_structures.pop(leaf.idx)
+            dendrogram.trunk.remove(leaf)
+            leaf._fill_footprint(dendrogram.index_map, -1)
+
+    # To make the structure.level property fast, we ensure all the structures in the
+    # trunk have their level cached as "0"
+    for structure in dendrogram.trunk:
+        structure._level = 0  # See the definition of level() in structure.py

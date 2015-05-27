@@ -21,9 +21,9 @@ import numpy as np
 
 
 def _ravel_multi_index(multi_index, dims, mode='raise'):
-    #partial implementation of ravel_multi_index,
-    #for compatibility with numpy <= 1.5
-    #does not implement order kwarg
+    # partial implementation of ravel_multi_index,
+    # for compatibility with numpy <= 1.5
+    # does not implement order kwarg
     ndim = len(dims)
 
     if len(multi_index) != len(dims):
@@ -83,6 +83,9 @@ def min_delta(delta):
     """
     def result(structure, index=None, value=None):
         if value is None:
+            if structure.parent is not None:
+                return (structure.height - structure.parent.height) >= delta
+
             return (structure.vmax - structure.vmin) >= delta
         return (structure.vmax - value) >= delta
     return result

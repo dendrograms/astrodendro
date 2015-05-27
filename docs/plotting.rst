@@ -11,7 +11,8 @@ One you have computed your dendrogram, the easiest way to view it interactively
 is to use the :meth:`~astrodendro.dendrogram.Dendrogram.viewer` method::
 
     d = Dendrogram.compute(...)
-    d.viewer()
+    v = d.viewer()
+    v.show()
 
 This will launch an interactive window showing the original data, and the
 dendrogram itself. Note that the viewer is only available for 2 or 3-d
@@ -28,6 +29,12 @@ click on pixels in the image and have the corresponding structure be
 highlighted in the dendrogram plot. Clicking on a branch in the dendrogram plot
 or in the image will highlight that branch and all sub-structures.
 
+Multiple structures can be highlighted in different colors using the three
+mouse buttons: Mouse button 1 (Left-click or "regular" click), button 2
+(Middle-click or "alt+click"), and button 3 (Right-click/"ctrl+click").
+Each selection is independent of the other two; any of the three can be
+selected either by clicking on the image or the dendrogram.
+
 **Change the image stretch:** use the ``vmin`` and ``vmax`` sliders above the
 image to change the lower and upper level of the image stretch.
 
@@ -40,6 +47,58 @@ slice manually by using the ``slice`` slider.
 has a unique integer ID (the ``.idx`` attribute) that can be used to recognize
 the identify the structure when computing catalogs or making plots manually
 (see below).
+
+**Display astronomical coordinates:**
+If your data has an associated WCS object (for example, if you loaded your data 
+from a FITS file with astronomical coordinate information), the interactive viewer
+will display the coordinates using ``wcsaxes``::
+
+    from astropy.io.fits import getdata
+    from astropy import wcs
+
+    data, header = getdata('astrodendro/docs/PerA_Extn2MASS_F_Gal.fits', header=True)
+    wcs = wcs.WCS(header)
+    d = astrodendro.Dendrogram.compute(data, wcs=wcs)
+    v = d.viewer()
+    v.show()
+
+.. image:: wcsaxes_docs_screenshot.png
+
+Note that this functionality requires that the ``wcsaxes`` package is installed.
+Installation instructions can be found here: 
+http://wcsaxes.readthedocs.org/en/latest/
+
+**Linked scatter plots:**
+If you have built a catalog (see :doc:`catalog`), you can also
+display a scatterplot of two catalog columns, linked to the viewer.
+The available catalog columns can be accessed as ```catalog.colnames```.
+Selections in the main viewer update the colors of the points in this plot::
+
+    from astrodendro.scatter import Scatter
+    ... code to create a dendrogram (d) and catalog ...
+    dv = d.viewer()
+    ds = Scatter(d, dv.hub, catalog, 'radius', 'v_rms')
+    dv.show()
+
+The catalog properties of dendrogram structures will be plotted here. You can 
+select structures directly from the scatter plot by clicking and dragging a 
+lasso, and the selected structures will be highlighted in other plots:
+
+.. image:: scatter_screenshot.png
+   :width: 50%
+
+.. image:: scatter_selected_viewer_screenshot.png
+   :width: 80%
+
+To set logarithmic scaling on either the x axis, the y axis, or both,
+the following convenience methods are defined::
+
+    ds.set_semilogx()
+    ds.set_semilogy()
+    ds.set_loglog()
+
+    # To unset logarithmic scaling, pass `log=False` to the above methods, i.e.
+    ds.set_loglog(False)
 
 Making plots for publications
 -----------------------------
@@ -55,7 +114,7 @@ tool::
 
 and then use this to make the plot you need. The following complete example
 shows how to make a plot of the dendrogram of the extinction map of the Perseus
-region (introduced in :doc:using) using the
+region (introduced in :doc:`using`) using
 :meth:`~astrodendro.plot.DendrogramPlotter.plot_tree`, highlighting two of the
 main branches:
 
@@ -77,8 +136,8 @@ main branches:
     p.plot_tree(ax, color='black')
 
     # Highlight two branches
-    p.plot_tree(ax, structure=2077, color='red', lw=2, alpha=0.5)
-    p.plot_tree(ax, structure=3262, color='orange', lw=2, alpha=0.5)
+    p.plot_tree(ax, structure=8, color='red', lw=2, alpha=0.5)
+    p.plot_tree(ax, structure=24, color='orange', lw=2, alpha=0.5)
 
     # Add axis labels
     ax.set_xlabel("Structure")
@@ -113,8 +172,8 @@ shown.
     p.plot_contour(ax, color='black')
 
     # Highlight two branches
-    p.plot_contour(ax, structure=2077, lw=3, colors='red')
-    p.plot_contour(ax, structure=3262, lw=3, colors='orange')
+    p.plot_contour(ax, structure=8, lw=3, colors='red')
+    p.plot_contour(ax, structure=24, lw=3, colors='orange')
 
 Plotting contours of structures in third-party packages
 -------------------------------------------------------
@@ -143,10 +202,10 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
     # that any pixel corresponding to a leaf is set to True.
     mask = np.zeros(hdu.data.shape, dtype=bool)
     for leaf in d.leaves:
-        mask = mask | leaf.get_mask(mask.shape)
+        mask = mask | leaf.get_mask()
 
     # Now we create a FITS HDU object to contain this, with the correct header
-    mask_hdu = fits.PrimaryHDU(mask.astype(int), hdu.header)
+    mask_hdu = fits.PrimaryHDU(mask.astype('short'), hdu.header)
 
     # We then use APLpy to make the final plot
     fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
@@ -158,7 +217,7 @@ Let's first take the plot above and make a contour plot in APLpy outlining all t
 Now let's take the example from `Making plots for publications`_ and try and
 reproduce the same plot. As described there, one way to find interesting
 structures in the dendrogram is to use the `Interactive Visualization`_ tool.
-This tool will give the ID of a structure as an integer (which we call ``idx``).
+This tool will give the ID of a structure as an integer (``idx``).
 
 Because we are starting from this ID rather than a
 :class:`~astrodendro.structure.Structure` object, we need to first get the
@@ -181,22 +240,22 @@ over the colors:
     d = Dendrogram.compute(hdu.data, min_value=2.0, min_delta=1., min_npix=10)
 
     # Find the structures
-    structure_2077 = d[2077]
-    structure_3262 = d[3262]
+    structure_08 = d[8]
+    structure_24 = d[24]
 
     # Extract the masks
-    mask_2077 = structure_2077.get_mask(hdu.data.shape)
-    mask_3262 = structure_3262.get_mask(hdu.data.shape)
+    mask_08 = structure_08.get_mask()
+    mask_24 = structure_24.get_mask()
 
     # Create FITS HDU objects to contain the masks
-    mask_hdu_2077 = fits.PrimaryHDU(mask_2077.astype(int), hdu.header)
-    mask_hdu_3262 = fits.PrimaryHDU(mask_3262.astype(int), hdu.header)
+    mask_hdu_08 = fits.PrimaryHDU(mask_08.astype('short'), hdu.header)
+    mask_hdu_24 = fits.PrimaryHDU(mask_24.astype('short'), hdu.header)
 
     # Use APLpy to make the final plot
     fig = aplpy.FITSFigure(hdu, figsize=(8, 6))
     fig.show_colorscale(cmap='Blues', vmax=4.0)
     fig.show_contour(hdu, levels=[2.0], colors='black', linewidths=0.5)
-    fig.show_contour(mask_hdu_2077, colors='red', linewidths=0.5)
-    fig.show_contour(mask_hdu_3262, colors='orange', linewidths=0.5)
+    fig.show_contour(mask_hdu_08, colors='red', linewidths=0.5)
+    fig.show_contour(mask_hdu_24, colors='orange', linewidths=0.5)
     fig.tick_labels.set_xformat('dd')
     fig.tick_labels.set_yformat('dd')

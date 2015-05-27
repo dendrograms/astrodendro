@@ -3,8 +3,7 @@
 import numpy as np
 import pytest
 
-from .. import Dendrogram
-from ..structure import Structure
+from .. import Dendrogram, periodic_neighbours, Structure
 
 
 class Test2DimensionalData(object):
@@ -94,6 +93,10 @@ class Test2DimensionalData(object):
         leaf_with_twos = d.structure_at((10, 9))
         assert leaf_with_twos.height == 2
 
+        # Check that all structures contain a reference to the dendrogram
+        for structure in d:
+            assert structure._dendrogram is d
+
 
 class Test3DimensionalData(object):
     def setup_method(self, method):
@@ -107,7 +110,7 @@ class Test3DimensionalData(object):
         assert len(d.leaves) == 55
 
         # Now check every pixel in the data cube (this takes a while).
-        st_map = np.zeros(self.data.shape, dtype=np.int)
+        st_map = -np.ones(self.data.shape, dtype=np.int)
         for st in d.all_structures:
             st_map[st.indices(subtree=False)] = st.idx
 
@@ -135,7 +138,7 @@ class Test3DimensionalData(object):
             if structure is not None:
                 assert structure.idx == st_map[coord], "Pixel at {0} is claimed to be part of {1}, but that structure does not contain the coordinate {0}!".format(coord, structure)
             else:
-                assert st_map[coord] == 0
+                assert st_map[coord] == -1
 
 
 class TestNDimensionalData(object):
@@ -176,7 +179,66 @@ class TestNDimensionalData(object):
         assert (list(zip(*branches[0].indices(subtree=False))), branches[0].values(subtree=False)) == ([(0, 0, 2, 2), ], [2., ])
 
 
+def test_periodic():
+    x = np.array([[0, 0, 0, 0, 0, ],
+                 [1, 1, 0, 1, 1],
+                 [0, 0, 0, 0, 0]])
+
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, -1],
+                        [0, 0, -1, 0, 0],
+                        [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic_left():
+    x = np.array([[1, 0, 0, 0, 0],
+                  [1, 0, 0, 0, 1],
+                  [1, 0, 0, 0, 0]])
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[0, -1, -1, -1, -1],
+                         [0, -1, -1, -1, 0],
+                         [0, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic_left_narrow():
+    x = np.array([[0, 0, 0, 0, 0],
+                  [1, 1, 0, 0, 1],
+                  [0, 0, 0, 0, 0]])
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, -1],
+                         [0, 0, -1, -1, 0],
+                         [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic_right():
+    x = np.array([[0, 0, 0, 0, 1],
+                  [1, 0, 0, 0, 1],
+                  [0, 0, 0, 0, 1]])
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, 0],
+                         [0, -1, -1, -1, 0],
+                         [-1, -1, -1, -1, 0]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+def test_periodic_right_narrow():
+    x = np.array([[0, 0, 0, 0, 0],
+                  [1, 0, 0, 1, 1],
+                  [0, 0, 0, 0, 0]])
+    d = Dendrogram.compute(x, min_value=0.5,
+                           neighbours=periodic_neighbours(1))
+    expected = np.array([[-1, -1, -1, -1, -1],
+                         [0, -1, -1, 0, 0],
+                         [-1, -1, -1, -1, -1]])
+    np.testing.assert_array_equal(d.index_map, expected)
+
+
+
 from .build_benchmark import BENCHMARKS
+
 
 @pytest.mark.parametrize(('filename'), BENCHMARKS.keys())
 def test_benchmark(filename):
@@ -192,3 +254,8 @@ def test_benchmark(filename):
     d2 = Dendrogram.load_from(path)
 
     assert d1 == d2
+
+    # Check that all structures contain a reference to the dendrogram
+    for structure in d1:
+        assert structure._dendrogram is d1
+

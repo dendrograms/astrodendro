@@ -6,7 +6,7 @@ import numpy as np
 class DendrogramPlotter(object):
 
     """
-    A class to plot a dendrogram object
+    A class to plot a dendrogram object.
     """
 
     def __init__(self, dendrogram):
@@ -17,7 +17,7 @@ class DendrogramPlotter(object):
 
     def set_custom_positions(self, custom_position):
         """
-        Manually set the positon on the structures for plotting
+        Manually set the positon on the structures for plotting.
 
         Parameters
         ----------
@@ -57,7 +57,7 @@ class DendrogramPlotter(object):
         for structure in sorted_trunk_structures:
 
             # Get sorted leaves
-            sorted_leaves = structure.get_sorted_leaves(subtree=True, reverse=reverse)
+            sorted_leaves = structure.sorted_leaves(subtree=True, reverse=reverse)
 
             # Loop over leaves and assign positions
             for leaf in sorted_leaves:
@@ -81,7 +81,7 @@ class DendrogramPlotter(object):
 
         Parameters
         ----------
-        ax : `matplotlib.axes.Axes` instance
+        ax : :class:`~matplotlib.axes.Axes` instance
             The Axes inside which to plot the dendrogram
         structure : int or `~astrodendro.structure.Structure`, optional
             If specified, only plot this structure. This can be either the
@@ -100,7 +100,7 @@ class DendrogramPlotter(object):
         """
 
         # Get the lines for the dendrogram
-        lines = self.get_lines(structure=structure, **kwargs)
+        lines = self.get_lines(structures=structure, **kwargs)
 
         # Add the lines to the axes
         ax.add_collection(lines)
@@ -117,7 +117,7 @@ class DendrogramPlotter(object):
 
         Parameters
         ----------
-        ax : `matplotlib.axes.Axes` instance
+        ax : :class:`~matplotlib.axes.Axes` instance
             The Axes inside which to plot the dendrogram
         structure : int or `~astrodendro.structure.Structure`, optional
             If specified, only plot this structure. This can be either the
@@ -145,7 +145,7 @@ class DendrogramPlotter(object):
         else:
             if type(structure) is int:
                 structure = self.dendrogram[structure]
-            mask = structure.get_mask(self.dendrogram.data.shape, subtree=subtree)
+            mask = structure.get_mask(subtree=subtree)
             if self.dendrogram.data.ndim == 3:
                 if slice is None:
                     peak_index = structure.get_peak(subtree=subtree)
@@ -158,18 +158,21 @@ class DendrogramPlotter(object):
 
         ax.contour(mask, levels=[0.5], **kwargs)
 
-    def get_lines(self, structure=None, **kwargs):
+    def get_lines(self, structures=None, subtree=True, **kwargs):
         """
         Get a collection of lines to draw the dendrogram.
 
         Parameters
         ----------
-        structure : `~astrodendro.structure.Structure`
-            The structure to plot. If not set, the whole tree will be plotted.
+        structures : :class:`~astrodendro.structure.Structure`
+            The structures to plot. If not set, the whole tree will be plotted.
+        subtree : bool, optional
+            If a structure is specified, by default the whole subtree will be
+            retrieved, but this can be disabled with this option.
 
         Returns
         -------
-        lines : `astrodendro.plot.StructureCollection`
+        lines : :class:`~astrodendro.plot.StructureCollection`
             The lines (sub-class of LineCollection) which can be directly used in Matplotlib
 
         Notes
@@ -181,12 +184,18 @@ class DendrogramPlotter(object):
         if self._cached_positions is None:
             raise Exception("Leaves have not yet been sorted")
 
-        if structure is None:
+        # Case 1: no structures are selected
+        if structures is None:
             structures = list(self.dendrogram.all_structures)
+        # Case 2: one structure is selected, and subtree is True
         else:
-            if isinstance(structure,int):
-                structure = self.dendrogram[structure]
-            structures = structure.descendants + [structure]
+            if subtree:
+                if isinstance(structures[0], int):
+                    structure = self.dendrogram[structures[0]]
+                else: 
+                    structure = structures[0]
+                structures = structure.descendants + [structure]
+        # Case 3: subtree is False (do nothing special to `structures`)
 
         lines = []
         mapping = []
