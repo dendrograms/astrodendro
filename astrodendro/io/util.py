@@ -140,6 +140,11 @@ def _fast_reader(index_map, data):
 
     # ndimage ignores 0 and -1, but we want index 0
     object_slices = ndimage.find_objects(index_map+1)
+
+    # find_objects returns a tuple that includes many None values that we
+    # need to get rid of.
+    object_slices = [x for x in object_slices if x is not None]
+
     index_cube = np.indices(index_map.shape)
 
     # Need to have same length, otherwise assumptions above are wrong
