@@ -41,6 +41,8 @@ def dendro_export_hdf5(d, filename):
     ds.attrs['IMAGE_VERSION'] = '1.2'
     ds.attrs['IMAGE_MINMAXRANGE'] = [d.data.min(), d.data.max()]
 
+    f.create_dataset('params', data=d.params)
+
     try:
         f.create_dataset('wcs_header', data=d.wcs.to_header_string())
     except AttributeError:
@@ -59,13 +61,14 @@ def dendro_import_hdf5(filename):
         newick = h5f['newick'].value
         data = h5f['data'].value
         index_map = h5f['index_map'].value
+        params = h5f['params']
         try:
             wcs = WCS(h5f['wcs_header'].value)
         except KeyError:
             wcs = None
 
     log.debug('Parsing dendrogram...')
-    return parse_dendrogram(newick, data, index_map, wcs)
+    return parse_dendrogram(newick, data, index_map, params, wcs)
 
 
 HDF5Handler = IOHandler(identify=is_hdf5,
