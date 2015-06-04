@@ -26,7 +26,7 @@ env:
 matrix:
     include:
         - python: 2.7
-          env: NP_VER=1.7 ASTRO_VER=0.4
+          env: NP_VER=1.7 ASTRO_VER=0.3
         - python: 2.7
           env: NP_VER=1.6 ASTRO_VER=0.3
 
