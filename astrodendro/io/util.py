@@ -151,7 +151,8 @@ def _fast_reader(index_map, data):
     assert len(idxs) == len(object_slices)
     log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
 
-    for idx,sl in ProgressBar(zip(idxs, object_slices)):
+    p = ProgressBar(len(object_slices))
+    for idx,sl in zip(idxs, object_slices):
         match = index_map[sl] == idx
         sl2 = (slice(None),) + sl
         match_inds = index_cube[sl2][:, match]
@@ -159,6 +160,7 @@ def _fast_reader(index_map, data):
         dd = data[sl][match].tolist()
         flux_by_structure[idx] = dd
         indices_by_structure[idx] = coords
+        p.update()
 
     return flux_by_structure, indices_by_structure
 
