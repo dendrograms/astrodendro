@@ -140,13 +140,19 @@ def _fast_reader(index_map, data):
 
     # ndimage ignores 0 and -1, but we want index 0
     object_slices = ndimage.find_objects(index_map+1)
+
+    # find_objects returns a tuple that includes many None values that we
+    # need to get rid of.
+    object_slices = [x for x in object_slices if x is not None]
+
     index_cube = np.indices(index_map.shape)
 
     # Need to have same length, otherwise assumptions above are wrong
     assert len(idxs) == len(object_slices)
     log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
 
-    for idx,sl in ProgressBar(zip(idxs, object_slices)):
+    p = ProgressBar(len(object_slices))
+    for idx,sl in zip(idxs, object_slices):
         match = index_map[sl] == idx
         sl2 = (slice(None),) + sl
         match_inds = index_cube[sl2][:, match]
@@ -154,6 +160,7 @@ def _fast_reader(index_map, data):
         dd = data[sl][match].tolist()
         flux_by_structure[idx] = dd
         indices_by_structure[idx] = coords
+        p.update()
 
     return flux_by_structure, indices_by_structure
 

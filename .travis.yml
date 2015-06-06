@@ -16,9 +16,11 @@ env:
         - PYTEST_ARGS='--cov astrodendro'
         - CONDA_BASE='pip setuptools h5py pytest matplotlib cython jinja2'
         - PIP_BASE='pytest-cov coveralls mock'
+        - CONDA_ADDITIONAL=''
     matrix:
-        - NP_VER=1.9 ASTRO_VER=0.4
-        - NP_VER=1.8 ASTRO_VER=0.3
+        - NP_VER=1.9 ASTRO_VER=1.0 CONDA_ADDITIONAL=scipy
+        - NP_VER=1.9 ASTRO_VER=1.0
+        - NP_VER=1.8 ASTRO_VER=0.4
         - NP_VER=1.9 ASTRO_VER=dev
 
 matrix:
@@ -42,7 +44,7 @@ before_install:
     - source activate test
 
     # DEPENDENCIES
-    - $CONDA_INSTALL $CONDA_BASE numpy=$NP_VER
+    - $CONDA_INSTALL $CONDA_BASE numpy=$NP_VER $CONDA_ADDITIONAL
     - $PIP_INSTALL $PIP_BASE
     - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else $CONDA_INSTALL astropy=$ASTRO_VER numpy=$NP_VER; fi
 
