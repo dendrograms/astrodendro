@@ -128,9 +128,9 @@ class Dendrogram(object):
                        that has been padded with one element along each edge.
 
         wcs : WCS object, optional
-            A WCS object that describes `data`. This is used in the 
-            interactive viewer to properly display the data's coordinates 
-            on the image axes. (Requires that `wcsaxes` is installed; see 
+            A WCS object that describes `data`. This is used in the
+            interactive viewer to properly display the data's coordinates
+            on the image axes. (Requires that `wcsaxes` is installed; see
             http://wcsaxes.readthedocs.org/ for install instructions.)
 
 
@@ -461,6 +461,9 @@ class Dendrogram(object):
             return False
 
         if not (self.data == other.data).all():
+            return False
+
+        if not self.params == other.params():
             return False
 
         # structures should have the same extent,
