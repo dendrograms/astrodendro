@@ -463,7 +463,7 @@ class Dendrogram(object):
         if not (self.data == other.data).all():
             return False
 
-        if not self.params == other.params():
+        if not self.params == other.params:
             return False
 
         # structures should have the same extent,
