@@ -6,7 +6,8 @@ from astropy import log
 
 
 def parse_newick(string):
-
+    string = string.decode('utf8')
+    
     items = {}
 
     # Find maximum level
