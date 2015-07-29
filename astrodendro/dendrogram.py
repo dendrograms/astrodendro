@@ -163,7 +163,7 @@ class Dendrogram(object):
 
         # Default min_val to the minimum in the data
         if min_value == "min":
-            min_value = np.min(data[np.isfinite(data)])
+            min_value = np.min(data[np.isfinite(data)]) - 1
 
         self = Dendrogram()
         self.data = data
