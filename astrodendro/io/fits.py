@@ -37,9 +37,9 @@ def dendro_export_fits(d, filename):
 
     primary_hdu.header["MIN_NPIX"] = (d.params['min_npix'],
                                       "Minimum number of pixels in a leaf.")
-    primary_hdu.header["MIN_DELTA"] = (d.params['min_delta'],
+    primary_hdu.header["MIN_DELT"] = (d.params['min_delta'],
                                        "Minimum branch height.")
-    primary_hdu.header["MIN_VALUE"] = (d.params['min_value'],
+    primary_hdu.header["MIN_VAL"] = (d.params['min_value'],
                                        "Minimum intensity value.")
 
     hdus = [primary_hdu,
@@ -67,8 +67,8 @@ def dendro_import_fits(filename):
         newick = ''.join(chr(x) for x in hdus[3].data.flat)
 
         params = {"min_npix": hdus[0].header['MIN_NPIX'],
-                  "min_value": hdus[0].header['MIN_VALUE'],
-                  "min_delta": hdus[0].header['MIN_DELTA']}
+                  "min_value": hdus[0].header['MIN_VAL'],
+                  "min_delta": hdus[0].header['MIN_DELT']}
 
     return parse_dendrogram(newick, data, index_map, params, wcs)
 
