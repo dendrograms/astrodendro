@@ -468,8 +468,22 @@ class Dendrogram(object):
         if not (self.data == other.data).all():
             return False
 
-        if not self.params == other.params:
+        if self.params['min_value'] != other.params['min_value']:
             return False
+
+        self_params = self.params
+        other_params = other.params
+
+        self_params.pop('min_value')
+        other_params.pop('min_value')
+
+        # Don't compare params if one has not been set (ie. = 0)
+        for key in self_params.keys():
+            if self_params[key] == 0 or other_params[key] == 0:
+                continue
+
+            if self_params[key] != other_params[key]:
+                return False
 
         # structures should have the same extent,
         # but idx values need not be identical. This
