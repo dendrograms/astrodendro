@@ -471,8 +471,8 @@ class Dendrogram(object):
         if self.params['min_value'] != other.params['min_value']:
             return False
 
-        self_params = self.params
-        other_params = other.params
+        self_params = self.params.copy()
+        other_params = other.params.copy()
 
         self_params.pop('min_value')
         other_params.pop('min_value')
