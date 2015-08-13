@@ -477,7 +477,9 @@ class Dendrogram(object):
         self_params.pop('min_value')
         other_params.pop('min_value')
 
-        # Don't compare params if one has not been set (ie. = 0)
+        # Hack for not comparing params that have not been set
+        # There is currently no explicit way to tell if it has not been set
+        # We assume that if it is =0, then it is not set and won't be compared
         for key in self_params.keys():
             if self_params[key] == 0 or other_params[key] == 0:
                 continue
