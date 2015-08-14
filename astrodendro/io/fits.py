@@ -35,6 +35,13 @@ def dendro_export_fits(d, filename):
     except AttributeError:
         primary_hdu = fits.PrimaryHDU()
 
+    primary_hdu.header["MIN_NPIX"] = (d.params['min_npix'],
+                                      "Minimum number of pixels in a leaf.")
+    primary_hdu.header["MIN_DELT"] = (d.params['min_delta'],
+                                       "Minimum branch height.")
+    primary_hdu.header["MIN_VAL"] = (d.params['min_value'],
+                                       "Minimum intensity value.")
+
     hdus = [primary_hdu,
             fits.ImageHDU(d.data),
             fits.ImageHDU(d.index_map),
@@ -59,7 +66,11 @@ def dendro_import_fits(filename):
         index_map = hdus[2].data
         newick = ''.join(chr(x) for x in hdus[3].data.flat)
 
-    return parse_dendrogram(newick, data, index_map, wcs)
+        params = {"min_npix": hdus[0].header['MIN_NPIX'],
+                  "min_value": hdus[0].header['MIN_VAL'],
+                  "min_delta": hdus[0].header['MIN_DELT']}
+
+    return parse_dendrogram(newick, data, index_map, params, wcs)
 
 
 FITSHandler = IOHandler(identify=is_fits,

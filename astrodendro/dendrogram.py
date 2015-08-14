@@ -87,7 +87,7 @@ class Dendrogram(object):
         self.load_from = static_warning
 
     @staticmethod
-    def compute(data, min_value=-np.inf, min_delta=0, min_npix=0,
+    def compute(data, min_value="min", min_delta=0, min_npix=0,
                 is_independent=None, verbose=False, neighbours=None, wcs=None):
         """
         Compute a dendrogram from a Numpy array.
@@ -96,9 +96,10 @@ class Dendrogram(object):
         ----------
         data : :class:`numpy.ndarray`
             The n-dimensional array to compute the dendrogram for
-        min_value : float, optional
+        min_value : float or "min", optional
             The minimum data value to go down to when computing the
-            dendrogram. Values below this threshold will be ignored.
+            dendrogram. Values below this threshold will be ignored. Defaults
+            to the minimum value in the data.
         min_delta : float, optional
             The minimum height a leaf has to have in order to be considered an
             independent entity.
@@ -128,9 +129,9 @@ class Dendrogram(object):
                        that has been padded with one element along each edge.
 
         wcs : WCS object, optional
-            A WCS object that describes `data`. This is used in the 
-            interactive viewer to properly display the data's coordinates 
-            on the image axes. (Requires that `wcsaxes` is installed; see 
+            A WCS object that describes `data`. This is used in the
+            interactive viewer to properly display the data's coordinates
+            on the image axes. (Requires that `wcsaxes` is installed; see
             http://wcsaxes.readthedocs.org/ for install instructions.)
 
 
@@ -159,6 +160,10 @@ class Dendrogram(object):
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
         neighbours = neighbours or Dendrogram.neighbours
+
+        # Default min_val to the minimum in the data
+        if min_value == "min":
+            min_value = np.min(data[np.isfinite(data)]) - 1
 
         self = Dendrogram()
         self.data = data
@@ -462,6 +467,25 @@ class Dendrogram(object):
 
         if not (self.data == other.data).all():
             return False
+
+        if self.params['min_value'] != other.params['min_value']:
+            return False
+
+        self_params = self.params.copy()
+        other_params = other.params.copy()
+
+        self_params.pop('min_value')
+        other_params.pop('min_value')
+
+        # Hack for not comparing params that have not been set
+        # There is currently no explicit way to tell if it has not been set
+        # We assume that if it is =0, then it is not set and won't be compared
+        for key in self_params.keys():
+            if self_params[key] == 0 or other_params[key] == 0:
+                continue
+
+            if self_params[key] != other_params[key]:
+                return False
 
         # structures should have the same extent,
         # but idx values need not be identical. This
