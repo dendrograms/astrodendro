@@ -43,9 +43,9 @@ def dendro_export_fits(d, filename):
                                        "Minimum intensity value.")
 
     hdus = [primary_hdu,
-            fits.ImageHDU(d.data),
-            fits.ImageHDU(d.index_map),
-            fits.ImageHDU(np.array([ord(x) for x in d.to_newick()]))]
+            fits.ImageHDU(d.data, name='data'),
+            fits.ImageHDU(d.index_map, name='index_map'),
+            fits.ImageHDU(np.array([ord(x) for x in d.to_newick()]), name='newick')]
 
     hdulist = fits.HDUList(hdus)
 
