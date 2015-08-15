@@ -42,7 +42,7 @@ def dendro_export_hdf5(d, filename):
     ds.attrs['IMAGE_MINMAXRANGE'] = [d.data.min(), d.data.max()]
 
     for key in d.params.keys():
-        f.create_dataset(key, data=d.params[key])
+        f.attrs[key] = d.params[key]
 
     try:
         f.create_dataset('wcs_header', data=d.wcs.to_header_string())
@@ -64,9 +64,11 @@ def dendro_import_hdf5(filename):
         index_map = h5f['index_map'].value
 
         params = {}
-        params['min_value'] = h5f['min_value'].value
-        params['min_delta'] = h5f['min_delta'].value
-        params['min_npix'] = h5f['min_npix'].value
+        if 'min_value' in h5f.attrs:
+            params['min_value'] = h5f.attrs['min_value']
+            params['min_delta'] = h5f.attrs['min_delta']
+            params['min_npix'] = h5f.attrs['min_npix']
+
         try:
             wcs = WCS(h5f['wcs_header'].value)
         except KeyError:
