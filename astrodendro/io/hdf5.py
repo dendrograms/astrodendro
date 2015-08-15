@@ -64,9 +64,11 @@ def dendro_import_hdf5(filename):
         index_map = h5f['index_map'].value
 
         params = {}
-        params['min_value'] = h5f['min_value'].value
-        params['min_delta'] = h5f['min_delta'].value
-        params['min_npix'] = h5f['min_npix'].value
+        if 'min_value' in h5f:
+            params['min_value'] = h5f['min_value'].value
+            params['min_delta'] = h5f['min_delta'].value
+            params['min_npix'] = h5f['min_npix'].value
+
         try:
             wcs = WCS(h5f['wcs_header'].value)
         except KeyError:
