@@ -66,9 +66,15 @@ def dendro_import_fits(filename):
         index_map = hdus[2].data
         newick = ''.join(chr(x) for x in hdus[3].data.flat)
 
-        params = {"min_npix": hdus[0].header['MIN_NPIX'],
-                  "min_value": hdus[0].header['MIN_VAL'],
-                  "min_delta": hdus[0].header['MIN_DELT']}
+        if 'MIN_NPIX' in hdus[0].header:
+
+            params = {"min_npix": hdus[0].header['MIN_NPIX'],
+                      "min_value": hdus[0].header['MIN_VAL'],
+                      "min_delta": hdus[0].header['MIN_DELT']}
+                      
+        else:
+            
+            params = {}
 
     return parse_dendrogram(newick, data, index_map, params, wcs)
 
