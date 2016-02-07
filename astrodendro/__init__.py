@@ -2,7 +2,7 @@
 
 from .dendrogram import Dendrogram, periodic_neighbours
 from .structure import Structure
-from .analysis import ppv_catalog, pp_catalog
+from .analysis import ppp_catalog, ppv_catalog, pp_catalog
 from .plot import DendrogramPlotter
 from .viewer import BasicDendrogramViewer
 
