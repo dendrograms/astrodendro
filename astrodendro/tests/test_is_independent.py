@@ -72,7 +72,7 @@ def test_benchmark(filename):
 
     d1 = Dendrogram.compute(data,
                             is_independent=is_independent_test,
-                            min_value=p['min_value'] if 'min_value' in p else -np.inf)
+                            min_value=p['min_value'] if 'min_value' in p else "min")
     d2 = Dendrogram.load_from(path)
 
     assert d1 == d2
