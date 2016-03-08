@@ -1,55 +1,58 @@
 language: python
 
 python:
-    - 2.6
     - 2.7
-    - 3.3
     - 3.4
+    - 3.5
+
+# Setting sudo to false opts in to Travis-CI container-based builds.
+sudo: false
+
+# The apt packages below are needed for sphinx builds, which can no longer
+# be installed with sudo apt-get.
+addons:
+    apt:
+        packages:
+            - graphviz
+            - texlive-latex-extra
+            - dvipng
 
 env:
     global:
         # The following versions are the 'default' for tests, unless
         # overidden underneath. They are defined here in order to save having
         # to repeat them for all configurations.
-        - CONDA_INSTALL='conda install --yes'
-        - PIP_INSTALL='pip install'
-        - PYTEST_ARGS='--cov astrodendro'
-        - CONDA_BASE='pip setuptools h5py pytest matplotlib cython jinja2'
-        - PIP_BASE='pytest-cov coveralls mock'
-        - CONDA_ADDITIONAL=''
+        - SETUP_CMD='test --coverage'
+        - NUMPY_VERSION=stable
+        - ASTROPY_VERSION=stable
+        - CONDA_DEPENDENCIES='pip setuptools h5py pytest matplotlib cython jinja2 matplotlib scipy'
+        - PIP_DEPENDENCIES='pytest-cov coveralls mock'
+        - SETUP_XVFB=True
     matrix:
-        - NP_VER=1.9 ASTRO_VER=1.0 CONDA_ADDITIONAL=scipy
-        - NP_VER=1.9 ASTRO_VER=1.0
-        - NP_VER=1.8 ASTRO_VER=0.4
-        - NP_VER=1.9 ASTRO_VER=dev
+        - SETUP_CMD='egg_info'
+        - # run with default settings
+        - ASTROPY_VERSION='development'
 
 matrix:
     include:
+
+        # Check for sphinx doc build warnings - we do this first because it
+        # may run for a long time
         - python: 2.7
-          env: NP_VER=1.7 ASTRO_VER=0.3
+          env: SETUP_CMD='build_sphinx -w'
+
+        # Try older numpy versions
         - python: 2.7
-          env: NP_VER=1.6 ASTRO_VER=0.3
+          env: NUMPY_VERSION=1.9 SETUP_CMD='test'
+        - python: 2.7
+          env: NUMPY_VERSION=1.8 SETUP_CMD='test'
 
 before_install:
-
-    - export PYTHONIOENCODING=UTF8
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda/bin:$PATH
-    - conda update --yes conda
-
-    # CONDA
-    - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
-    - source activate test
-
-    # DEPENDENCIES
-    - $CONDA_INSTALL $CONDA_BASE numpy=$NP_VER $CONDA_ADDITIONAL
-    - $PIP_INSTALL $PIP_BASE
-    - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else $CONDA_INSTALL astropy=$ASTRO_VER numpy=$NP_VER; fi
+    - git clone git://github.com/astropy/ci-helpers.git
+    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 script:
-    - py.test $PYTEST_ARGS astrodendro
+    - python setup.py $SETUP_CMD
 
 after_success:
-  - coveralls
+    - if [[ $SETUP_CMD == 'test --coverage' ]]; then coveralls --rcfile='astrodendro/tests/coveragerc'; fi
