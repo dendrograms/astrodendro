@@ -8,8 +8,11 @@ python:
 # Setting sudo to false opts in to Travis-CI container-based builds.
 sudo: false
 
-# The apt packages below are needed for sphinx builds, which can no longer
-# be installed with sudo apt-get.
+# The apt packages below are needed for sphinx builds. A full list of packages
+# that can be included can be found here:
+#
+# https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+
 addons:
     apt:
         packages:
@@ -19,40 +22,48 @@ addons:
 
 env:
     global:
-        # The following versions are the 'default' for tests, unless
-        # overidden underneath. They are defined here in order to save having
-        # to repeat them for all configurations.
-        - SETUP_CMD='test --coverage'
         - NUMPY_VERSION=stable
         - ASTROPY_VERSION=stable
-        - CONDA_DEPENDENCIES='pip setuptools h5py pytest matplotlib cython jinja2 matplotlib scipy'
-        - PIP_DEPENDENCIES='pytest-cov coveralls mock'
-        - SETUP_XVFB=True
+        - SETUP_CMD='test'
+        - PIP_DEPENDENCIES=''
+        - CONDA_DEPENDENCIES=''
+
     matrix:
         - SETUP_CMD='egg_info'
-        - # run with default settings
-        - ASTROPY_VERSION='development'
+        - SETUP_CMD='test'
 
 matrix:
     include:
 
-        # Check for sphinx doc build warnings - we do this first because it
-        # may run for a long time
+        # Try Astropy development and LTS versions
         - python: 2.7
-          env: SETUP_CMD='build_sphinx -w'
+          env: ASTROPY_VERSION=development
+        - python: 3.5
+          env: ASTROPY_VERSION=development
+        - python: 2.7
+          env: ASTROPY_VERSION=lts
+        - python: 3.5
+          env: ASTROPY_VERSION=lts
 
         # Try older numpy versions
         - python: 2.7
-          env: NUMPY_VERSION=1.9 SETUP_CMD='test'
+          env: NUMPY_VERSION=1.10
         - python: 2.7
-          env: NUMPY_VERSION=1.8 SETUP_CMD='test'
+          env: NUMPY_VERSION=1.9
+        - python: 2.7
+          env: NUMPY_VERSION=1.8
+        - python: 2.7
+          env: NUMPY_VERSION=1.7
 
-before_install:
+        # Try numpy pre-release
+        - python: 3.5
+          env: NUMPY_VERSION=prerelease
+
+install:
+
+    # We now use the ci-helpers package to set up our testing environment.
     - git clone git://github.com/astropy/ci-helpers.git
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 script:
-    - python setup.py $SETUP_CMD
-
-after_success:
-    - if [[ $SETUP_CMD == 'test --coverage' ]]; then coveralls --rcfile='astrodendro/tests/coveragerc'; fi
+   - python setup.py $SETUP_CMD
