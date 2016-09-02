@@ -26,7 +26,7 @@ env:
         - ASTROPY_VERSION=stable
         - SETUP_CMD='test'
         - PIP_DEPENDENCIES=''
-        - CONDA_DEPENDENCIES='matplotlib mock'
+        - CONDA_DEPENDENCIES='matplotlib mock h5py'
 
     matrix:
         - SETUP_CMD='egg_info'
