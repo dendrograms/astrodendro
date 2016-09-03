@@ -26,6 +26,7 @@ env:
         - ASTROPY_VERSION=stable
         - SETUP_CMD='test'
         - PIP_DEPENDENCIES=''
+        - CONDA_CHANNELS='astropy astropy-ci-extras'
         - CONDA_DEPENDENCIES='matplotlib mock h5py'
 
     matrix:
