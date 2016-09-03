@@ -64,7 +64,7 @@ class TestRecursionLimit(object):
     def test_plot(self):
         sys.setrecursionlimit(self._oldlimit)
         ax = plt.gca()
-        sys.setrecursionlimit(110)
+        sys.setrecursionlimit(150)
 
         d = Dendrogram.compute(self.data)
         p = d.plotter()
