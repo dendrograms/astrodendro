@@ -1,55 +1,70 @@
 language: python
 
 python:
-    - 2.6
     - 2.7
-    - 3.3
     - 3.4
+    - 3.5
+
+# Setting sudo to false opts in to Travis-CI container-based builds.
+sudo: false
+
+# The apt packages below are needed for sphinx builds. A full list of packages
+# that can be included can be found here:
+#
+# https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+
+addons:
+    apt:
+        packages:
+            - graphviz
+            - texlive-latex-extra
+            - dvipng
 
 env:
     global:
-        # The following versions are the 'default' for tests, unless
-        # overidden underneath. They are defined here in order to save having
-        # to repeat them for all configurations.
-        - CONDA_INSTALL='conda install --yes'
-        - PIP_INSTALL='pip install'
-        - PYTEST_ARGS='--cov astrodendro'
-        - CONDA_BASE='pip setuptools h5py pytest matplotlib cython jinja2'
-        - PIP_BASE='pytest-cov coveralls mock'
-        - CONDA_ADDITIONAL=''
+        - NUMPY_VERSION=stable
+        - ASTROPY_VERSION=stable
+        - SETUP_CMD='test'
+        - PIP_DEPENDENCIES=''
+        - CONDA_CHANNELS='astropy astropy-ci-extras'
+        - CONDA_DEPENDENCIES='matplotlib mock h5py'
+
     matrix:
-        - NP_VER=1.9 ASTRO_VER=1.0 CONDA_ADDITIONAL=scipy
-        - NP_VER=1.9 ASTRO_VER=1.0
-        - NP_VER=1.8 ASTRO_VER=0.4
-        - NP_VER=1.9 ASTRO_VER=dev
+        - SETUP_CMD='egg_info'
+        - SETUP_CMD='test'
 
 matrix:
     include:
+
+        # Try Astropy development and LTS versions
         - python: 2.7
-          env: NP_VER=1.7 ASTRO_VER=0.3
+          env: ASTROPY_VERSION=development
+        - python: 3.5
+          env: ASTROPY_VERSION=development
         - python: 2.7
-          env: NP_VER=1.6 ASTRO_VER=0.3
+          env: ASTROPY_VERSION=lts
+        - python: 3.5
+          env: ASTROPY_VERSION=lts
 
-before_install:
+        # Try older numpy versions
+        - python: 2.7
+          env: NUMPY_VERSION=1.10
+        - python: 2.7
+          env: NUMPY_VERSION=1.9
+        - python: 2.7
+          env: NUMPY_VERSION=1.8
+        - python: 2.7
+          env: NUMPY_VERSION=1.7
 
-    - export PYTHONIOENCODING=UTF8
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda/bin:$PATH
-    - conda update --yes conda
+        # Try numpy pre-release
+        - python: 3.5
+          env: NUMPY_VERSION=prerelease
 
-    # CONDA
-    - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
-    - source activate test
+install:
 
-    # DEPENDENCIES
-    - $CONDA_INSTALL $CONDA_BASE numpy=$NP_VER $CONDA_ADDITIONAL
-    - $PIP_INSTALL $PIP_BASE
-    - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else $CONDA_INSTALL astropy=$ASTRO_VER numpy=$NP_VER; fi
+    # We now use the ci-helpers package to set up our testing environment.
+    - git clone git://github.com/astropy/ci-helpers.git
+    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 script:
-    - py.test $PYTEST_ARGS astrodendro
-
-after_success:
-  - coveralls
+   - python setup.py $SETUP_CMD
