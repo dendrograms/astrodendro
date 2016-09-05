@@ -1,6 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
 import numpy as np
+from .structure import Structure
 
 
 class DendrogramPlotter(object):
@@ -190,7 +191,11 @@ class DendrogramPlotter(object):
         # Case 2: one structure is selected, and subtree is True
         else:
             if subtree:
-                if type(structures[0]) is int:
+                if isinstance(structures, int):
+                    structure = self.dendrogram[structures]
+                elif isinstance(structures, Structure):
+                    structure = structures
+                elif isinstance(structures[0], int):
                     structure = self.dendrogram[structures[0]]
                 else: 
                     structure = structures[0]
