@@ -36,6 +36,8 @@ Mapping these terms back onto the structure gives the following:
 For an example of use of dendrograms on real data, see `Goodman, A. et al
 (2009) <http://adsabs.harvard.edu/abs/2009Natur.457...63G>`_.
 
+For some examples of dendrograms in practice, see :doc:`examples`
+
 Documentation
 -------------
 
