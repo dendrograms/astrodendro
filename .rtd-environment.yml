@@ -1,0 +1,13 @@
+name: astropy
+
+channels:
+  - astropy
+
+dependencies:
+  - astropy-helpers
+  - astropy
+  - numpy
+  - matplotlib
+  - scipy
+  - pip:
+    - aplpy
