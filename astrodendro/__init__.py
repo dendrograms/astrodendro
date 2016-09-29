@@ -6,4 +6,4 @@ from .analysis import ppv_catalog, pp_catalog
 from .plot import DendrogramPlotter
 from .viewer import BasicDendrogramViewer
 
-__version__ = '0.2.0'
+__version__ = '0.3.0.dev'
