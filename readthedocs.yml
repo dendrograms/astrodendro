@@ -3,6 +3,3 @@ conda:
 
 python:
   setup_py_install: true
-
-formats:
-  - none
