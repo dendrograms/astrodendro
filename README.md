@@ -27,6 +27,5 @@ This package was developed by:
 Build and coverage status
 -------------------------
 
-[![Build Status](https://travis-ci.org/dendrograms/astrodendro.png?branch=master)](https://travis-ci.org/dendrograms/astrodendro)
-
-[![Coverage Status](https://coveralls.io/repos/dendrograms/astrodendro/badge.png?branch=master)](https://coveralls.io/r/dendrograms/astrodendro?branch=master)
+[![Build Status](https://travis-ci.org/dendrograms/astrodendro.svg?branch=master)](https://travis-ci.org/dendrograms/astrodendro)
+[![Coverage Status](https://coveralls.io/repos/dendrograms/astrodendro/badge.svg?branch=master)](https://coveralls.io/r/dendrograms/astrodendro?branch=master)
