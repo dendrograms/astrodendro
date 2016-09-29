@@ -719,8 +719,8 @@ def periodic_neighbours(axes):
         Which axes of the data are periodic
 
 
-    Example
-    -------
+    Examples
+    --------
     Build a dendrogram where the 0th axis wraps from top-to-bottom::
 
         Dendrogram.compute(data, neighbours=periodic_neighbours(0))

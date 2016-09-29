@@ -28,8 +28,8 @@ import sys, os
 extensions = ['matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
-              'astropy.sphinx.ext.numpydoc',
-              'astropy.sphinx.ext.astropyautosummary'
+              'astropy_helpers.sphinx.ext.numpydoc',
+              'astropy_helpers.sphinx.ext.astropyautosummary'
              ]
 
 autosummary_generate = True
@@ -287,5 +287,5 @@ intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     'matplotlib': ('http://matplotlib.sourceforge.net/', None),
-    'astropy': ('http://www.astropy.org/', None),
+    'astropy': ('http://docs.astropy.org/', None),
     }
