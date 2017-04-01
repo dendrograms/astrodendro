@@ -421,7 +421,7 @@ def test_wraparound_catalog():
     d_straddling = Dendrogram.compute(x_straddling, min_value=0.5,
                            neighbours=periodic_neighbours(1))
 
-    assert len(d_centered) == len(d_straddling)
+    assert len(d_centered) == len(d_straddling) == 1
 
     metadata = {'data_unit': u.Jy} # dummy unit to get the catalog to compute
 
@@ -433,12 +433,35 @@ def test_wraparound_catalog():
     assert catalog_centered['radius'][0] == catalog_straddling['radius'][0]
     assert catalog_centered['area_exact'][0] == catalog_straddling['area_exact'][0]
 
-    assert catalog_centered['x_cen'][0] == catalog_straddling['x_cen'][0] - 4 # offset by 4 px
+    assert (catalog_centered['x_cen'][0] + 4) % (x_centered.shape[1]) == catalog_straddling['x_cen'][0] # offset by 4 px, then wrapped around
     assert catalog_centered['y_cen'][0] == catalog_straddling['y_cen'][0]
 
     # default behavior is to NOT join structures on data edges, let's make sure that we aren't fooling ourselves.
     d_broken = Dendrogram.compute(x_straddling, min_value=0.5)
     assert len(d_straddling) != len(d_broken)
+
+class MockDendrogramThreeByFive(list):
+    """ This class is used to "fool" `_make_catalog` into wrapping the indices """
+    def __init__(self, *args):
+        list.__init__(self, *args)
+        self.data = np.zeros((3,5)) # to enable shape checking for catalog wrapping
+
+def test_wraparound_make_catalog_symmetric():
+    # x looks like this:
+    #     x = np.array([[0, 0, 0, 0, 0],
+    #                   [1, 1, 0, 1, 1],
+    #                   [0, 0, 0, 0, 0]])
+
+    indices = (np.array([1, 1, 1, 1]), np.array([0, 1, 3, 4]))
+    values = np.array([1, 1, 1, 1])
+    struct = Structure(zip(*indices), values)
+
+    unwrapped_catalog = pp_catalog([struct], {'data_unit':u.Jy})
+    np.testing.assert_equal(unwrapped_catalog['x_cen'], np.array(2)) # the middle pixel
+
+    wrapped_catalog = pp_catalog(MockDendrogramThreeByFive([struct]), {'data_unit':u.Jy})
+    np.testing.assert_equal(wrapped_catalog['x_cen'], np.array(4.5)) # between the last pixel and the first 
+
 
 # don't let pytest test abstract class
 del TestCataloger
