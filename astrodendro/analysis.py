@@ -489,6 +489,40 @@ class PPVStatistic(SpatialBase):
         indices = zip(*tuple(self.stat.indices[i] for i in range(3) if i != self.vaxis))
         return len(set(indices)) * dx ** 2
 
+    @property
+    def ellipticity(self):
+        """
+        ellipticity measure from Stojmenovic & Nayak 2007
+        https://link.springer.com/chapter/10.1007/978-3-540-77129-6_22
+        area of intersection(struct,ellipse) / area of union(struct,ellipse)
+        """
+        # are points inside or outside of the ellipse?
+        x0=self.x_cen.value
+        y0=self.y_cen.value
+        th=np.radians(self.position_angle).value
+        c, s = np.cos(th), np.sin(th)
+        R = np.array(((c,-s), (s, c)))  # double check y,x
+        c0=np.array([y0,x0])
+        indices = np.array([self.stat.indices[i] for i in range(3) if i != self.vaxis]).T
+        rotindices=np.array([R.dot(i-c0) for i in indices])
+        ha=(self.major_sigma/self.spatial_scale).value*2.3548
+        hb=(self.minor_sigma/self.spatial_scale).value*2.3548
+        metric = (rotindices[:,0]/ha)**2+(rotindices[:,1]/hb)**2
+        # intersection = #inside
+        # union = intersection + #outside
+        #import pdb
+        #print metric
+        #import pylab as pl
+        #pl.ion()
+        #pl.clf()
+        #pl.plot(rotindices[:,1],rotindices[:,0],'.')
+        #tt=pl.frange(20)/10*pl.pi        
+        #pdb.set_trace()
+        
+        return len(np.where(metric<1)[0])*1./(1+len(np.where(metric>=1)[0]))
+        
+        
+
 
 class PPStatistic(SpatialBase):
 
@@ -615,7 +649,7 @@ class PPPStatistic(object):
         pass
 
 
-def _make_catalog(structures, fields, metadata, statistic, verbose=False):
+def _make_catalog(structures, fields, metadata, statistic, verbose=False, clipping=False):
     """
     Make a catalog from a list of structures
     """
@@ -643,7 +677,10 @@ def _make_catalog(structures, fields, metadata, statistic, verbose=False):
                 if i2.ptp() < index_array.ptp():  # more compact with wrapping. Use this
                     index_array[:] = i2
 
-        stat = ScalarStatistic(values, indices)
+        if clipping:
+            stat = ScalarStatistic(values-np.nanmin(values), indices)
+        else:
+            stat = ScalarStatistic(values, indices)
         stat = statistic(stat, metadata)
         row = {}
         for lbl in fields:
@@ -696,7 +733,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose=False):
     return result
 
 
-def ppv_catalog(structures, metadata, fields=None, verbose=True):
+def ppv_catalog(structures, metadata, fields=None, verbose=True, clipping=False):
     """
     Iterate over a collection of position-position-velocity (PPV) structures,
     extracting several quantities from each, and building a catalog.
@@ -713,6 +750,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     verbose : bool, optional
         If True (the default), will generate warnings
         about missing metadata
+    clipping: bool, optional; default=False; if True, clip each struct Tmin.
 
     Returns
     -------
@@ -725,7 +763,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
         warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)        
-        return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
+        return _make_catalog(structures, fields, metadata, PPVStatistic, verbose, clipping)
 
 
 def pp_catalog(structures, metadata, fields=None, verbose=True):
