@@ -135,7 +135,7 @@ def _construct_tree(dend, repr, indices_by_structure, flux_by_structure):
             dend._structures_dict[idx] = ell
     return structures
 
-def parse_dendrogram(parsed_newick, data, index_map, params, wcs=None):
+def parse_dendrogram(newick, data, index_map, params, wcs=None):
     from ..dendrogram import Dendrogram
 
     d = Dendrogram()
@@ -151,6 +151,9 @@ def parse_dendrogram(parsed_newick, data, index_map, params, wcs=None):
         flux_by_structure, indices_by_structure = _fast_reader(d.index_map, data)
     except ImportError:
         flux_by_structure, indices_by_structure = _slow_reader(d.index_map, data)
+
+    log.debug('Parsing newick and constructing tree...')
+    parsed_newick = parse_newick(newick)
 
     log.debug('Constructing tree...')
     d.trunk = _construct_tree(d, parsed_newick, indices_by_structure, flux_by_structure)

@@ -3,9 +3,8 @@
 import os
 
 import numpy as np
-from astropy import log
 
-from .util import parse_dendrogram, parse_newick
+from .util import parse_dendrogram
 from .handler import IOHandler
 
 # Import and export
@@ -77,11 +76,7 @@ def dendro_import_fits(filename):
 
             params = {}
 
-    log.debug('Parsing newick and constructing tree...')
-    log.debug("newick is: {0}".format(newick[:100]))
-    parsed_newick = parse_newick(newick)
-
-    return parse_dendrogram(parsed_newick, data, index_map, params, wcs)
+    return parse_dendrogram(newick, data, index_map, params, wcs)
 
 
 FITSHandler = IOHandler(identify=is_fits,
