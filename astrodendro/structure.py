@@ -69,7 +69,7 @@ class Structure(object):
             self._indices = [indices]
             self._values = [values]
             self._vmin, self._vmax = values, values
-        elif isinstance(indices, list) and isinstance(values, list):
+        elif (isinstance(indices, list) or isinstance(indices, np.ndarray)) and isinstance(values, list):
             self._indices = indices
             self._values = values
             self._vmin, self._vmax = min(values), max(values)
@@ -78,7 +78,10 @@ class Structure(object):
             self._values = [x for x in values]
             self._vmin, self._vmax = min(values), max(values)
 
-        self._smallest_index = min(self._indices)
+        try:
+            self._smallest_index = min(self._indices)
+        except ValueError:
+            self._smallest_index = self._indices[0]
 
         self.idx = idx
 
@@ -402,8 +405,7 @@ class Structure(object):
 
         if self._peak is None:
             for s in reversed(list(prefix_visit(self))):
-                s._peak = (s._indices[s._values.index(s.vmax)],
-                          s.vmax)
+                s._peak = (tuple(s._indices[s._values.index(s.vmax)]), s.vmax)
                 if s.is_leaf:
                     s._peak_subtree = s._peak
                 else:

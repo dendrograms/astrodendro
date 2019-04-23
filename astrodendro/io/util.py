@@ -70,6 +70,39 @@ def parse_newick(string):
     return items['trunk']
 
 
+def _construct_tree(dend, repr, indices_by_structure, flux_by_structure):
+    from ..structure import Structure
+    structures = []
+    for idx in repr:
+        idx = int(idx)
+        structure_indices = indices_by_structure[idx]
+        f = flux_by_structure[idx]
+        if type(repr[idx]) == tuple:
+            sub_structures_repr = repr[idx][0]  # Parsed representation of sub structures
+            sub_structures = _construct_tree(sub_structures_repr)
+            for i in sub_structures:
+                dend._structures_dict[i.idx] = i
+            b = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=dend)
+            # Correct merge levels - complicated because of the
+            # order in which we are building the tree.
+            # What we do is look at the heights of this branch's
+            # 1st child as stored in the newick representation, and then
+            # work backwards to compute the merge level of this branch
+            #
+            # these five lines were not used
+            #first_child_repr = six.next(six.itervalues(sub_structures_repr))
+            #if type(first_child_repr) == tuple:
+            #    height = first_child_repr[1]
+            #else:
+            #    height = first_child_repr
+            dend._structures_dict[idx] = b
+            structures.append(b)
+        else:
+            ell = Structure(structure_indices, f, idx=idx, dendrogram=dend)
+            structures.append(ell)
+            dend._structures_dict[idx] = ell
+    return structures
+
 def parse_dendrogram(newick, data, index_map, params, wcs=None):
     from ..dendrogram import Dendrogram
     from ..structure import Structure
@@ -88,38 +121,8 @@ def parse_dendrogram(newick, data, index_map, params, wcs=None):
     except ImportError:
         flux_by_structure, indices_by_structure = _slow_reader(d.index_map, data)
 
-    def _construct_tree(repr):
-        structures = []
-        for idx in repr:
-            idx = int(idx)
-            structure_indices = indices_by_structure[idx]
-            f = flux_by_structure[idx]
-            if type(repr[idx]) == tuple:
-                sub_structures_repr = repr[idx][0]  # Parsed representation of sub structures
-                sub_structures = _construct_tree(sub_structures_repr)
-                for i in sub_structures:
-                    d._structures_dict[i.idx] = i
-                b = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=d)
-                # Correct merge levels - complicated because of the
-                # order in which we are building the tree.
-                # What we do is look at the heights of this branch's
-                # 1st child as stored in the newick representation, and then
-                # work backwards to compute the merge level of this branch
-                first_child_repr = six.next(six.itervalues(sub_structures_repr))
-                if type(first_child_repr) == tuple:
-                    height = first_child_repr[1]
-                else:
-                    height = first_child_repr
-                d._structures_dict[idx] = b
-                structures.append(b)
-            else:
-                l = Structure(structure_indices, f, idx=idx, dendrogram=d)
-                structures.append(l)
-                d._structures_dict[idx] = l
-        return structures
-
     log.debug('Parsing newick and constructing tree...')
-    d.trunk = _construct_tree(parse_newick(newick))
+    d.trunk = _construct_tree(d, parse_newick(newick), indices_by_structure, flux_by_structure)
     # To make the structure.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
     for structure in d.trunk:
@@ -157,10 +160,10 @@ def _fast_reader(index_map, data):
         match = index_map[sl] == idx
         sl2 = (slice(None),) + sl
         match_inds = index_cube[sl2][:, match]
-        coords = list(zip(*match_inds))
+        #coords = list(zip(*match_inds))
         dd = data[sl][match].tolist()
         flux_by_structure[idx] = dd
-        indices_by_structure[idx] = coords
+        indices_by_structure[idx] = match_inds.T
         p.update()
 
     return flux_by_structure, indices_by_structure
