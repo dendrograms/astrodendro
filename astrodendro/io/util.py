@@ -22,7 +22,7 @@ def parse_newick(string):
 
     # Loop through levels and construct tree
     log.debug('Tree loading...')
-    for level in range(max_level, 0, -1):
+    for level in ProgressBar(range(max_level, 0, -1)):
 
         pairs = []
 
