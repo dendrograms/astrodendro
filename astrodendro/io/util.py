@@ -152,6 +152,8 @@ def parse_dendrogram(newick, data, index_map, params, wcs=None):
     except ImportError:
         flux_by_structure, indices_by_structure = _slow_reader(d.index_map, data)
 
+    # newline to avoid overwriting progressbar
+    print()
     log.debug('Parsing newick and constructing tree...')
     parsed_newick = parse_newick(newick)
 
