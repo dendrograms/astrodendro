@@ -177,12 +177,13 @@ def min_ppv_connected(delta, area, chan):
         The minimum height of a leaf above its merger level
     area : int
         The minimum area in pixels of a leaf
-
+    chan : int
+        The minimum velocity channels of a leaf
     '''
 
-    return all_true((min_delta(min_delta),
+    return all_true([min_delta(delta),
                      min_area(area),
-                     min_spectral(chan)))
+                     min_spectral(chan)])
 
 
 def contains_seeds(seeds):
