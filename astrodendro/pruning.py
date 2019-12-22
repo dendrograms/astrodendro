@@ -133,6 +133,58 @@ def min_npix(npix):
     return result
 
 
+def min_area(area):
+    """
+    Minimum area criteria
+
+    Parameters
+    ----------
+    area : int
+        The minimum area in pixels of a leaf
+    """
+    def result(structure, index=None, value=None):
+        # EWK: I _think_ this is more memory efficient than converting to a set
+        return np.unique(np.array(structure.indices()[:2]), axis=-1).shape[1] > = area
+        # return len(set(zip(*tuple(structure.indices()[i] for i in [1,2])))) >= area
+    return result
+
+
+def min_spectral(chan):
+    """
+    Minimum velocity channels criteria
+
+    Parameters
+    ----------
+    chan : int
+        The minimum velocity channels of a leaf
+    """
+    def result(structure, index=None, value=None):
+        v = structure.indices()[0]
+        v0, v1 = min(v), max(v)
+        return (v1 - v0) >= chan
+    return result
+
+
+def min_ppv_connected(delta, area, chan):
+    '''
+    Minimum delta, spatial area, and spectral pixels combined. This function
+    forces regions to be kept only when they are spatially and spectrally
+    contiguous.
+
+    Parameters
+    ----------
+    delta : float
+        The minimum height of a leaf above its merger level
+    area : int
+        The minimum area in pixels of a leaf
+
+    '''
+
+    return all_true((min_delta(min_delta),
+                     min_area(area),
+                     min_spectral(chan)))
+
+
 def contains_seeds(seeds):
     """
     Critieria that leaves contain at least one of a list of seed positions
