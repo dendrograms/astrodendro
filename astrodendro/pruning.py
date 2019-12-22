@@ -144,7 +144,7 @@ def min_area(area):
     """
     def result(structure, index=None, value=None):
         # EWK: I _think_ this is more memory efficient than converting to a set
-        return np.unique(np.array(structure.indices()[:2]), axis=-1).shape[1] > = area
+        return np.unique(np.array(structure.indices()[:2]), axis=-1).shape[1] >= area
         # return len(set(zip(*tuple(structure.indices()[i] for i in [1,2])))) >= area
     return result
 
