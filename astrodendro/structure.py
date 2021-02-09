@@ -332,7 +332,7 @@ class Structure(object):
             raise ValueError("Cannot return Newick representation if idx is not set")
         if self.children:
             newick_items = [child.newick for child in self.children]
-            return "(%s)%s:%.3f" % (','.join(newick_items), self.idx, self.height)
+            return "(%s)%s:%.3f" % (','.join(newick_items), self.idx, self.vmax - self.vmin)
         else:
             return "%i:%.3f" % (self.idx, self.height)
 
