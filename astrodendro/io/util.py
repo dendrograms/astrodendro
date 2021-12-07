@@ -5,14 +5,45 @@ from astropy.utils.console import ProgressBar
 from astropy import log
 
 
-def parse_newick(string):
+def newick_from_json(d):
+    """
+    If "d" is a JSON-derived dict (e.g., `json.load('my_newick.json')`), this
+    will convert all of the keys from strings to integers, resulting in
+    something with identical format to `parse_newick`'s result.
 
+    Example:
+        >>> newick = ''.join(chr(x) for x in hdus[3].data.flat)
+        >>> rslt = astrodendro.io.util.parse_newick(newick)
+        >>> jj = json.dumps(rslt)
+        >>> rdtrip = newick_from_json(json.loads(jj))
+        >>> rdtrip == rslt
+        True
+    """
+    new = {}
+    for k, v in d.items():
+        new_v = v
+        if isinstance(v, dict):
+            new_v = newick_from_json(v)
+        elif isinstance(v, list):
+            new_v = list()
+            for x in v:
+                if isinstance(x, dict):
+                    new_v.append(newick_from_json(x))
+                else:
+                    new_v.append(x)
+            new_v = tuple(new_v)
+        new[int(k)] = new_v
+    return new
+
+def parse_newick(string, verbose=True):
     items = {}
 
     # Find maximum level
     current_level = 0
     max_level = 0
-    log.debug('String loading...')
+    log.debug("String starts with {0}".format(string[:100]))
+    log.debug("String loading... newick has {0} chars, {1} ('s"
+              .format(len(string), string.count("(")))
     for i, c in enumerate(string):
         if c == '(':
             current_level += 1
@@ -20,9 +51,12 @@ def parse_newick(string):
             current_level -= 1
         max_level = max(max_level, current_level)
 
+    if not verbose:
+        ProgressBar = lambda x: x
+
     # Loop through levels and construct tree
-    log.debug('Tree loading...')
-    for level in range(max_level, 0, -1):
+    log.debug('Tree loading... max_level={0}'.format(max_level))
+    for level in ProgressBar(range(max_level, 0, -1)):
 
         pairs = []
 
@@ -56,8 +90,6 @@ def parse_newick(string):
             # Remove branch definition from string
             string = string[:start] + string[end + 1:]
 
-    new_items = {}
-
     def collect(d):
         for item in d:
             if item in items:
@@ -70,9 +102,44 @@ def parse_newick(string):
     return items['trunk']
 
 
+def _construct_tree(dend, repr, indices_by_structure, flux_by_structure):
+    from ..structure import Structure
+    structures = []
+    for idx in repr:
+        idx = int(idx)
+        structure_indices = indices_by_structure[idx]
+        f = flux_by_structure[idx]
+        if type(repr[idx]) == tuple:
+            sub_structures_repr = repr[idx][0]  # Parsed representation of sub structures
+            sub_structures = _construct_tree(dend,
+                                             sub_structures_repr,
+                                             indices_by_structure,
+                                             flux_by_structure)
+            for i in sub_structures:
+                dend._structures_dict[i.idx] = i
+            b = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=dend)
+            # Correct merge levels - complicated because of the
+            # order in which we are building the tree.
+            # What we do is look at the heights of this branch's
+            # 1st child as stored in the newick representation, and then
+            # work backwards to compute the merge level of this branch
+            #
+            # these five lines were not used
+            #first_child_repr = six.next(six.itervalues(sub_structures_repr))
+            #if type(first_child_repr) == tuple:
+            #    height = first_child_repr[1]
+            #else:
+            #    height = first_child_repr
+            dend._structures_dict[idx] = b
+            structures.append(b)
+        else:
+            ell = Structure(structure_indices, f, idx=idx, dendrogram=dend)
+            structures.append(ell)
+            dend._structures_dict[idx] = ell
+    return structures
+
 def parse_dendrogram(newick, data, index_map, params, wcs=None):
     from ..dendrogram import Dendrogram
-    from ..structure import Structure
 
     d = Dendrogram()
     d.ndim = len(data.shape)
@@ -88,38 +155,13 @@ def parse_dendrogram(newick, data, index_map, params, wcs=None):
     except ImportError:
         flux_by_structure, indices_by_structure = _slow_reader(d.index_map, data)
 
-    def _construct_tree(repr):
-        structures = []
-        for idx in repr:
-            idx = int(idx)
-            structure_indices = indices_by_structure[idx]
-            f = flux_by_structure[idx]
-            if type(repr[idx]) == tuple:
-                sub_structures_repr = repr[idx][0]  # Parsed representation of sub structures
-                sub_structures = _construct_tree(sub_structures_repr)
-                for i in sub_structures:
-                    d._structures_dict[i.idx] = i
-                b = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=d)
-                # Correct merge levels - complicated because of the
-                # order in which we are building the tree.
-                # What we do is look at the heights of this branch's
-                # 1st child as stored in the newick representation, and then
-                # work backwards to compute the merge level of this branch
-                first_child_repr = six.next(six.itervalues(sub_structures_repr))
-                if type(first_child_repr) == tuple:
-                    height = first_child_repr[1]
-                else:
-                    height = first_child_repr
-                d._structures_dict[idx] = b
-                structures.append(b)
-            else:
-                l = Structure(structure_indices, f, idx=idx, dendrogram=d)
-                structures.append(l)
-                d._structures_dict[idx] = l
-        return structures
-
+    # newline to avoid overwriting progressbar
+    print()
     log.debug('Parsing newick and constructing tree...')
-    d.trunk = _construct_tree(parse_newick(newick))
+    parsed_newick = parse_newick(newick)
+
+    log.debug('Constructing tree...')
+    d.trunk = _construct_tree(d, parsed_newick, indices_by_structure, flux_by_structure)
     # To make the structure.level property fast, we ensure all the items in the
     # trunk have their level cached as "0"
     for structure in d.trunk:
@@ -157,10 +199,10 @@ def _fast_reader(index_map, data):
         match = index_map[sl] == idx
         sl2 = (slice(None),) + sl
         match_inds = index_cube[sl2][:, match]
-        coords = list(zip(*match_inds))
+        #coords = list(zip(*match_inds))
         dd = data[sl][match].tolist()
         flux_by_structure[idx] = dd
-        indices_by_structure[idx] = coords
+        indices_by_structure[idx] = match_inds.T
         p.update()
 
     return flux_by_structure, indices_by_structure
