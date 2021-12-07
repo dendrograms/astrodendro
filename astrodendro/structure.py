@@ -403,9 +403,15 @@ class Structure(object):
         def key(x):
             return x[1]
 
+        def to_tuple(x):
+            if np.isscalar(x):
+                return (x,)
+            else:
+                return tuple(x)
+
         if self._peak is None:
             for s in reversed(list(prefix_visit(self))):
-                s._peak = (tuple(s._indices[s._values.index(s.vmax)]), s.vmax)
+                s._peak = (to_tuple(s._indices[s._values.index(s.vmax)]), s.vmax)
                 if s.is_leaf:
                     s._peak_subtree = s._peak
                 else:

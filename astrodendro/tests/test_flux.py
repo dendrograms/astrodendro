@@ -25,7 +25,12 @@ COMBINATIONS = \
 @pytest.mark.parametrize(('input_quantities', 'output_unit', 'keywords', 'output'), COMBINATIONS)
 def test_compute_flux(input_quantities, output_unit, keywords, output):
     q = compute_flux(input_quantities, output_unit, **keywords)
-    np.testing.assert_allclose(q.value, output.value)
+    # tolerances are set b/c some conversions lose precision at the ~10^-7 level
+    # (<Quantity [1., 2., 3.] K>, Unit("Jy"), {'spatial_scale': <Quantity 2. arcsec>, 'beam_major': <Quantity 1. arcsec>, 'beam_minor': <Quantity 0.5 arcsec>, 'wavelength': <Quantity 2. mm>}, <Quantity 0.38941637 Jy>)
+    # -> 
+    # Max absolute difference: 5.64106332e-08
+    # Max relative difference: 1.44859431e-07
+    np.testing.assert_allclose(q.value, output.value, atol=1e-7, rtol=2e-7)
     assert q.unit == output.unit
 
 
