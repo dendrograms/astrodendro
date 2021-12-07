@@ -35,7 +35,7 @@ def newick_from_json(d):
         new[int(k)] = new_v
     return new
 
-def parse_newick(string):
+def parse_newick(string, verbose=True):
     items = {}
 
     # Find maximum level
@@ -50,6 +50,9 @@ def parse_newick(string):
         if c == ')':
             current_level -= 1
         max_level = max(max_level, current_level)
+
+    if not verbose:
+        ProgressBar = lambda x: x
 
     # Loop through levels and construct tree
     log.debug('Tree loading... max_level={0}'.format(max_level))
