@@ -64,7 +64,8 @@ def dendro_import_hdf5(filename):
             data = h5f['data'][:] # numpy array
             index_map = h5f['index_map'][:] # numpy array
         else:
-            newick = h5f['newick'].value
+            # py3 needs to decode the byte string even with old h5py
+            newick = h5f['newick'].value.decode("utf-8")
             data = h5f['data'].value
             index_map = h5f['index_map'].value
 
