@@ -5,7 +5,12 @@
 # - An ancestor is the largest structure that a structure is part of
 
 import numpy as np
-from collections import Iterable
+try:
+    # Python <= 3.9
+    from collections import Iterable
+except ImportError:
+    # Python > 3.9
+    from collections.abc import Iterable
 import copy
 import warnings
 
