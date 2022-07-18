@@ -6,11 +6,11 @@
 
 import numpy as np
 try:
-    # Python <= 3.9
-    from collections import Iterable
-except ImportError:
     # Python > 3.9
     from collections.abc import Iterable
+except ImportError:
+    # Python <= 3.9
+    from collections import Iterable
 import copy
 import warnings
 

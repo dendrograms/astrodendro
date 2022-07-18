@@ -76,7 +76,7 @@ class ScalarStatistic(object):
             Location of each element of values. The i-th array in the tuple
             describes the ith positional dimension
         """
-        self.values = values.astype(np.float)
+        self.values = values.astype(float)
         self.indices = indices
 
     @memoize
@@ -125,7 +125,7 @@ class ScalarStatistic(object):
             The variance (or co-variance matrix) of the data along the
             specified direction(s).
         """
-        w = np.atleast_2d(direction).astype(np.float)
+        w = np.atleast_2d(direction).astype(float)
         for row in w:
             row /= np.linalg.norm(row)
 
