@@ -8,7 +8,6 @@ jobs:
   test:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
-      posargs: '-n 4'
       envs: |
         - linux: codestyle
           pytest: false
