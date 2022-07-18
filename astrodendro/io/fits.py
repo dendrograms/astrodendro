@@ -49,7 +49,7 @@ def dendro_export_fits(d, filename):
 
     hdulist = fits.HDUList(hdus)
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
 
 
 def dendro_import_fits(filename):
@@ -71,9 +71,9 @@ def dendro_import_fits(filename):
             params = {"min_npix": hdus[0].header['MIN_NPIX'],
                       "min_value": hdus[0].header['MIN_VAL'],
                       "min_delta": hdus[0].header['MIN_DELT']}
-                      
+
         else:
-            
+
             params = {}
 
     return parse_dendrogram(newick, data, index_map, params, wcs)

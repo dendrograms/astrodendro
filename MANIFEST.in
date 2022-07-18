@@ -1,6 +1,16 @@
-include LICENSE
-include CHANGES
-include runtests.py
-recursive-include astrodendro/tests *.npz
-recursive-include astrodendro/tests/benchmark_data *.fits
+include README.rst
+include CHANGES.rst
+include setup.cfg
+include LICENSE.rst
+include pyproject.toml
+
+recursive-include astrodendro *.pyx *.c *.pxd
 recursive-include docs *
+recursive-include licenses *
+recursive-include scripts *
+
+prune build
+prune docs/_build
+prune docs/api
+
+global-exclude *.pyc *.o

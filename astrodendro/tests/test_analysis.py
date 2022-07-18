@@ -1,7 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
 import pytest
-from mock import patch
+from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
