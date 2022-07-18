@@ -25,7 +25,7 @@ COMBINATIONS = \
 @pytest.mark.parametrize(('input_quantities', 'output_unit', 'keywords', 'output'), COMBINATIONS)
 def test_compute_flux(input_quantities, output_unit, keywords, output):
     q = compute_flux(input_quantities, output_unit, **keywords)
-    np.testing.assert_allclose(q.value, output.value)
+    np.testing.assert_allclose(q.value, output.value, rtol=1e-6)
     assert q.unit == output.unit
 
 

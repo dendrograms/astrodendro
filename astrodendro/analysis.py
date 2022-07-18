@@ -132,7 +132,7 @@ class ScalarStatistic(object):
 
         result = np.dot(np.dot(w, self.mom2()), w.T)
         if result.size == 1:
-            result = np.asscalar(result)
+            result = result.item()
         return result
 
     @memoize
@@ -724,7 +724,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
 
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
-        warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)        
+        warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)
         return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
 

@@ -59,16 +59,9 @@ def dendro_import_hdf5(filename):
 
     log.debug('Loading HDF5 file from disk...')
     with h5py.File(filename, 'r') as h5f:
-        if h5py.__version__>'3':
-            newick = h5f['newick'][()].decode("utf-8") # str
-            data = h5f['data'][:] # numpy array
-            index_map = h5f['index_map'][:] # numpy array
-        else:
-            # py3 needs to decode the byte string even with old h5py
-            newick = h5f['newick'].value.decode("utf-8")
-            data = h5f['data'].value
-            index_map = h5f['index_map'].value
-
+        newick = h5f['newick'][()].decode("utf-8") # str
+        data = h5f['data'][:] # numpy array
+        index_map = h5f['index_map'][:] # numpy array
         params = {}
         if 'min_value' in h5f.attrs:
             params['min_value'] = h5f.attrs['min_value']
