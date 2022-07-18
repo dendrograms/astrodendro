@@ -2,8 +2,6 @@
 
 " Test import and export of dendrograms "
 
-import os
-
 import pytest
 import numpy as np
 
