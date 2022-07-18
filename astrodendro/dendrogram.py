@@ -16,13 +16,12 @@ import warnings
 
 from .structure import Structure
 from .progressbar import AnimatedProgressBar
-from .io import IO_FORMATS
 from . import pruning
-from . import six
 
 
 def _sorted_by_idx(d):
     return sorted(d, key=lambda s: s.idx)
+
 
 # utility dict to offsets of adjacent pixel list
 _offsets = dict((ndim, np.concatenate((
@@ -31,7 +30,7 @@ _offsets = dict((ndim, np.concatenate((
                 for ndim in range(1, 8))
 
 # the formula above generalizes this special case
-#_offsets[3] = np.array([(0, 0, -1), (0, 0, 1),
+# _offsets[3] = np.array([(0, 0, -1), (0, 0, 1),
 #                        (0, -1, 0), (0, 1, 0),
 #                        (-1, 0, 0), (1, 0, 0)])
 
@@ -337,7 +336,7 @@ class Dendrogram(object):
         # add dendrogram index
         ti = TreeIndex(self)
 
-        for s in six.itervalues(self._structures_dict):
+        for s in self._structures_dict.values():
             s._tree_index = ti
 
     def neighbours(self, idx):
@@ -414,10 +413,10 @@ class Dendrogram(object):
         """
         A flattened list of all leaves in the dendrogram.
         """
-        return [i for i in six.itervalues(self._structures_dict) if i.is_leaf]
+        return [i for i in self._structures_dict.values() if i.is_leaf]
 
     def to_newick(self):
-        #this caches newicks, and prevents too much recursion
+        # this caches newicks, and prevents too much recursion
         [s.newick for s in reversed(list(self.all_structures))]
 
         return "(%s);" % ','.join([structure.newick for structure
@@ -549,15 +548,15 @@ class Dendrogram(object):
         # Check if params are too restrictive.
         if min_delta < self.params["min_delta"]:
             warnings.warn("New min_delta (%s) is less than the current min_delta \
-                           (%s). No leaves can be pruned." \
-                           % (min_delta, self.params["min_delta"]))
+                           (%s). No leaves can be pruned."
+                          % (min_delta, self.params["min_delta"]))
         else:  # Update params
             self.params["min_delta"] = min_delta
 
         if min_npix < self.params["min_npix"]:
             warnings.warn("New min_npix (%s) is less than the current min_npix \
-                           (%s). No leaves can be pruned." \
-                           % (min_npix, self.params["min_npix"]))
+                           (%s). No leaves can be pruned."
+                          % (min_npix, self.params["min_npix"]))
         else:  # Updates params
             self.params["min_npix"] = min_npix
 
@@ -574,23 +573,23 @@ class Dendrogram(object):
 
         # Continue until there are no more leaves to prune.
         for struct in _to_prune(self, keep_structures, is_independent):
-                # merge struct
-                parent = struct.parent
-                siblings = parent.children
-                # If leaf has one other sibling, merge both into the parent
-                if len(siblings) == 2:
-                    merge = copy.copy(siblings)
+            # merge struct
+            parent = struct.parent
+            siblings = parent.children
+            # If leaf has one other sibling, merge both into the parent
+            if len(siblings) == 2:
+                merge = copy.copy(siblings)
 
-                # If leaf has multiple siblings, merge leaf into parent
-                elif len(siblings) > 2:
-                    merge = [struct]
+            # If leaf has multiple siblings, merge leaf into parent
+            elif len(siblings) > 2:
+                merge = [struct]
 
-                # Merge structures into the parent
-                for m in merge:
-                    _merge_with_parent(m, self.index_map)
+            # Merge structures into the parent
+            for m in merge:
+                _merge_with_parent(m, self.index_map)
 
-                    # Remove this structure
-                    del keep_structures[m.idx]
+                # Remove this structure
+                del keep_structures[m.idx]
 
         # Create trunk from objects with no ancestors
         _make_trunk(self, keep_structures, is_independent)
@@ -616,15 +615,13 @@ class TreeIndex(object):
                     The dendrogram to index
         """
         index_map = dendrogram.index_map
-        trunk = dendrogram.trunk
 
         sz = index_map.size
-        nd = len(index_map.shape)
 
         assert sz == dendrogram.data.size
         assert index_map.min() >= -1
 
-        #map ids to [0, 1, ...] for storage efficiency
+        # map ids to [0, 1, ...] for storage efficiency
         uniq, bins = np.unique(index_map, return_inverse=True)
         packed = dict((u, i) for i, u in enumerate(uniq))
 
@@ -634,14 +631,14 @@ class TreeIndex(object):
         idx_sub_ct = {}
         idx_cdf = np.hstack((0, np.cumsum(idx_ct)))
 
-        #efficiently build up npix values
+        # efficiently build up npix values
         structures = reversed(sorted(dendrogram._structures_dict.values(),
-                                key=lambda x: x.level))
+                                     key=lambda x: x.level))
         for st in structures:
             idx_sub_ct[st.idx] = idx_ct[packed[st.idx]]
             idx_sub_ct[st.idx] += sum(idx_sub_ct[c.idx] for c in st.children)
 
-        #build a 1D index array with the following properties
+        # build a 1D index array with the following properties
         # - values in index reference locations in flattened index_map
         # - every structure (+ subtree) is a continuous slice of index
         # - index[offset[i]] is the first location for (packed) structure i
@@ -673,7 +670,7 @@ class TreeIndex(object):
             index[pos: pos + npix[sid]] = idx
             pos += npix[sid]
 
-        #turn inds back into an ndim index
+        # turn inds back into an ndim index
         self._index = tuple(n.ravel()[index] for n in
                             np.indices(index_map.shape))
 
@@ -752,6 +749,7 @@ def periodic_neighbours(axes):
 
     return result
 
+
 def _to_prune(dendrogram, keep_structures, is_independent):
     '''
     Yields a sequence of leaves which need to be pruned.
@@ -793,6 +791,7 @@ def _to_prune(dendrogram, keep_structures, is_independent):
         else:
             return
 
+
 def _merge_with_parent(m, index_map):
     '''
     Merge a given structure into the parent.
@@ -820,6 +819,7 @@ def _merge_with_parent(m, index_map):
         for child in m.children:
             child.parent = parent
 
+
 def _make_trunk(dendrogram, keep_structures, is_independent):
     '''
     Creates the trunk and prunes off orphan leaves.
@@ -838,7 +838,7 @@ def _make_trunk(dendrogram, keep_structures, is_independent):
         leaf can be treated as an independent entity.
 
     '''
-    dendrogram.trunk = _sorted_by_idx([structure for structure in six.itervalues(keep_structures) if structure.parent is None])
+    dendrogram.trunk = _sorted_by_idx([structure for structure in keep_structures.values() if structure.parent is None])
 
     # Remove orphan leaves that aren't large enough
     leaves_in_trunk = [structure for structure in dendrogram.trunk if structure.is_leaf]

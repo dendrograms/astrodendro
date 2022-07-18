@@ -12,7 +12,6 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.wcs import WCS
 
-from . import six
 from .structure import Structure
 from .flux import UnitMetadataWarning
 from .progressbar import AnimatedProgressBar
@@ -233,7 +232,7 @@ class Metadata(object):
                If True, raise KeyError if metadata not provided.
                This overrides default
         """
-        if not isinstance(key, six.string_types):
+        if not isinstance(key, str):
             raise TypeError("Key is", key, type(key))
         self.key = key
         self.description = description or 'no description'
@@ -684,14 +683,12 @@ def _make_catalog(structures, fields, metadata, statistic, verbose=False):
             progress_bar + 1
             progress_bar.show_progress()
 
-
     result.sort('_idx')
 
     if verbose:
         progress_bar.progress = 100  # Done
         progress_bar.show_progress()
         print("")  # newline
-
 
     return result
 

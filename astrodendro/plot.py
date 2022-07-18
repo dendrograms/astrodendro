@@ -48,7 +48,7 @@ class DendrogramPlotter(object):
         """
 
         if sort_key is None:
-            sort_key = lambda s: s.get_peak(subtree=True)[1]
+            def sort_key(s): return s.get_peak(subtree=True)[1]
 
         sorted_trunk_structures = sorted(self.dendrogram.trunk, key=sort_key, reverse=reverse)
 

@@ -1,6 +1,5 @@
 import os
 
-import numpy as np
 from astropy.io import fits
 
 from astrodendro import Dendrogram
@@ -10,7 +9,8 @@ BENCHMARKS = {'2d1.fits': {'min_value': 2.5, 'min_npix': 20},
               '2d3.fits': {'min_value': 2.5, 'min_delta': 1},
               '3d1.fits': {'min_value': 4.5, 'min_npix': 20},
               '3d2.fits': {'min_value': 4.5},
-              '3d3.fits': {'min_value': 4.5, 'min_delta':1}}
+              '3d3.fits': {'min_value': 4.5, 'min_delta': 1}}
+
 
 def main():
 

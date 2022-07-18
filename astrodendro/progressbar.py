@@ -56,6 +56,7 @@ class ProgressBar(object):
         format  Format
         incremental
     """
+
     def __init__(self, start=0, end=10, width=12, fill='=', blank='.', pformat='[%(fill)s>%(blank)s] %(progress)s%%', incremental=True):
         super(ProgressBar, self).__init__()
 
@@ -99,6 +100,7 @@ class AnimatedProgressBar(ProgressBar):
     Accepts an extra keyword argument named `stdout` (by default use sys.stdout)
     and may be any file-object to which send the progress status.
     """
+
     def __init__(self, *args, **kwargs):
         super(AnimatedProgressBar, self).__init__(*args, **kwargs)
         self.stdout = kwargs.get('stdout', sys.stdout)

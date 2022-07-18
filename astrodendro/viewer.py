@@ -2,9 +2,11 @@
 
 from collections import defaultdict
 import warnings
+from functools import reduce
 
 import numpy as np
 from .plot import DendrogramPlotter
+
 
 class SelectionHub(object):
 
@@ -17,9 +19,9 @@ class SelectionHub(object):
     def __init__(self):
         # map selection IDs -> list of selected dendrogram IDs
         self.selections = {}
-        self.select_subtree = {} # map selection IDs -> bool
+        self.select_subtree = {}  # map selection IDs -> bool
         self.colors = defaultdict(lambda: 'red')
-        self.colors[1] = '#e41a1c' 
+        self.colors[1] = '#e41a1c'
         self.colors[2] = '#377eb8'
         self.colors[3] = '#4daf4a'
         # someday we may provide a UI to update what goes in colordict.
@@ -77,8 +79,7 @@ class BasicDendrogramViewer(object):
         # Define the currently selected subtree
         self.selected_lines = {}
         self.selected_contour = {}
-        # The keys in these dictionaries are event button IDs.        
-
+        # The keys in these dictionaries are event button IDs.
 
         # Initiate plot
         import matplotlib.pyplot as plt
@@ -94,7 +95,6 @@ class BasicDendrogramViewer(object):
             if self.dendrogram.wcs is not None:
                 warnings.warn("`WCSAxes` package required for wcs coordinate display.")
 
-
         if self.dendrogram.wcs is not None and __wcaxes_imported:
 
             if self.array.ndim == 2:
@@ -106,7 +106,7 @@ class BasicDendrogramViewer(object):
             self.ax_image = self.fig.add_axes(ax_image)
 
         else:
-            self.ax_image = self.fig.add_axes(ax_image_limits)            
+            self.ax_image = self.fig.add_axes(ax_image_limits)
 
         from matplotlib.widgets import Slider
 
@@ -138,7 +138,7 @@ class BasicDendrogramViewer(object):
                 self.slice = 0
                 self.slice_slider = None
 
-            self.image = self.ax_image.imshow(self.array[self.slice, :,:], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+            self.image = self.ax_image.imshow(self.array[self.slice, :, :], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
@@ -157,13 +157,13 @@ class BasicDendrogramViewer(object):
         self.ax_dendrogram = self.fig.add_axes([0.6, 0.3, 0.35, 0.4])
         self.ax_dendrogram.add_collection(self.lines)
 
-        self.selected_label = {} # map selection IDs -> text objects
-        self.selected_label[1] = self.fig.text(0.6, 0.85, "No structure selected", fontsize=18, 
-            color=self.hub.colors[1])
+        self.selected_label = {}  # map selection IDs -> text objects
+        self.selected_label[1] = self.fig.text(0.6, 0.85, "No structure selected", fontsize=18,
+                                               color=self.hub.colors[1])
         self.selected_label[2] = self.fig.text(0.6, 0.8, "No structure selected", fontsize=18,
-            color=self.hub.colors[2])
+                                               color=self.hub.colors[2])
         self.selected_label[3] = self.fig.text(0.6, 0.75, "No structure selected", fontsize=18,
-            color=self.hub.colors[3])
+                                               color=self.hub.colors[3])
         x = [p.vertices[:, 0] for p in self.lines.get_paths()]
         y = [p.vertices[:, 1] for p in self.lines.get_paths()]
         xmin = np.min(x)
@@ -179,7 +179,6 @@ class BasicDendrogramViewer(object):
 
         self.fig.canvas.mpl_connect('pick_event', self.line_picker)
         self.fig.canvas.mpl_connect('button_press_event', self.select_from_map)
-
 
     def show(self):
         import matplotlib.pyplot as plt
@@ -301,7 +300,7 @@ class BasicDendrogramViewer(object):
 
         if len(structures) <= 1:
             label_text = "Selected structure: {0}".format(structure.idx)
-        elif len(structures) <=3:
+        elif len(structures) <= 3:
             label_text = "Selected structures: {0}".format(', '.join([str(structure.idx) for structure in structures]))
         else:
             label_text = "Selected structures: {0}...".format(', '.join([str(structure.idx) for structure in structures[:3]]))

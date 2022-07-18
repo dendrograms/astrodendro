@@ -3,6 +3,7 @@
 import numpy as np
 from ..dendrogram import Dendrogram, TreeIndex
 
+
 def assert_permuted_fancyindex(x, y):
     """ Assert that two fancy indices (tuples of integer ndarrays)
     are permutations of each other
@@ -19,6 +20,7 @@ def assert_permuted_fancyindex(x, y):
     np.testing.assert_array_equal(np.sort(x),
                                   np.sort(y))
 
+
 def assert_identical_fancyindex(x, y):
     for xx, yy in zip(x, y):
         np.testing.assert_array_equal(xx, yy)
@@ -32,13 +34,13 @@ class TestIndex(object):
     def assert_valid_index(self, d, index):
         """Assert that a dendrogram index is correct"""
 
-        #subtree=False is a permutation of np.where(index_map == x)
+        # subtree=False is a permutation of np.where(index_map == x)
         for s in d.all_structures:
             ind = index.indices(s.idx, subtree=False)
             expected = np.where(d.index_map == s.idx)
             assert_permuted_fancyindex(ind, expected)
 
-        #subtree=True is the same, but includes descendents
+        # subtree=True is the same, but includes descendents
         for s in d.all_structures:
             ind = index.indices(s.idx, subtree=True)
             expected = [np.where(d.index_map == ss.idx) for

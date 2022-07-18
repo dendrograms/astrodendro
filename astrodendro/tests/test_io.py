@@ -8,7 +8,6 @@ import pytest
 import numpy as np
 
 from .. import Dendrogram
-from ..structure import Structure
 from .test_index import assert_permuted_fancyindex
 
 from astropy.wcs import WCS
@@ -90,10 +89,10 @@ class TestIO(object):
         d1.save_to('astrodendro-test', format='hdf5')
 
         # recognize from extension
-        d2 = Dendrogram.load_from(self.test_filename)
+        Dendrogram.load_from(self.test_filename)
 
         # recognize from signature
-        d2 = Dendrogram.load_from('astrodendro-test')
+        Dendrogram.load_from('astrodendro-test')
 
     def test_fits_auto(self, tmpdir):
 
@@ -112,10 +111,10 @@ class TestIO(object):
         d1.save_to('astrodendro-test', format='fits')
 
         # recognize from extension
-        d2 = Dendrogram.load_from(self.test_filename)
+        Dendrogram.load_from(self.test_filename)
 
         # recognize from signature
-        d2 = Dendrogram.load_from('astrodendro-test')
+        Dendrogram.load_from('astrodendro-test')
 
     def test_hdf5_with_wcs(self):
         self.test_filename = 'astrodendro-test-wcs.hdf5'

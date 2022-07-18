@@ -2,7 +2,6 @@
 
 import os
 
-import numpy as np
 from astropy import log
 
 from .util import parse_dendrogram
@@ -59,9 +58,9 @@ def dendro_import_hdf5(filename):
 
     log.debug('Loading HDF5 file from disk...')
     with h5py.File(filename, 'r') as h5f:
-        newick = h5f['newick'][()].decode("utf-8") # str
-        data = h5f['data'][:] # numpy array
-        index_map = h5f['index_map'][:] # numpy array
+        newick = h5f['newick'][()].decode("utf-8")  # str
+        data = h5f['data'][:]  # numpy array
+        index_map = h5f['index_map'][:]  # numpy array
         params = {}
         if 'min_value' in h5f.attrs:
             params['min_value'] = h5f.attrs['min_value']

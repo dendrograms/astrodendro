@@ -5,6 +5,7 @@ import numpy as np
 
 def cached_property(func):
     memo = {}
+
     def result(self):
         if self not in memo:
             memo[self] = func(self)
@@ -403,13 +404,13 @@ class Structure(object):
         if self._peak is None:
             for s in reversed(list(prefix_visit(self))):
                 s._peak = (s._indices[s._values.index(s.vmax)],
-                          s.vmax)
+                           s.vmax)
                 if s.is_leaf:
                     s._peak_subtree = s._peak
                 else:
                     s._peak_subtree = max((c._peak_subtree
                                            for c in s.children),
-                                           key=key)
+                                          key=key)
                     s._peak_subtree = max(s._peak_subtree, s._peak, key=key)
 
         if not subtree:
@@ -424,7 +425,7 @@ class Structure(object):
             return "<Structure type=branch idx={0}>".format(self.idx)
 
     def sorted_leaves(self, sort_key=lambda s: s.get_peak(subtree=True)[1],
-                          reverse=False, subtree=True):
+                      reverse=False, subtree=True):
         """
         Return a list of sorted leaves.
 
