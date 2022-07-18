@@ -59,26 +59,28 @@ class TestIO(object):
 
     # Below are the actual tests for each import/export format:
 
-    def test_hdf5(self):
-        self.test_filename = 'astrodendro-test.hdf5'
+    def test_hdf5(self, tmpdir):
+        self.test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
         d1 = Dendrogram.compute(self.data, verbose=False)
         d1.save_to(self.test_filename, format='hdf5')
         d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
         self.compare_dendrograms(d1, d2)
 
-    def test_fits(self):
-        self.test_filename = 'astrodendro-test.fits'
+    def test_fits(self, tmpdir):
+        self.test_filename = tmpdir.join('astrodendro-test.fits').strpath
         d1 = Dendrogram.compute(self.data, verbose=False)
-        d1.save_to(self.test_filename, format='hdf5')
-        d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
+        d1.save_to(self.test_filename, format='fits')
+        d2 = Dendrogram.load_from(self.test_filename, format='fits')
         self.compare_dendrograms(d1, d2)
 
-    def test_hdf5_auto(self):
+    def test_hdf5_auto(self, tmpdir):
+
+        self.test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
         # recognize from extension
-        d1.save_to('astrodendro-test.hdf5')
+        d1.save_to(self.test_filename)
 
         # no way to tell
         with pytest.raises(IOError):
@@ -88,17 +90,19 @@ class TestIO(object):
         d1.save_to('astrodendro-test', format='hdf5')
 
         # recognize from extension
-        d2 = Dendrogram.load_from('astrodendro-test.hdf5')
+        d2 = Dendrogram.load_from(self.test_filename)
 
         # recognize from signature
         d2 = Dendrogram.load_from('astrodendro-test')
 
-    def test_fits_auto(self):
+    def test_fits_auto(self, tmpdir):
+
+        self.test_filename = tmpdir.join('astrodendro-test.fits').strpath
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
         # recognize from extension
-        d1.save_to('astrodendro-test.fits')
+        d1.save_to(self.test_filename)
 
         # no way to tell
         with pytest.raises(IOError):
@@ -108,7 +112,7 @@ class TestIO(object):
         d1.save_to('astrodendro-test', format='fits')
 
         # recognize from extension
-        d2 = Dendrogram.load_from('astrodendro-test.fits')
+        d2 = Dendrogram.load_from(self.test_filename)
 
         # recognize from signature
         d2 = Dendrogram.load_from('astrodendro-test')
@@ -137,12 +141,12 @@ class TestIO(object):
         assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
 
     @pytest.mark.parametrize('ext', ('fits', 'hdf5'))
-    def test_reload_retains_dendro_reference(self, ext):
+    def test_reload_retains_dendro_reference(self, ext, tmpdir):
         # regression test for issue 106
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
-        self.test_filename = 'astrodendro-test.%s' % ext
+        self.test_filename = tmpdir.join('astrodendro-test.%s' % ext).strpath
 
         d1.save_to(self.test_filename)
         d2 = Dendrogram.load_from(self.test_filename)
