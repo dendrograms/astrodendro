@@ -27,7 +27,7 @@ def _sorted_by_idx(d):
 # utility dict to offsets of adjacent pixel list
 _offsets = dict((ndim, np.concatenate((
                 np.identity(ndim),
-                np.identity(ndim) * -1)).astype(np.int))
+                np.identity(ndim) * -1)).astype(int))
                 for ndim in range(1, 8))
 
 # the formula above generalizes this special case
@@ -655,11 +655,11 @@ class TreeIndex(object):
         #    index[offset[pi] : offset[pi] + npix[pi]]
         # and including subtrees is
         #    index[offset[pi] : offset[pi] + npix_subtree[pi]]
-        offset = np.zeros(idx_ct.size, dtype=np.int)
+        offset = np.zeros(idx_ct.size, dtype=int)
         npix = offset * 0
         npix_subtree = offset * 0
 
-        index = -np.ones(sz, dtype=np.int)
+        index = -np.ones(sz, dtype=int)
         order = dendrogram.all_structures
 
         pos = 0

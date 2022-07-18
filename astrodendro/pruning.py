@@ -40,7 +40,7 @@ def _ravel_multi_index(multi_index, dims, mode='raise'):
     else:  # mode == 'wrap'
         indices = [i % d for i, d in zip(indices, dims)]
 
-    result = np.zeros(len(multi_index[0]), dtype=np.int)
+    result = np.zeros(len(multi_index[0]), dtype=int)
     offset = 1
     for i, d in list(zip(indices, dims))[::-1]:
         result += (i * offset).ravel()

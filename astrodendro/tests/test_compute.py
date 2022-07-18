@@ -110,7 +110,7 @@ class Test3DimensionalData(object):
         assert len(d.leaves) == 55
 
         # Now check every pixel in the data cube (this takes a while).
-        st_map = -np.ones(self.data.shape, dtype=np.int)
+        st_map = -np.ones(self.data.shape, dtype=int)
         for st in d.all_structures:
             st_map[st.indices(subtree=False)] = st.idx
 
