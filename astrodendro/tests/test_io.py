@@ -29,11 +29,6 @@ class TestIO(object):
                                [1, 1, n, n, n, n, n, n],
                                [n, n, n, n, n, n, 0, 1],
                                [n, n, n, 1, 0, 1, 0, n]]])
-        self.test_filename = None
-
-    def teardown_method(self, method):
-        if self.test_filename and os.path.exists(self.test_filename):
-            os.remove(self.test_filename)
 
     def compare_dendrograms(self, d1, d2):
         " Helper method that ensures d1 and d2 are equivalent "
@@ -59,27 +54,27 @@ class TestIO(object):
     # Below are the actual tests for each import/export format:
 
     def test_hdf5(self, tmpdir):
-        self.test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
+        test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
         d1 = Dendrogram.compute(self.data, verbose=False)
-        d1.save_to(self.test_filename, format='hdf5')
-        d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
+        d1.save_to(test_filename, format='hdf5')
+        d2 = Dendrogram.load_from(test_filename, format='hdf5')
         self.compare_dendrograms(d1, d2)
 
     def test_fits(self, tmpdir):
-        self.test_filename = tmpdir.join('astrodendro-test.fits').strpath
+        test_filename = tmpdir.join('astrodendro-test.fits').strpath
         d1 = Dendrogram.compute(self.data, verbose=False)
-        d1.save_to(self.test_filename, format='fits')
-        d2 = Dendrogram.load_from(self.test_filename, format='fits')
+        d1.save_to(test_filename, format='fits')
+        d2 = Dendrogram.load_from(test_filename, format='fits')
         self.compare_dendrograms(d1, d2)
 
     def test_hdf5_auto(self, tmpdir):
 
-        self.test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
+        test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
         # recognize from extension
-        d1.save_to(self.test_filename)
+        d1.save_to(test_filename)
 
         # no way to tell
         with pytest.raises(IOError):
@@ -89,19 +84,19 @@ class TestIO(object):
         d1.save_to('astrodendro-test', format='hdf5')
 
         # recognize from extension
-        Dendrogram.load_from(self.test_filename)
+        Dendrogram.load_from(test_filename)
 
         # recognize from signature
         Dendrogram.load_from('astrodendro-test')
 
     def test_fits_auto(self, tmpdir):
 
-        self.test_filename = tmpdir.join('astrodendro-test.fits').strpath
+        test_filename = tmpdir.join('astrodendro-test.fits').strpath
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
         # recognize from extension
-        d1.save_to(self.test_filename)
+        d1.save_to(test_filename)
 
         # no way to tell
         with pytest.raises(IOError):
@@ -111,31 +106,31 @@ class TestIO(object):
         d1.save_to('astrodendro-test', format='fits')
 
         # recognize from extension
-        Dendrogram.load_from(self.test_filename)
+        Dendrogram.load_from(test_filename)
 
         # recognize from signature
         Dendrogram.load_from('astrodendro-test')
 
     def test_hdf5_with_wcs(self):
-        self.test_filename = 'astrodendro-test-wcs.hdf5'
+        test_filename = 'astrodendro-test-wcs.hdf5'
         test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                                    cdelt2=2, crval2=0, crpix2=1,
                                    cdelt3=3, crval3=0, crpix3=1))
 
         d1 = Dendrogram.compute(self.data, verbose=False, wcs=test_wcs)
-        d1.save_to(self.test_filename, format='hdf5')
-        d2 = Dendrogram.load_from(self.test_filename, format='hdf5')
+        d1.save_to(test_filename, format='hdf5')
+        d2 = Dendrogram.load_from(test_filename, format='hdf5')
 
         assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
 
     def test_fits_with_wcs(self):
-        self.test_filename = 'astrodendro-test-wcs.fits'
+        test_filename = 'astrodendro-test-wcs.fits'
         test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                                    cdelt2=2, crval2=0, crpix2=1,
                                    cdelt3=3, crval3=0, crpix3=1))
         d1 = Dendrogram.compute(self.data, verbose=False, wcs=test_wcs)
-        d1.save_to(self.test_filename, format='fits')
-        d2 = Dendrogram.load_from(self.test_filename, format='fits')
+        d1.save_to(test_filename, format='fits')
+        d2 = Dendrogram.load_from(test_filename, format='fits')
 
         assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
 
@@ -145,10 +140,10 @@ class TestIO(object):
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
-        self.test_filename = tmpdir.join('astrodendro-test.%s' % ext).strpath
+        test_filename = tmpdir.join('astrodendro-test.%s' % ext).strpath
 
-        d1.save_to(self.test_filename)
-        d2 = Dendrogram.load_from(self.test_filename)
+        d1.save_to(test_filename)
+        d2 = Dendrogram.load_from(test_filename)
 
         for s in d1:
             np.testing.assert_array_equal(d2[s.idx].get_mask(subtree=True),
