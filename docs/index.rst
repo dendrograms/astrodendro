@@ -96,5 +96,7 @@ Public API
    :maxdepth: 1
 
 .. automodapi:: astrodendro
+   :no-inheritance-diagram:
 
 .. automodapi:: astrodendro.pruning
+   :no-inheritance-diagram:
