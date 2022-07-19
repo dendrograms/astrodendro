@@ -68,6 +68,7 @@ class TestIO(object):
     def test_hdf5_auto(self, tmpdir):
 
         test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
+        test_filename_noext = tmpdir.join('astrodendro-test').strpath
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
@@ -76,20 +77,21 @@ class TestIO(object):
 
         # no way to tell
         with pytest.raises(IOError):
-            d1.save_to('astrodendro-test')
+            d1.save_to(test_filename_noext)
 
         # no way to tell, so have to explicitly give format
-        d1.save_to('astrodendro-test', format='hdf5')
+        d1.save_to(test_filename_noext, format='hdf5')
 
         # recognize from extension
         Dendrogram.load_from(test_filename)
 
         # recognize from signature
-        Dendrogram.load_from('astrodendro-test')
+        Dendrogram.load_from(test_filename_noext)
 
     def test_fits_auto(self, tmpdir):
 
         test_filename = tmpdir.join('astrodendro-test.fits').strpath
+        test_filename_noext = tmpdir.join('astrodendro-test').strpath
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
@@ -98,16 +100,16 @@ class TestIO(object):
 
         # no way to tell
         with pytest.raises(IOError):
-            d1.save_to('astrodendro-test')
+            d1.save_to(test_filename_noext)
 
         # no way to tell, so have to explicitly give format
-        d1.save_to('astrodendro-test', format='fits')
+        d1.save_to(test_filename_noext, format='fits')
 
         # recognize from extension
         Dendrogram.load_from(test_filename)
 
         # recognize from signature
-        Dendrogram.load_from('astrodendro-test')
+        Dendrogram.load_from(test_filename_noext)
 
     def test_hdf5_with_wcs(self):
         test_filename = 'astrodendro-test-wcs.hdf5'
