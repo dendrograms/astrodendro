@@ -157,7 +157,7 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         # Convert input quantity to Fnu in Jy
         # Implicitly, this equivalency gives the Janskys in a single beam, so we make this explicit by dividing out a beam
         jansky_per_beam = input_quantities.to(u.Jy,
-                                              equivalencies=u.brightness_temperature(nu, omega_beam)) / u.beam
+                                              equivalencies=u.brightness_temperature(nu, beam_area=omega_beam)) / u.beam
 
         q = jansky_per_beam * beams_per_pixel
 
