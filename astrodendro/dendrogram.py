@@ -376,7 +376,7 @@ class Dendrogram(object):
 
         Parameters
         ----------
-        filename : str
+        filename : str or `pathlib.Path`
             The name of the file to load the dendrogram from. By default, the
             file format will be automatically detected from the file
             extension. At this time, only HDF5 files (extension ``.hdf5``) are
@@ -395,7 +395,7 @@ class Dendrogram(object):
 
         Parameters
         ----------
-        filename : str
+        filename : str or `pathlib.Path`
             The name of the file to save the dendrogram to. By default, the
             file format will be automatically detected from the file
             extension. At this time, only HDF5 files (extension ``.hdf5``) are

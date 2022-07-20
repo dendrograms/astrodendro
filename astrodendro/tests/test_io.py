@@ -51,24 +51,24 @@ class TestIO(object):
 
     # Below are the actual tests for each import/export format:
 
-    def test_hdf5(self, tmpdir):
-        test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
+    def test_hdf5(self, tmp_path):
+        test_filename = tmp_path / 'astrodendro-test.hdf5'
         d1 = Dendrogram.compute(self.data, verbose=False)
         d1.save_to(test_filename, format='hdf5')
         d2 = Dendrogram.load_from(test_filename, format='hdf5')
         self.compare_dendrograms(d1, d2)
 
-    def test_fits(self, tmpdir):
-        test_filename = tmpdir.join('astrodendro-test.fits').strpath
+    def test_fits(self, tmp_path):
+        test_filename = tmp_path / 'astrodendro-test.fits'
         d1 = Dendrogram.compute(self.data, verbose=False)
         d1.save_to(test_filename, format='fits')
         d2 = Dendrogram.load_from(test_filename, format='fits')
         self.compare_dendrograms(d1, d2)
 
-    def test_hdf5_auto(self, tmpdir):
+    def test_hdf5_auto(self, tmp_path):
 
-        test_filename = tmpdir.join('astrodendro-test.hdf5').strpath
-        test_filename_noext = tmpdir.join('astrodendro-test').strpath
+        test_filename = tmp_path / 'astrodendro-test.hdf5'
+        test_filename_noext = tmp_path / 'astrodendro-test'
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
@@ -88,10 +88,10 @@ class TestIO(object):
         # recognize from signature
         Dendrogram.load_from(test_filename_noext)
 
-    def test_fits_auto(self, tmpdir):
+    def test_fits_auto(self, tmp_path):
 
-        test_filename = tmpdir.join('astrodendro-test.fits').strpath
-        test_filename_noext = tmpdir.join('astrodendro-test').strpath
+        test_filename = tmp_path / 'astrodendro-test.fits'
+        test_filename_noext = tmp_path / 'astrodendro-test'
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
@@ -111,8 +111,8 @@ class TestIO(object):
         # recognize from signature
         Dendrogram.load_from(test_filename_noext)
 
-    def test_hdf5_with_wcs(self):
-        test_filename = 'astrodendro-test-wcs.hdf5'
+    def test_hdf5_with_wcs(self, tmp_path):
+        test_filename = tmp_path / 'astrodendro-test-wcs.hdf5'
         test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                                    cdelt2=2, crval2=0, crpix2=1,
                                    cdelt3=3, crval3=0, crpix3=1))
@@ -123,8 +123,8 @@ class TestIO(object):
 
         assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
 
-    def test_fits_with_wcs(self):
-        test_filename = 'astrodendro-test-wcs.fits'
+    def test_fits_with_wcs(self, tmp_path):
+        test_filename = tmp_path / 'astrodendro-test-wcs.fits'
         test_wcs = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                                    cdelt2=2, crval2=0, crpix2=1,
                                    cdelt3=3, crval3=0, crpix3=1))
@@ -135,12 +135,12 @@ class TestIO(object):
         assert d2.wcs.to_header_string() == d1.wcs.to_header_string()
 
     @pytest.mark.parametrize('ext', ('fits', 'hdf5'))
-    def test_reload_retains_dendro_reference(self, ext, tmpdir):
+    def test_reload_retains_dendro_reference(self, ext, tmp_path):
         # regression test for issue 106
 
         d1 = Dendrogram.compute(self.data, verbose=False)
 
-        test_filename = tmpdir.join('astrodendro-test.%s' % ext).strpath
+        test_filename = tmp_path / f'astrodendro-test.{ext}'
 
         d1.save_to(test_filename)
         d2 = Dendrogram.load_from(test_filename)
