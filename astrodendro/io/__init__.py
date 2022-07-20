@@ -1,5 +1,7 @@
 # Licensed under an MIT open source license - see LICENSE
 
+from pathlib import Path
+
 from .fits import FITSHandler
 from .hdf5 import HDF5Handler
 
@@ -15,6 +17,8 @@ def _valid(formats):
 
 
 def load_dendrogram(filename, format=None):
+    if isinstance(filename, Path):
+        filename = str(filename)
     if format is not None:
         return IO_FORMATS[format].import_dendro(filename)
     else:
@@ -27,6 +31,8 @@ def load_dendrogram(filename, format=None):
 
 
 def save_dendrogram(dendrogram, filename, format=None):
+    if isinstance(filename, Path):
+        filename = str(filename)
     if format is not None:
         return IO_FORMATS[format].export_dendro(dendrogram, filename)
     else:

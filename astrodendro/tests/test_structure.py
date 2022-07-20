@@ -6,7 +6,6 @@
 
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose
 from ..structure import Structure
 from .test_index import assert_identical_fancyindex
 
@@ -21,7 +20,7 @@ def test_init_leaf_scalar(index):
     assert s.is_leaf
     assert not s.is_branch
     assert_identical_fancyindex(s.indices(subtree=False),
-                               tuple(np.atleast_1d(i) for i in index))
+                                tuple(np.atleast_1d(i) for i in index))
     assert np.all(s.indices() == s.indices(subtree=True))
     assert np.all(s.values(subtree=False) == np.array([1.5]))
     assert np.all(s.values(subtree=True) == s.values(subtree=False))
@@ -349,12 +348,14 @@ def test_add_pixel():
     assert s.vmin == 8.
     assert s.vmax == 12.
 
+
 def test_sorted_leaves():
     l1 = Structure(1, 10., idx=1)
     l2 = Structure(2, 8., idx=2)
     s = Structure(3, 5., children=[l1, l2], idx=3)
     assert s.sorted_leaves() == [l2, l1]
     assert s.sorted_leaves(reverse=True) == [l1, l2]
+
     def key(x):
         return x.idx
     assert s.sorted_leaves(sort_key=key) == [l1, l2]

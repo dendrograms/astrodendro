@@ -1,9 +1,9 @@
 # Licensed under an MIT open source license - see LICENSE
 
-from .dendrogram import Dendrogram, periodic_neighbours
-from .structure import Structure
-from .analysis import ppv_catalog, pp_catalog
-from .plot import DendrogramPlotter
-from .viewer import BasicDendrogramViewer
+from .dendrogram import Dendrogram, periodic_neighbours  # noqa
+from .structure import Structure  # noqa
+from .analysis import ppv_catalog, pp_catalog  # noqa
+from .plot import DendrogramPlotter  # noqa
+from .viewer import BasicDendrogramViewer  # noqa
 
-__version__ = '0.3.0.dev'
+from .version import version as __version__  # noqa

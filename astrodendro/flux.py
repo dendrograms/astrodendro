@@ -5,8 +5,10 @@ import numpy as np
 from astropy import units as u
 from astropy.constants import si
 
+
 class UnitMetadataWarning(UserWarning):
-   pass
+    pass
+
 
 def quantity_sum(quantities):
     """
@@ -145,7 +147,8 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
         # Find frequency
         nu = wavelength.to(u.Hz, equivalencies=u.spectral())
 
-        # Angular area of beam. Conversion between 2D Gaussian FWHM and effective area comes from https://github.com/radio-astro-tools/radio_beam/blob/bc906c38a65e85c6a894ee81519a642665e50f7c/radio_beam/beam.py#L8
+        # Angular area of beam. Conversion between 2D Gaussian FWHM and effective area comes from
+        # https://github.com/radio-astro-tools/radio_beam/blob/bc906c38a65e85c6a894ee81519a642665e50f7c/radio_beam/beam.py#L8
         omega_beam = np.pi * 2 / (8*np.log(2)) * beam_major * beam_minor
 
         # Find the beam area
@@ -153,8 +156,8 @@ def compute_flux(input_quantities, output_unit, wavelength=None, spatial_scale=N
 
         # Convert input quantity to Fnu in Jy
         # Implicitly, this equivalency gives the Janskys in a single beam, so we make this explicit by dividing out a beam
-        jansky_per_beam = input_quantities.to(u.Jy, 
-            equivalencies=u.brightness_temperature(omega_beam, nu)) / u.beam
+        jansky_per_beam = input_quantities.to(u.Jy,
+                                              equivalencies=u.brightness_temperature(nu, beam_area=omega_beam)) / u.beam
 
         q = jansky_per_beam * beams_per_pixel
 

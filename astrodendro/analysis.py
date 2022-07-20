@@ -12,12 +12,11 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.wcs import WCS
 
-from . import six
 from .structure import Structure
 from .flux import UnitMetadataWarning
 from .progressbar import AnimatedProgressBar
 
-__all__ = ['ppv_catalog', 'pp_catalog']
+__all__ = ['ppv_catalog', 'pp_catalog', 'PPStatistic', 'PPVStatistic', 'PPPStatistic', 'SpatialBase']
 
 
 def memoize(func):
@@ -77,7 +76,7 @@ class ScalarStatistic(object):
             Location of each element of values. The i-th array in the tuple
             describes the ith positional dimension
         """
-        self.values = values.astype(np.float)
+        self.values = values.astype(float)
         self.indices = indices
 
     @memoize
@@ -126,13 +125,13 @@ class ScalarStatistic(object):
             The variance (or co-variance matrix) of the data along the
             specified direction(s).
         """
-        w = np.atleast_2d(direction).astype(np.float)
+        w = np.atleast_2d(direction).astype(float)
         for row in w:
             row /= np.linalg.norm(row)
 
         result = np.dot(np.dot(w, self.mom2()), w.T)
         if result.size == 1:
-            result = np.asscalar(result)
+            result = result.item()
         return result
 
     @memoize
@@ -233,7 +232,7 @@ class Metadata(object):
                If True, raise KeyError if metadata not provided.
                This overrides default
         """
-        if not isinstance(key, six.string_types):
+        if not isinstance(key, str):
             raise TypeError("Key is", key, type(key))
         self.key = key
         self.description = description or 'no description'
@@ -684,14 +683,12 @@ def _make_catalog(structures, fields, metadata, statistic, verbose=False):
             progress_bar + 1
             progress_bar.show_progress()
 
-
     result.sort('_idx')
 
     if verbose:
         progress_bar.progress = 100  # Done
         progress_bar.show_progress()
         print("")  # newline
-
 
     return result
 
@@ -724,7 +721,7 @@ def ppv_catalog(structures, metadata, fields=None, verbose=True):
 
     with warnings.catch_warnings():
         warnings.simplefilter("once" if verbose else 'ignore', category=MissingMetadataWarning)
-        warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)        
+        warnings.simplefilter("once" if verbose else 'ignore', category=UnitMetadataWarning)
         return _make_catalog(structures, fields, metadata, PPVStatistic, verbose)
 
 

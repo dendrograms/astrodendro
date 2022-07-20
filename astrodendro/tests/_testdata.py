@@ -6,7 +6,7 @@ values are randomly generated.
 """
 import os
 try:
-    import gzip
+    import gzip  # noqa
 except AttributeError:
     # gzip tries to import from the "io" package, which causes an error
     # if the user's current directory is the "astrodendro" directory

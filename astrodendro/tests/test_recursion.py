@@ -1,12 +1,11 @@
 # Licensed under an MIT open source license - see LICENSE
 
+from .. import Dendrogram
 import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 plt.switch_backend('Agg')
-
-from .. import Dendrogram
 
 
 class TestRecursionLimit(object):
@@ -17,6 +16,7 @@ class TestRecursionLimit(object):
     dendrograms without using deep recursion, even if we aren't
     yet able to plot them without using recursion.
     """
+
     def setup_method(self, method):
         self._oldlimit = sys.getrecursionlimit()
         sys.setrecursionlimit(100)  # Reduce recursion limit dramatically (default is 1000)
@@ -59,7 +59,6 @@ class TestRecursionLimit(object):
                 assert structure.level == 0
             else:
                 assert structure.level == structure.parent.level + 1
-
 
     def test_plot(self):
         sys.setrecursionlimit(self._oldlimit)

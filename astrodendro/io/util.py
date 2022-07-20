@@ -1,6 +1,5 @@
 import numpy as np
 
-from .. import six
 from astropy.utils.console import ProgressBar
 from astropy import log
 
@@ -56,8 +55,6 @@ def parse_newick(string):
             # Remove branch definition from string
             string = string[:start] + string[end + 1:]
 
-    new_items = {}
-
     def collect(d):
         for item in d:
             if item in items:
@@ -99,23 +96,18 @@ def parse_dendrogram(newick, data, index_map, params, wcs=None):
                 sub_structures = _construct_tree(sub_structures_repr)
                 for i in sub_structures:
                     d._structures_dict[i.idx] = i
-                b = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=d)
+                branch = Structure(structure_indices, f, children=sub_structures, idx=idx, dendrogram=d)
                 # Correct merge levels - complicated because of the
                 # order in which we are building the tree.
                 # What we do is look at the heights of this branch's
                 # 1st child as stored in the newick representation, and then
                 # work backwards to compute the merge level of this branch
-                first_child_repr = six.next(six.itervalues(sub_structures_repr))
-                if type(first_child_repr) == tuple:
-                    height = first_child_repr[1]
-                else:
-                    height = first_child_repr
-                d._structures_dict[idx] = b
-                structures.append(b)
+                d._structures_dict[idx] = branch
+                structures.append(branch)
             else:
-                l = Structure(structure_indices, f, idx=idx, dendrogram=d)
-                structures.append(l)
-                d._structures_dict[idx] = l
+                leaf = Structure(structure_indices, f, idx=idx, dendrogram=d)
+                structures.append(leaf)
+                d._structures_dict[idx] = leaf
         return structures
 
     log.debug('Parsing newick and constructing tree...')
@@ -128,13 +120,14 @@ def parse_dendrogram(newick, data, index_map, params, wcs=None):
     d._index()
     return d
 
+
 def _fast_reader(index_map, data):
     """
     Use scipy.ndimage.find_objects to quickly identify subsets of the data
     to increase speed of dendrogram loading
     """
 
-    flux_by_structure, indices_by_structure = {},{}
+    flux_by_structure, indices_by_structure = {}, {}
 
     from scipy import ndimage
     idxs = np.unique(index_map[index_map > -1])
@@ -153,7 +146,7 @@ def _fast_reader(index_map, data):
     log.debug('Creating index maps for {0} indices...'.format(len(idxs)))
 
     p = ProgressBar(len(object_slices))
-    for idx,sl in zip(idxs, object_slices):
+    for idx, sl in zip(idxs, object_slices):
         match = index_map[sl] == idx
         sl2 = (slice(None),) + sl
         match_inds = index_cube[sl2][:, match]
@@ -165,6 +158,7 @@ def _fast_reader(index_map, data):
 
     return flux_by_structure, indices_by_structure
 
+
 def _slow_reader(index_map, data):
     """
     Loop over each valid pixel in the index_map and add its coordinates and
@@ -174,7 +168,7 @@ def _slow_reader(index_map, data):
     be without find_objects.  The bottleneck is doing `index_map == idx` N
     times.
     """
-    flux_by_structure, indices_by_structure = {},{}
+    flux_by_structure, indices_by_structure = {}, {}
     # Do a fast iteration through d.data, adding the indices and data values
     # to the two dictionaries declared above:
     indices = np.array(np.where(index_map > -1)).transpose()

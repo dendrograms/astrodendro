@@ -1,5 +1,6 @@
 # These tests ensure that the ``is_independent`` function is working correctly
 
+from .build_benchmark import BENCHMARKS
 import pytest
 import numpy as np
 
@@ -41,9 +42,6 @@ class TestCustomMerge(object):
 
 
 # Try and reproduce the benchmark tests using a function instead of arguments
-
-
-from .build_benchmark import BENCHMARKS
 
 
 @pytest.mark.parametrize(('filename'), BENCHMARKS.keys())

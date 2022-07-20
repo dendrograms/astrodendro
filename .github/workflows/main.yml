@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: codestyle
+          pytest: false
+        - linux: py37-test-oldestdeps
+        - macos: py38-test
+        - windows: py39-test
+        - linux: py310-test
+        - linux: py310-test-devdeps
+      coverage: 'codecov'

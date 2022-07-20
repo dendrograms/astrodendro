@@ -28,8 +28,9 @@ import sys, os
 extensions = ['matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
-              'astropy_helpers.sphinx.ext.numpydoc',
-              'astropy_helpers.sphinx.ext.astropyautosummary'
+              'numpydoc',
+              'sphinx_automodapi.automodapi',
+              'sphinx_automodapi.smart_resolver'
              ]
 
 autosummary_generate = True
@@ -284,8 +285,13 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-    'matplotlib': ('http://matplotlib.sourceforge.net/', None),
-    'astropy': ('http://docs.astropy.org/', None),
+    'python': ('https://docs.python.org/3/',
+               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
+    'numpy': ('https://numpy.org/doc/stable/',
+              (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
+    'matplotlib': ('https://matplotlib.org/stable/',
+                   (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
+    'astropy': ('https://docs.astropy.org/en/stable/', None)
     }
+
+nitpicky = True

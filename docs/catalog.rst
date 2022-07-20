@@ -2,7 +2,7 @@ Computing Dendrogram Statistics
 ===============================
 
 For 2D position-position (PP) and 3D position-position-velocity (PPV)
-observational data, the :doc:`api/astrodendro.analysis` module can be used to
+observational data, the ``astrodendro.analysis`` module can be used to
 compute basic properties for each Dendrogram structure. There are two ways to
 compute statistics - on a structure-by-structure basis and as a catalog, both
 of which are described below.
@@ -12,8 +12,7 @@ Deriving statistics for individual structures
 
 In order to derive statistics for a given structure, you will need to use the
 :class:`~astrodendro.analysis.PPStatistic` or the
-:class:`~astrodendro.analysis.PPVStatistic` classes from the
-:doc:`api/astrodendro.analysis` module, e.g.::
+:class:`~astrodendro.analysis.PPVStatistic` classes, e.g.::
 
    >>> from astrodendro.analysis import PPStatistic
    >>> stat = PPStatistic(structure)
@@ -176,8 +175,8 @@ u.arcsec``):
   :func:`~astrodendro.analysis.ppv_catalog` functions, as well as for the
   ``flux`` attribute of the :class:`~astrodendro.analysis.PPStatistic` and
   :class:`~astrodendro.analysis.PPVStatistic` classes.
-  Note: if ``data_unit`` is given as ``K``, it is interpreted as units of 
-  main beam brightness temperature, following the conventions in the astropy 
+  Note: if ``data_unit`` is given as ``K``, it is interpreted as units of
+  main beam brightness temperature, following the conventions in the astropy
   `Brightness Temperature / Flux Density equivalency <http://docs.astropy.org/en/stable/units/equivalencies.html#brightness-temperature-flux-density-equivalency>`_ .
 
 * ``spatial_scale`` is **required** if the data are in units of surface
@@ -251,7 +250,7 @@ approximating the structures on top of the structures themselves:
 
 As shown above, the :class:`~astrodendro.analysis.PPStatistic` and
 :class:`~astrodendro.analysis.PPVStatistic` classes have a
-:meth:`~astrodendro.analysis.PPStatistic.to_mpl_ellipse` method to convert the
+:meth:`~astrodendro.analysis.SpatialBase.to_mpl_ellipse` method to convert the
 first and second moments of the structures into schematic ellipses.
 
 

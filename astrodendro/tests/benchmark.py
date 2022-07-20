@@ -44,7 +44,7 @@ def benchmark_hdf5():
         print('Exporting...')
         d.save_to(filename)
         print('Importing...')
-        d2 = Dendrogram.load_from(filename)
+        Dendrogram.load_from(filename)
         os.remove(filename)
 
     t = timeit.timeit(testHDF5, number=num) / num

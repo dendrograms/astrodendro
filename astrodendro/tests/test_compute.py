@@ -1,9 +1,10 @@
 # Licensed under an MIT open source license - see LICENSE
 
+from .build_benchmark import BENCHMARKS
 import numpy as np
 import pytest
 
-from .. import Dendrogram, periodic_neighbours, Structure
+from .. import Dendrogram, periodic_neighbours
 
 
 class Test2DimensionalData(object):
@@ -114,7 +115,7 @@ class Test3DimensionalData(object):
         for st in d.all_structures:
             st_map[st.indices(subtree=False)] = st.idx
 
-        #check that vmin/vmax/peak are correct
+        # check that vmin/vmax/peak are correct
         for st in d.all_structures:
             assert st.vmin == self.data[st.indices(subtree=False)].min()
             assert st.vmax == self.data[st.indices(subtree=False)].max()
@@ -133,7 +134,6 @@ class Test3DimensionalData(object):
         # here, we test a few values of structure_at
         for coord in np.indices(self.data.shape).reshape(self.data.ndim, np.prod(self.data.shape)).transpose()[::100]:
             coord = tuple(coord)
-            f = self.data[coord]
             structure = d.structure_at(coord)
             if structure is not None:
                 assert structure.idx == st_map[coord], "Pixel at {0} is claimed to be part of {1}, but that structure does not contain the coordinate {0}!".format(coord, structure)
@@ -191,6 +191,7 @@ def test_periodic():
                         [-1, -1, -1, -1, -1]])
     np.testing.assert_array_equal(d.index_map, expected)
 
+
 def test_periodic_left():
     x = np.array([[1, 0, 0, 0, 0],
                   [1, 0, 0, 0, 1],
@@ -201,6 +202,7 @@ def test_periodic_left():
                          [0, -1, -1, -1, 0],
                          [0, -1, -1, -1, -1]])
     np.testing.assert_array_equal(d.index_map, expected)
+
 
 def test_periodic_left_narrow():
     x = np.array([[0, 0, 0, 0, 0],
@@ -213,6 +215,7 @@ def test_periodic_left_narrow():
                          [-1, -1, -1, -1, -1]])
     np.testing.assert_array_equal(d.index_map, expected)
 
+
 def test_periodic_right():
     x = np.array([[0, 0, 0, 0, 1],
                   [1, 0, 0, 0, 1],
@@ -224,6 +227,7 @@ def test_periodic_right():
                          [-1, -1, -1, -1, 0]])
     np.testing.assert_array_equal(d.index_map, expected)
 
+
 def test_periodic_right_narrow():
     x = np.array([[0, 0, 0, 0, 0],
                   [1, 0, 0, 1, 1],
@@ -234,10 +238,6 @@ def test_periodic_right_narrow():
                          [0, -1, -1, 0, 0],
                          [-1, -1, -1, -1, -1]])
     np.testing.assert_array_equal(d.index_map, expected)
-
-
-
-from .build_benchmark import BENCHMARKS
 
 
 @pytest.mark.parametrize(('filename'), BENCHMARKS.keys())
@@ -258,4 +258,3 @@ def test_benchmark(filename):
     # Check that all structures contain a reference to the dendrogram
     for structure in d1:
         assert structure._dendrogram is d1
-

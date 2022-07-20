@@ -1,7 +1,6 @@
 # Licensed under an MIT open source license - see LICENSE
 
 import pytest
-from mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -23,6 +22,7 @@ def assert_allclose_quantity(a, b):
         raise TypeError("b is not a quantity")
     assert_allclose(a.value, b.value)
     assert a.unit == b.unit
+
 
 wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                          cdelt2=2, crval2=0, crpix2=1))
@@ -401,29 +401,30 @@ class TestPPCataloger(TestCataloger):
     def metadata(self):
         return dict(data_unit=u.Jy, wcs=wcs_2d)
 
+
 def test_wraparound_catalog():
 
     x_centered = np.array(
         [[0, 1, 0, 0, 0, 0],
          [0, 1, 1, 1, 0, 0],
          [0, 0, 0, 0, 0, 0]]
-        )
+    )
     # same structure as x_centered, but shifted to the boundary
     x_straddling = np.array(
         [[0, 0, 0, 0, 0, 1],
          [1, 1, 0, 0, 0, 1],
          [0, 0, 0, 0, 0, 0]]
-        )
+    )
 
     d_centered = Dendrogram.compute(x_centered, min_value=0.5,
-                           neighbours=periodic_neighbours(1))
+                                    neighbours=periodic_neighbours(1))
 
     d_straddling = Dendrogram.compute(x_straddling, min_value=0.5,
-                           neighbours=periodic_neighbours(1))
+                                      neighbours=periodic_neighbours(1))
 
     assert len(d_centered) == len(d_straddling)
 
-    metadata = {'data_unit': u.Jy} # dummy unit to get the catalog to compute
+    metadata = {'data_unit': u.Jy}  # dummy unit to get the catalog to compute
 
     catalog_centered = pp_catalog(d_centered, metadata)
     catalog_straddling = pp_catalog(d_straddling, metadata)
@@ -433,12 +434,13 @@ def test_wraparound_catalog():
     assert catalog_centered['radius'][0] == catalog_straddling['radius'][0]
     assert catalog_centered['area_exact'][0] == catalog_straddling['area_exact'][0]
 
-    assert catalog_centered['x_cen'][0] == catalog_straddling['x_cen'][0] - 4 # offset by 4 px
+    assert catalog_centered['x_cen'][0] == catalog_straddling['x_cen'][0] - 4  # offset by 4 px
     assert catalog_centered['y_cen'][0] == catalog_straddling['y_cen'][0]
 
     # default behavior is to NOT join structures on data edges, let's make sure that we aren't fooling ourselves.
     d_broken = Dendrogram.compute(x_straddling, min_value=0.5)
     assert len(d_straddling) != len(d_broken)
+
 
 # don't let pytest test abstract class
 del TestCataloger
