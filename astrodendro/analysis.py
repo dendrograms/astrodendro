@@ -16,7 +16,7 @@ from .structure import Structure
 from .flux import UnitMetadataWarning
 from .progressbar import AnimatedProgressBar
 
-__all__ = ['ppv_catalog', 'pp_catalog']
+__all__ = ['ppv_catalog', 'pp_catalog', 'PPStatistic', 'PPVStatistic', 'PPPStatistic', 'SpatialBase']
 
 
 def memoize(func):

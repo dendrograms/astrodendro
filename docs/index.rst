@@ -98,5 +98,11 @@ Public API
 .. automodapi:: astrodendro
    :no-inheritance-diagram:
 
+.. automodapi:: astrodendro.analysis
+   :no-inheritance-diagram:
+
 .. automodapi:: astrodendro.pruning
+   :no-inheritance-diagram:
+
+.. automodapi:: astrodendro.structure_collection
    :no-inheritance-diagram:

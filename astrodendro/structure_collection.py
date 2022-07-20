@@ -2,6 +2,8 @@
 
 from matplotlib.collections import LineCollection
 
+__all__ = ['StructureCollection']
+
 
 class StructureCollection(LineCollection):
 

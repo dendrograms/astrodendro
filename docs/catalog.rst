@@ -250,7 +250,7 @@ approximating the structures on top of the structures themselves:
 
 As shown above, the :class:`~astrodendro.analysis.PPStatistic` and
 :class:`~astrodendro.analysis.PPVStatistic` classes have a
-:meth:`~astrodendro.analysis.PPStatistic.to_mpl_ellipse` method to convert the
+:meth:`~astrodendro.analysis.SpatialBase.to_mpl_ellipse` method to convert the
 first and second moments of the structures into schematic ellipses.
 
 

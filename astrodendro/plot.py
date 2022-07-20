@@ -172,7 +172,7 @@ class DendrogramPlotter(object):
 
         Returns
         -------
-        lines : :class:`~astrodendro.plot.StructureCollection`
+        lines : :class:`~astrodendro.structure_collection.StructureCollection`
             The lines (sub-class of LineCollection) which can be directly used in Matplotlib
 
         Notes
