@@ -477,7 +477,7 @@ class Structure(object):
         """
         if shape is None:
             shape = self._dendrogram.data.shape
-        indices = self.indices(subtree=True) if subtree else self.indices
+        indices = self.indices(subtree=True) if subtree else self.indices()
         mask = np.zeros(shape, dtype=bool)
         mask[indices] = True
         return mask
