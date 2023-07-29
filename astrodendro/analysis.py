@@ -322,7 +322,7 @@ class SpatialBase(object):
         computed from the intensity weighted second moment in direction of
         greatest elongation in the PP plane.
         """
-        dx = self.spatial_scale or u.pixel
+        dx = self.spatial_scale if self.spatial_scale is not None else u.pixel
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the major axis
         # rather than the half-major axis.
@@ -335,7 +335,7 @@ class SpatialBase(object):
         computed from the intensity weighted second moment perpendicular to
         the major axis in the PP plane.
         """
-        dx = self.spatial_scale or u.pixel
+        dx = self.spatial_scale if self.spatial_scale is not None else u.pixel
         a, b = self._sky_paxes()
         # We need to multiply the second moment by two to get the minor axis
         # rather than the half-minor axis.
@@ -462,7 +462,7 @@ class PPVStatistic(SpatialBase):
         0 following the Numpy convention - the third axis in the FITS
         convention).
         """
-        dv = self.velocity_scale or u.pixel
+        dv = self.velocity_scale if self.velocity_scale is not None else u.pixel
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
         return dv * np.sqrt(self.stat.mom2_along(tuple(ax)))
@@ -484,7 +484,7 @@ class PPVStatistic(SpatialBase):
         """
         The exact area of the structure on the sky.
         """
-        dx = self.spatial_scale or u.pixel
+        dx = self.spatial_scale if self.spatial_scale is not None else u.pixel
         indices = zip(*tuple(self.stat.indices[i] for i in range(3) if i != self.vaxis))
         return len(set(indices)) * dx ** 2
 
@@ -562,7 +562,7 @@ class PPStatistic(SpatialBase):
         """
         The exact area of the structure on the sky.
         """
-        dx = self.spatial_scale or u.pixel
+        dx = self.spatial_scale if self.spatial_scale is not None else u.pixel
         return self.stat.count() * dx ** 2
 
 
