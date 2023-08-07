@@ -462,7 +462,7 @@ class PPVStatistic(SpatialBase):
         0 following the Numpy convention - the third axis in the FITS
         convention).
         """
-        dv = self.velocity_scale or u.pixel
+        dv = self.velocity_scale if self.velocity_scale is not None else u.pixel
         ax = [0, 0, 0]
         ax[self.vaxis] = 1
         return dv * np.sqrt(self.stat.mom2_along(tuple(ax)))
