@@ -6,23 +6,13 @@ import numpy as np
 from numpy.testing import assert_allclose
 import astropy.units as u
 from astropy.wcs import WCS
-
+from astropy.tests.helper import assert_quantity_allclose as assert_allclose_quantity
 
 from ._testdata import data
 from ..analysis import (ScalarStatistic, PPVStatistic, ppv_catalog,
                         Metadata, PPStatistic, pp_catalog)
 from .. import Dendrogram, periodic_neighbours
 from ..structure import Structure
-
-
-def assert_allclose_quantity(a, b):
-    if not isinstance(a, u.Quantity):
-        raise TypeError("a is not a quantity")
-    if not isinstance(b, u.Quantity):
-        raise TypeError("b is not a quantity")
-    assert_allclose(a.value, b.value)
-    assert a.unit == b.unit
-
 
 wcs_2d = WCS(header=dict(cdelt1=1, crval1=0, crpix1=1,
                          cdelt2=2, crval2=0, crpix2=1))

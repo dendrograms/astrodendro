@@ -8,10 +8,10 @@ def assert_permuted_fancyindex(x, y):
     """ Assert that two fancy indices (tuples of integer ndarrays)
     are permutations of each other
     """
-    if not isinstance(x, tuple) or not(isinstance(x[0], np.ndarray)):
+    if not isinstance(x, tuple) or not (isinstance(x[0], np.ndarray)):
         raise TypeError("First argument not a fancy index: %s" % x)
 
-    if not isinstance(y, tuple) or not(isinstance(y[0], np.ndarray)):
+    if not isinstance(y, tuple) or not (isinstance(y[0], np.ndarray)):
         raise TypeError("Second argument not a fancy index: %s" % y)
 
     dtype = [('%i' % i, 'i') for i in range(len(x))]
