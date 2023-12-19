@@ -49,7 +49,7 @@ def dendro_export_fits(d, filename):
 
     hdulist = fits.HDUList(hdus)
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
 
 
 def dendro_import_fits(filename):
