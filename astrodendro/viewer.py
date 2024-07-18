@@ -60,6 +60,7 @@ class SelectionHub(object):
 class BasicDendrogramViewer(object):
 
     def __init__(self, dendrogram):
+
         if dendrogram.data.ndim not in [2, 3]:
             raise ValueError(
                 "Only 2- and 3-dimensional arrays are supported at this time")
@@ -83,6 +84,7 @@ class BasicDendrogramViewer(object):
         # Initiate plot
         import matplotlib.pyplot as plt
         self.fig = plt.figure(figsize=(14, 8))
+
         ax_image_limits = [0.1, 0.1, 0.4, 0.7]
 
         try:
@@ -92,6 +94,7 @@ class BasicDendrogramViewer(object):
             __wcaxes_imported = False
             if self.dendrogram.wcs is not None:
                 warnings.warn("`WCSAxes` package required for wcs coordinate display.")
+
         if self.dendrogram.wcs is not None and __wcaxes_imported:
 
             if self.array.ndim == 2:
