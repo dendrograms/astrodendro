@@ -1,7 +1,98 @@
 [build-system]
+build-backend = "setuptools.build_meta"
 
-requires = ["setuptools",
-            "setuptools_scm",
-            "wheel"]
+requires = [
+  "setuptools>=61.2",
+  "setuptools-scm",
+]
 
-build-backend = 'setuptools.build_meta'
+[project]
+name = "astrodendro"
+description = "Python package for computation of astronomical dendrograms"
+readme.content-type = "text/markdown"
+readme.file = "README.md"
+license.text = "MIT"
+authors = [
+  { name = "Thomas Robitaille", email = "thomas.robitaille@gmail.com" },
+  { name = "Chris Beaumont" },
+  { name = "Adam Ginsburg" },
+  { name = "Braden MacDonald" },
+  { name = "and Erik Rosolowsky" },
+]
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3"
+]
+dynamic = [
+  "version",
+]
+dependencies = [
+  "astropy>=5",
+  "h5py>=3",
+  "matplotlib>=3.3",
+  "numpy>=1.20",
+]
+
+[project.optional-dependencies]
+docs = [
+  "aplpy",
+  "numpydoc",
+  "sphinx<7",
+  "sphinx-astropy",
+]
+test = [
+  "pytest",
+  "pytest-cov",
+]
+
+[project.urls]
+homepage = "https://www.dendrograms.org/"
+documentation = "https://dendrograms.readthedocs.io/en/stable/"
+repository = "https://github.com/dendrograms/astrodendro"
+
+[tool.setuptools]
+zip-safe = false
+license-files = [
+  "LICENSE",
+]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+namespaces = false
+
+[tool.setuptools.package-data]
+"astrodendro.tests" = [
+  "*.npz",
+  "benchmark_data/*.fits",
+]
+"astrodendro.io.tests" = [
+  "data/*",
+]
+
+[tool.setuptools_scm]
+write_to = "astrodendro/version.py"
+
+[tool.coverage.run]
+omit = [
+  "astrodendro/conftest.py",
+  "astrodendro/tests/*",
+  "astrodendro/*/tests/*",
+  "astrodendro/extern/*",
+  "astrodendro/version*",
+  "*/astrodendro/conftest.py",
+  "*/astrodendro/tests/*",
+  "*/astrodendro/*/tests/*",
+  "*/astrodendro/extern/*",
+  "*/astrodendro/version*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "except ImportError",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "def main\\(.*\\):",
+  "pragma: py{ignore_python_version}",
+  "def _ipython_key_completions_",
+]

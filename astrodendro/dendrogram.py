@@ -625,6 +625,10 @@ class TreeIndex(object):
         uniq, bins = np.unique(index_map, return_inverse=True)
         packed = dict((u, i) for i, u in enumerate(uniq))
 
+        # starting with numpy 2.0 or later, bins is no longer 1-dimensional,
+        # so we always ravel the array to make it 1-d
+        bins = bins.ravel()
+
         flat_idx = index_map.ravel()
         ri = np.argsort(bins)
         idx_ct = np.bincount(bins)

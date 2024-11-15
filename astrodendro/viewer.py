@@ -1,7 +1,6 @@
 # Licensed under an MIT open source license - see LICENSE
 
 from collections import defaultdict
-import warnings
 from functools import reduce
 
 import numpy as np
