@@ -13,6 +13,7 @@ DATA = np.array([[1, 3, 4, 4, 1, 4],
                  [2, 3, 2, 1, 1, 2],
                  [2, 3, 5, 3, 1, 1]])
 
+
 def test_viewer(capsys):
 
     original_backend = plt.get_backend()
