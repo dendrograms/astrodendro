@@ -87,23 +87,14 @@ class BasicDendrogramViewer(object):
 
         ax_image_limits = [0.1, 0.1, 0.4, 0.7]
 
-        try:
-            from wcsaxes import WCSAxes
-            __wcaxes_imported = True
-        except ImportError:
-            __wcaxes_imported = False
-            if self.dendrogram.wcs is not None:
-                warnings.warn("`WCSAxes` package required for wcs coordinate display.")
-
-        if self.dendrogram.wcs is not None and __wcaxes_imported:
+        if self.dendrogram.wcs is not None:
 
             if self.array.ndim == 2:
                 slices = ('x', 'y')
             else:
                 slices = ('x', 'y', 1)
 
-            ax_image = WCSAxes(self.fig, ax_image_limits, wcs=self.dendrogram.wcs, slices=slices)
-            self.ax_image = self.fig.add_axes(ax_image)
+            self.ax_image = self.fig.add_axes(ax_image_limits, projection=self.dendrogram.wcs, slices=slices)
 
         else:
             self.ax_image = self.fig.add_axes(ax_image_limits)
