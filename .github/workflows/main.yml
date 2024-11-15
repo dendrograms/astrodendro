@@ -15,7 +15,7 @@ jobs:
         - macos: py39-test
         - windows: py39-test
         - linux: py310-test
-        - macos: py311-test
+        - macos: py311-test-viewer
         - windows: py312-test
         - linux: py313-test-devdeps
       coverage: 'codecov'
