@@ -1,3 +1,22 @@
+## v0.3.1 - 2024-11-15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix compatibility of interactive viewer with recent versions of Matplotlib by @astrofrog in https://github.com/dendrograms/astrodendro/pull/202
+
+#### Other Changes
+
+* Bump actions/checkout from 4.2.0 to 4.2.2 in /.github/workflows in the actions group by @dependabot in https://github.com/dendrograms/astrodendro/pull/201
+
+### New Contributors
+
+* @dependabot made their first contribution in https://github.com/dendrograms/astrodendro/pull/201
+
+**Full Changelog**: https://github.com/dendrograms/astrodendro/compare/v0.3.0...v0.3.1
+
 ## v0.3.0 - 2024-11-15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
