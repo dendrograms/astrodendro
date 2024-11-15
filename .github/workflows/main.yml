@@ -25,6 +25,6 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
     with:
       test_extras: test
-      test_command: pytest --pyargs astrodenro
+      test_command: pytest --pyargs astrodendro
     secrets:
       pypi_token: ${{ secrets.pypi_token }}
