@@ -277,7 +277,7 @@ class BasicDendrogramViewer(object):
 
         # Remove previously selected collection
         if selection_id in self.selected_lines:
-            self.ax_dendrogram.collections.remove(self.selected_lines[selection_id])
+            self.selected_lines[selection_id].remove()
             del self.selected_lines[selection_id]
 
         if structure is None:
@@ -308,15 +308,13 @@ class BasicDendrogramViewer(object):
         self.ax_dendrogram.add_collection(self.selected_lines[selection_id])
 
     def remove_contour(self, selection_id):
-
         if selection_id in self.selected_contour:
-            for collection in self.selected_contour[selection_id].collections:
-                self.ax_image.collections.remove(collection)
+            self.selected_contour[selection_id].remove()
             del self.selected_contour[selection_id]
 
     def remove_all_contours(self):
         """ Remove all selected contours. """
-        for key in self.selected_contour.keys():
+        for key in list(self.selected_contour):
             self.remove_contour(key)
 
     def update_contours(self):
