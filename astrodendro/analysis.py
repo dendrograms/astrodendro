@@ -281,8 +281,8 @@ class SpatialBase(object):
 
     wavelength = MetadataQuantity('wavelength', 'Wavelength')
     spatial_scale = MetadataQuantity('spatial_scale', 'Pixel width/height')
-    beam_major = MetadataQuantity('beam_major', 'Major FWHM of beam')
-    beam_minor = MetadataQuantity('beam_minor', 'Minor FWHM of beam')
+    beam_major = MetadataQuantity('beam_major', 'Major axis (sigma) of beam')
+    beam_minor = MetadataQuantity('beam_minor', 'Minor axis (sigma) of beam')
     data_unit = MetadataQuantity('data_unit', 'Units of the pixel values', strict=True)
     wcs = MetadataWCS('wcs', 'WCS object')
 
