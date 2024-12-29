@@ -1,7 +1,6 @@
 # Licensed under an MIT open source license - see LICENSE
 
 from collections import defaultdict
-import warnings
 from functools import reduce
 
 import numpy as np
@@ -87,23 +86,14 @@ class BasicDendrogramViewer(object):
 
         ax_image_limits = [0.1, 0.1, 0.4, 0.7]
 
-        try:
-            from wcsaxes import WCSAxes
-            __wcaxes_imported = True
-        except ImportError:
-            __wcaxes_imported = False
-            if self.dendrogram.wcs is not None:
-                warnings.warn("`WCSAxes` package required for wcs coordinate display.")
-
-        if self.dendrogram.wcs is not None and __wcaxes_imported:
+        if self.dendrogram.wcs is not None:
 
             if self.array.ndim == 2:
                 slices = ('x', 'y')
             else:
                 slices = ('x', 'y', 1)
 
-            ax_image = WCSAxes(self.fig, ax_image_limits, wcs=self.dendrogram.wcs, slices=slices)
-            self.ax_image = self.fig.add_axes(ax_image)
+            self.ax_image = self.fig.add_axes(ax_image_limits, projection=self.dendrogram.wcs, slices=slices)
 
         else:
             self.ax_image = self.fig.add_axes(ax_image_limits)
@@ -287,7 +277,7 @@ class BasicDendrogramViewer(object):
 
         # Remove previously selected collection
         if selection_id in self.selected_lines:
-            self.ax_dendrogram.collections.remove(self.selected_lines[selection_id])
+            self.selected_lines[selection_id].remove()
             del self.selected_lines[selection_id]
 
         if structure is None:
@@ -318,15 +308,13 @@ class BasicDendrogramViewer(object):
         self.ax_dendrogram.add_collection(self.selected_lines[selection_id])
 
     def remove_contour(self, selection_id):
-
         if selection_id in self.selected_contour:
-            for collection in self.selected_contour[selection_id].collections:
-                self.ax_image.collections.remove(collection)
+            self.selected_contour[selection_id].remove()
             del self.selected_contour[selection_id]
 
     def remove_all_contours(self):
         """ Remove all selected contours. """
-        for key in self.selected_contour.keys():
+        for key in list(self.selected_contour):
             self.remove_contour(key)
 
     def update_contours(self):

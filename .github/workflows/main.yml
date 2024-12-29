@@ -5,15 +5,26 @@ on:
   pull_request:
 
 jobs:
+
   test:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       envs: |
         - linux: codestyle
-          pytest: false
         - linux: py38-test-oldestdeps
         - macos: py39-test
         - windows: py39-test
         - linux: py310-test
-        - linux: py311-test-devdeps
+        - macos: py311-test-viewer
+        - windows: py312-test
+        - linux: py313-test-devdeps
       coverage: 'codecov'
+
+  publish:
+    needs: test
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
+    with:
+      test_extras: test
+      test_command: pytest --pyargs astrodendro
+    secrets:
+      pypi_token: ${{ secrets.pypi_token }}

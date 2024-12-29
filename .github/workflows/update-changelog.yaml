@@ -1,0 +1,33 @@
+# This workflow takes the GitHub release notes an updates the changelog on the
+# main branch with the body of the release notes, thereby keeping a log in
+# the git repo of the changes.
+
+name: "Update Changelog"
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          ref: main
+
+      - name: Update Changelog
+        uses: stefanzweifel/changelog-updater-action@a938690fad7edf25368f37e43a1ed1b34303eb36  # v1.12.0
+        with:
+          release-notes: ${{ github.event.release.body }}
+          latest-version: ${{ github.event.release.name }}
+          path-to-changelog: CHANGES.md
+
+      - name: Commit updated CHANGELOG
+        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842  # v5.0.1
+        with:
+          branch: main
+          commit_message: Update CHANGELOG
+          file_pattern: CHANGES.md

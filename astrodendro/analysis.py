@@ -639,7 +639,7 @@ def _make_catalog(structures, fields, metadata, statistic, verbose=False):
             for index_array, shape in zip(indices, shape_tuple):
                 # catch simple cases where a structure wraps around the image boundary
                 i2 = np.where(index_array < shape/2, index_array+shape, index_array)
-                if i2.ptp() < index_array.ptp():  # more compact with wrapping. Use this
+                if np.ptp(i2) < np.ptp(index_array):  # more compact with wrapping. Use this
                     index_array[:] = i2
 
         stat = ScalarStatistic(values, indices)
