@@ -1,7 +1,22 @@
 import numpy as np
+import ast
+from numpy import inf,nan
 
 from astropy.utils.console import ProgressBar
 from astropy import log
+
+def _fix_string(string):
+    """
+    Given a string that may contain inf or nan, replace inf and nan with None
+    so that it can be parsed by ast.literal_eval
+    """
+    return string.replace("inf","None").replace("nan","None")
+
+def _eval_string(string):
+    """
+    Parse a string into a dictionary using ast.literal_eval
+    """
+    return ast.literal_eval(_fix_string(string))
 
 
 def parse_newick(string):
@@ -50,7 +65,7 @@ def parse_newick(string):
                 branch_id = int(branch_id)
 
             # Add branch definition to overall definition
-            items[branch_id] = eval("{%s}" % string[start + 1:end])
+            items[branch_id] = _eval_string("{%s}" % string[start + 1:end])
 
             # Remove branch definition from string
             string = string[:start] + string[end + 1:]
