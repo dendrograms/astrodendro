@@ -110,7 +110,7 @@ class DendrogramPlotter(object):
             ax.margins(0.05)
             ax.autoscale_view(True, True, True)
 
-    def plot_contour(self, ax, structure=None, subtree=True, slice=None, **kwargs):
+    def plot_contour(self, ax, structure=None, subtree=True, slice=None, collapse=None, **kwargs):
         """
         Plot a contour outlining all pixels in the dendrogram, or a specific.
         structure.
@@ -129,6 +129,10 @@ class DendrogramPlotter(object):
             If dealing with a 3-d cube, the slice at which to plot the contour.
             If not set, the slice containing the peak of the structure will be
             shown
+        collapse: int, optional
+            If dealing with a 3-d cube, the dimension which will be "collapsed" when plotting.
+            I.e., if slice=85 and collapse=0, contours will be plotted by taking the 85th slice along x, 
+            "collapsing" the x direction.
 
         Notes
         -----
@@ -150,7 +154,12 @@ class DendrogramPlotter(object):
                 if slice is None:
                     peak_index = structure.get_peak(subtree=subtree)
                     slice = peak_index[0][0]
-                mask = mask[slice, :, :]
+                if collapse is None or collapse==0:
+                    mask = mask[slice, :, :]
+                elif collapse==1:
+                    mask=mask[:, slice, :]
+                elif collapse==2:
+                    mask=mask[:, :, slice]
 
         # fix a common mistake when trying to set the color of contours
         if 'color' in kwargs and 'colors' not in kwargs:
