@@ -210,8 +210,12 @@ class Structure(object):
         """
         self._indices.append(index)
         self._values.append(value)
-        self._vmin, self._vmax = min(value, self.vmin), max(value, self.vmax)
-        self._smallest_index = min(self._smallest_index, index)
+        if value < self._vmin:
+            self._vmin = value
+        elif value > self._vmax:
+            self._vmax = value
+        if index < self._smallest_index:
+            self._smallest_index = index
         self._reset_cache()
 
     def _merge(self, structure):
@@ -477,7 +481,7 @@ class Structure(object):
         """
         if shape is None:
             shape = self._dendrogram.data.shape
-        indices = self.indices(subtree=True) if subtree else self.indices
+        indices = self.indices(subtree=True) if subtree else self.indices()
         mask = np.zeros(shape, dtype=bool)
         mask[indices] = True
         return mask

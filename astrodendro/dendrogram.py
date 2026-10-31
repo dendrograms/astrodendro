@@ -163,7 +163,6 @@ class Dendrogram(object):
             else:
                 tests.append(is_independent)
         is_independent = pruning.all_true(tests)
-        neighbours = neighbours or Dendrogram.neighbours
 
         # Default min_val to the minimum in the data
         if min_value == "min":
@@ -180,7 +179,7 @@ class Dendrogram(object):
         # Create a list of all points in the cube above min_value
         keep = self.data > min_value
         data_values = self.data[keep]
-        indices = np.vstack(np.where(keep)).transpose()
+        coords = np.nonzero(keep)
 
         if verbose:
             print("Generating dendrogram using {:,} of {:,} pixels ({}% of data)".format(data_values.size, self.data.size, (100 * data_values.size / self.data.size)))
@@ -188,53 +187,72 @@ class Dendrogram(object):
 
         # Define index array indicating what structure each cell is part of
         # We expand each dimension by one, so the last value of each
-        # index (accessed with e.g. [nx,#,#] or [-1,#,#]) is always zero
+        # index (accessed with e.g. [nx,#,#] or [-1,#,#]) is always -1
         # This permits an optimization below when finding adjacent structures
         self.index_map = -np.ones(np.add(self.data.shape, 1), dtype=np.int32)
 
         # Dictionary of currently-defined structures:
         structures = {}
 
+        # Process pixels from largest to smallest value. Convert everything
+        # the loop needs to plain Python lists up front, since indexing
+        # numpy arrays one element at a time is slow.
+        order = np.argsort(data_values)[::-1]
+        order_list = order.tolist()
+        values_sorted = data_values[order].tolist()
+        coords_sorted = [c[order] for c in coords]
+
+        if neighbours is None:
+            # Default (face-adjacent) neighbours: work with flat indices into
+            # the padded index map. Stepping off any edge (including -1 on
+            # the first axis, which wraps to the end of the array) lands on
+            # a padding cell, which is always -1.
+            flat_map = self.index_map.reshape(-1)  # a view
+            flat_sorted = np.ravel_multi_index(coords_sorted,
+                                               self.index_map.shape).tolist()
+            strides = [st // self.index_map.itemsize
+                       for st in self.index_map.strides]
+            offsets = [o for st in strides for o in (st, -st)]
+            map_get = flat_map.item
+
+            def adjacent_ids(k):
+                p = flat_sorted[k]
+                return {map_get(p + o) for o in offsets}
+        else:
+            indices = np.vstack(coords_sorted).transpose()
+
+            def adjacent_ids(k):
+                return {int(self.index_map[c])
+                        for c in neighbours(self, indices[k])}
+
+        coords_sorted = list(zip(*[c.tolist() for c in coords_sorted]))
+
         # Loop from largest to smallest data_value value. Each time, check if
         # the pixel connects to any existing leaf. Otherwise, create new leaf.
-        count = 0
+        for k in range(len(order_list)):
 
-        for i in np.argsort(data_values)[::-1]:
-
-            def next_idx():
-                return i + 1
-                # Generate IDs index i. We add one to avoid ID 0
-
-            data_value = data_values[i]
-            coord = tuple(indices[i])
+            data_value = values_sorted[k]
+            coord = coords_sorted[k]
 
             # Print stats
-            count += 1
-            if verbose and (count % 100 == 0):
+            if verbose and ((k + 1) % 100 == 0):
                 progress_bar + 100
                 progress_bar.show_progress()
 
             # Check if point is adjacent to any leaf
             # We don't worry about the edges, because overflow or underflow in
             # any one dimension will always land on an extra "padding" cell
-            # with value zero added above when index_map was created
-
-            indices_adjacent = neighbours(self, indices[i])
-            adjacent = [self.index_map[c] for c in indices_adjacent
-                        if self.index_map[c] > -1]
-
-            # Replace adjacent elements by its ancestor
-            adjacent = [structures[a].ancestor for a in adjacent]
-
-            # Remove duplicates
-            adjacent = _sorted_by_idx(set(adjacent))
+            # with value -1 added above when index_map was created
+            ids = adjacent_ids(k)
+            ids.discard(-1)
 
             # What happens next depends on how many unique adjacent structures there are
 
-            if not adjacent:  # No adjacent structures;  Create new leaf:
+            if not ids:  # No adjacent structures;  Create new leaf:
 
-                # Set absolute index of the new element
-                idx = next_idx()
+                # Generate IDs from the original pixel index. We add one to
+                # avoid ID 0
+                idx = order_list[k] + 1
 
                 # Create leaf
                 leaf = Structure(coord, data_value, idx=idx, dendrogram=self)
@@ -244,16 +262,24 @@ class Dendrogram(object):
 
                 # Set absolute index of pixel in index map
                 self.index_map[coord] = idx
+                continue
 
-            elif len(adjacent) == 1:  # Add to existing leaf or branch
+            # Replace adjacent elements by their ancestor, removing duplicates
+            adjacent = {structures[a].ancestor for a in ids}
+
+            if len(adjacent) == 1:  # Add to existing leaf or branch
+
+                belongs_to = adjacent.pop()
 
                 # Add point to structure
-                adjacent[0]._add_pixel(coord, data_value)
+                belongs_to._add_pixel(coord, data_value)
 
                 # Set absolute index of pixel in index map
-                self.index_map[coord] = adjacent[0].idx
+                self.index_map[coord] = belongs_to.idx
 
             else:  # Merge leaves
+
+                adjacent = _sorted_by_idx(adjacent)
 
                 # At this stage, the adjacent structures might consist of an
                 # arbitrary number of leaves and branches.
@@ -286,7 +312,8 @@ class Dendrogram(object):
                 else:
                     # Create a branch
                     belongs_to = Structure(coord, data_value,
-                                           children=adjacent, idx=next_idx(),
+                                           children=adjacent,
+                                           idx=order_list[k] + 1,
                                            dendrogram=self)
                     # Add branch to overall list
                     structures[belongs_to.idx] = belongs_to
@@ -296,7 +323,6 @@ class Dendrogram(object):
 
                 # Add all insignificant leaves in 'merge' to the same object as this pixel:
                 for m in merge:
-                    # print "Merging leaf %i onto leaf %i" % (i, idx)
                     # Remove leaf
                     structures.pop(m.idx)
                     # Merge the insignificant structure that this pixel now belongs to:
