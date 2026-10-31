@@ -150,7 +150,7 @@ class ScalarStatistic(object):
         are sorted in decreasing order of elongation of the data
         """
         mom2 = self.mom2()
-        w, v = np.linalg.eig(mom2)
+        w, v = np.linalg.eigh(mom2)
         order = np.argsort(w)
 
         return tuple(v[:, o] for o in order[::-1])
@@ -177,7 +177,7 @@ class ScalarStatistic(object):
         """
         axes = tuple(axes)
         mom2 = self.mom2_along(axes)
-        w, v = np.linalg.eig(mom2)
+        w, v = np.linalg.eigh(mom2)
         order = np.argsort(w)
 
         return tuple(v[:, o] for o in order[::-1])
